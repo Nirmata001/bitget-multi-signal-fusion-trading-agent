@@ -35,18 +35,45 @@ def filter_tools_for_analyst(all_tools: dict, analyst: str) -> list:
     assigned = ANALYST_TOOLS.get(analyst, [])
     return [tool for name, tool in all_tools.items() if name in assigned]
 
+def clean_schema(schema: dict) -> dict:
+    """Clean JSON schema to match Gemini Type and remove unsupported keys"""
+    if not isinstance(schema, dict):
+        return schema
+        
+    cleaned = {}
+    
+    # Supported Schema keys in Gemini API
+    allowed_keys = ["type", "description", "properties", "required", "items", "enum"]
+    
+    for k, v in schema.items():
+        if k in allowed_keys:
+            if k == "type" and isinstance(v, str):
+                cleaned[k] = v.upper() # "object" -> "OBJECT", etc.
+            elif k == "properties" and isinstance(v, dict):
+                cleaned[k] = {prop_name: clean_schema(prop_val) for prop_name, prop_val in v.items()}
+            elif k == "items" and isinstance(v, dict):
+                cleaned[k] = clean_schema(v)
+            else:
+                cleaned[k] = v
+                
+    return cleaned
+
 def tools_to_gemini_format(tools: list) -> list:
     """Convert MCP tool objects to Gemini function declaration format"""
-    gemini_tools = []
+    if not tools:
+        return []
+        
+    declarations = []
     for tool in tools:
-        gemini_tools.append({
-            "function_declaration": {
-                "name": tool.name,
-                "description": tool.description or f"Execute {tool.name}",
-                "parameters": tool.inputSchema
-            }
+        declarations.append({
+            "name": tool.name,
+            "description": tool.description or f"Execute {tool.name}",
+            "parameters": clean_schema(tool.inputSchema)
         })
-    return gemini_tools
+        
+    return [{
+        "function_declarations": declarations
+    }]
 
 async def call_mcp_tool(session: ClientSession, tool_name: str, arguments: dict) -> str:
     """Execute a tool call against the MCP server and return result as string"""
