@@ -1,0 +1,6 @@
+{
+  "name": "AI Trading Agent Project",
+  "description": "A Python-based AI trading agent project structure.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
