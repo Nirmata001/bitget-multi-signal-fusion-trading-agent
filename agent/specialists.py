@@ -6,6 +6,7 @@ from google.genai import types
 from mcp import ClientSession
 from agent.mcp_client import filter_tools_for_analyst, tools_to_gemini_format, call_mcp_tool
 from agent.prompts import ANALYST_PROMPTS
+from agent.gemini_utils import generate_content_with_retry
 
 MAX_ITERATIONS = 8
 
@@ -42,7 +43,8 @@ async def run_specialist(
 
     # Agentic loop
     for iteration in range(MAX_ITERATIONS):
-        response = ai_client.models.generate_content(
+        response = await generate_content_with_retry(
+            ai_client=ai_client,
             model=model,
             contents=contents,
             config=config
@@ -115,9 +117,15 @@ async def run_all_specialists(
 
     analysts = ["macro", "technical", "sentiment", "market_intel", "news"]
 
+    async def run_with_stagger(index, analyst):
+        if index > 0:
+            # Stagger launch by 2 seconds to spread out API requests on free tiers
+            await asyncio.sleep(index * 2.0)
+        return await run_specialist(session, all_tools, analyst, coin, ai_client, model)
+
     reports = await asyncio.gather(*[
-        run_specialist(session, all_tools, analyst, coin, ai_client, model)
-        for analyst in analysts
+        run_with_stagger(i, analyst)
+        for i, analyst in enumerate(analysts)
     ], return_exceptions=True)
 
     # Handle any exceptions

@@ -4,6 +4,7 @@ from datetime import datetime, timezone
 from google import genai
 from google.genai import types
 from agent.prompts import SYNTHESIS_PROMPT
+from agent.gemini_utils import generate_content_with_retry
 
 
 async def synthesize_reports(
@@ -38,7 +39,8 @@ Full Report: {report.get('fullReport', '')[:500]}
     # No tools for synthesis — pure reasoning
     config = types.GenerateContentConfig(temperature=0.1)
 
-    response = ai_client.models.generate_content(
+    response = await generate_content_with_retry(
+        ai_client=ai_client,
         model=model,
         contents=prompt,
         config=config
