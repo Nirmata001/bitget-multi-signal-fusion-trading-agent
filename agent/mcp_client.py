@@ -36,6 +36,23 @@ def filter_tools_for_analyst(all_tools: dict, analyst: str) -> list:
     assigned = ANALYST_TOOLS.get(analyst, [])
     return [tool for name, tool in all_tools.items() if name in assigned]
 
+def clean_schema(schema: dict) -> dict:
+    if not isinstance(schema, dict):
+        return schema
+    cleaned = {}
+    for key, value in schema.items():
+        if key == 'enum' and isinstance(value, list):
+            filtered = [v for v in value if v != '' and v is not None]
+            if filtered:
+                cleaned[key] = filtered
+        elif isinstance(value, dict):
+            cleaned[key] = clean_schema(value)
+        elif isinstance(value, list):
+            cleaned[key] = [clean_schema(item) if isinstance(item, dict) else item for item in value]
+        else:
+            cleaned[key] = value
+    return cleaned
+
 def tools_to_gemini_format(tools: list) -> list:
     """Convert MCP tool objects to Gemini Tool objects"""
     function_declarations = []
@@ -43,12 +60,13 @@ def tools_to_gemini_format(tools: list) -> list:
         # Clean the input schema
         schema = tool.inputSchema or {}
         properties = schema.get('properties', {})
+        cleaned_properties = clean_schema(properties)
         required = schema.get('required', [])
 
         # Build parameters schema
         params = {
             'type': 'object',
-            'properties': properties,
+            'properties': cleaned_properties,
         }
         if required:
             params['required'] = required

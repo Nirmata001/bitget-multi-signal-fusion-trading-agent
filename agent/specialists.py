@@ -8,7 +8,8 @@ from mcp import ClientSession
 from agent.mcp_client import filter_tools_for_analyst, tools_to_gemini_format, call_mcp_tool
 from agent.prompts import ANALYST_PROMPTS
 
-async def call_gemini_with_retry(ai_client, model, contents, config, retries=3, delay=10):
+async def call_gemini_with_retry(ai_client, model, contents, config, retries=3):
+    import re
     for attempt in range(retries):
         try:
             return ai_client.models.generate_content(
@@ -17,16 +18,25 @@ async def call_gemini_with_retry(ai_client, model, contents, config, retries=3, 
                 config=config
             )
         except Exception as e:
-            if '503' in str(e) or 'UNAVAILABLE' in str(e):
+            err_str = str(e)
+            if '429' in err_str or 'RESOURCE_EXHAUSTED' in err_str:
+                match = re.search(r'retry in (\d+)', err_str)
+                wait = int(match.group(1)) + 5 if match else 60
                 if attempt < retries - 1:
-                    print(f'    ⚠️  Gemini overloaded, retrying in {delay}s... ({attempt + 2}/{retries})')
-                    await asyncio.sleep(delay)
+                    print(f'    ⚠️  Rate limited, waiting {wait}s... ({attempt + 2}/{retries})')
+                    await asyncio.sleep(wait)
+                else:
+                    raise
+            elif '503' in err_str or 'UNAVAILABLE' in err_str:
+                if attempt < retries - 1:
+                    print(f'    ⚠️  Gemini overloaded, retrying in 10s... ({attempt + 2}/{retries})')
+                    await asyncio.sleep(10)
                 else:
                     raise
             else:
                 raise
 
-MAX_ITERATIONS = 8
+MAX_ITERATIONS = 4
 
 async def run_specialist(
     session: ClientSession,
@@ -120,40 +130,28 @@ def parse_analyst_report(text: str, analyst_key: str, coin: str) -> dict:
     }
 
 
-async def run_all_specialists(
-    session: ClientSession,
-    all_tools: dict,
-    coin: str,
-    ai_client: genai.Client,
-    model: str = "gemini-2.5-flash"
-) -> list:
-    """Run all 5 specialist analysts in parallel and return their reports"""
-    print(f"\n📊 Running 5 specialist analysts for {coin} in parallel...")
-
-    analysts = ["macro", "technical", "sentiment", "market_intel", "news"]
-
-    reports = await asyncio.gather(*[
-        run_specialist(session, all_tools, analyst, coin, ai_client, model)
-        for analyst in analysts
-    ], return_exceptions=True)
-
-    # Handle any exceptions
-    clean_reports = []
-    for analyst, report in zip(analysts, reports):
-        if isinstance(report, Exception):
-            print(f"  ❌ {analyst} failed: {report}")
-            clean_reports.append({
-                "analyst": analyst,
-                "signal": "NEUTRAL",
-                "confidence": 0,
-                "summary": f"Analyst failed: {str(report)}",
-                "keyPoints": [],
-                "fullReport": str(report)
-            })
-        else:
-            clean_reports.append(report)
+async def run_all_specialists(session, all_tools, coin, ai_client, model='gemini-2.5-flash') -> list:
+    print(f'\n📊 Running 5 specialist analysts for {coin} sequentially...')
+    analysts = ['macro', 'technical', 'sentiment', 'market_intel', 'news']
+    reports = []
+    for i, analyst in enumerate(analysts):
+        if i > 0:
+            print(f'  ⏳ Waiting 15s before next analyst to respect rate limits...')
+            await asyncio.sleep(15)
+        try:
+            report = await run_specialist(session, all_tools, analyst, coin, ai_client, model)
             signal = report.get('signal', 'NEUTRAL')
             confidence = report.get('confidence', 0)
-            print(f"  ✅ {analyst}: {signal} ({confidence}%)")
-
-    return clean_reports
+            print(f'  ✅ {analyst}: {signal} ({confidence}%)')
+            reports.append(report)
+        except Exception as e:
+            print(f'  ❌ {analyst} failed: {e}')
+            reports.append({
+                'analyst': analyst,
+                'signal': 'NEUTRAL',
+                'confidence': 0,
+                'summary': f'Analyst failed: {str(e)}',
+                'keyPoints': [],
+                'fullReport': str(e)
+            })
+    return reports
