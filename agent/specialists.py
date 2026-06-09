@@ -1,12 +1,30 @@
 import asyncio
 import json
 import re
+import time
 from google import genai
 from google.genai import types
 from mcp import ClientSession
 from agent.mcp_client import filter_tools_for_analyst, tools_to_gemini_format, call_mcp_tool
 from agent.prompts import ANALYST_PROMPTS
-from agent.gemini_utils import generate_content_with_retry
+
+async def call_gemini_with_retry(ai_client, model, contents, config, retries=3, delay=10):
+    for attempt in range(retries):
+        try:
+            return ai_client.models.generate_content(
+                model=model,
+                contents=contents,
+                config=config
+            )
+        except Exception as e:
+            if '503' in str(e) or 'UNAVAILABLE' in str(e):
+                if attempt < retries - 1:
+                    print(f'    ⚠️  Gemini overloaded, retrying in {delay}s... ({attempt + 2}/{retries})')
+                    await asyncio.sleep(delay)
+                else:
+                    raise
+            else:
+                raise
 
 MAX_ITERATIONS = 8
 
@@ -43,11 +61,8 @@ async def run_specialist(
 
     # Agentic loop
     for iteration in range(MAX_ITERATIONS):
-        response = await generate_content_with_retry(
-            ai_client=ai_client,
-            model=model,
-            contents=contents,
-            config=config
+        response = await call_gemini_with_retry(
+            ai_client, model=model, contents=contents, config=config
         )
 
         # Check for function calls
@@ -117,15 +132,9 @@ async def run_all_specialists(
 
     analysts = ["macro", "technical", "sentiment", "market_intel", "news"]
 
-    async def run_with_stagger(index, analyst):
-        if index > 0:
-            # Stagger launch by 2 seconds to spread out API requests on free tiers
-            await asyncio.sleep(index * 2.0)
-        return await run_specialist(session, all_tools, analyst, coin, ai_client, model)
-
     reports = await asyncio.gather(*[
-        run_with_stagger(i, analyst)
-        for i, analyst in enumerate(analysts)
+        run_specialist(session, all_tools, analyst, coin, ai_client, model)
+        for analyst in analysts
     ], return_exceptions=True)
 
     # Handle any exceptions

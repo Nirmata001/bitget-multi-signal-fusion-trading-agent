@@ -1,10 +1,30 @@
+import asyncio
 import json
 import re
+import time
 from datetime import datetime, timezone
 from google import genai
 from google.genai import types
 from agent.prompts import SYNTHESIS_PROMPT
-from agent.gemini_utils import generate_content_with_retry
+
+
+async def call_gemini_with_retry(ai_client, model, contents, config, retries=3, delay=10):
+    for attempt in range(retries):
+        try:
+            return ai_client.models.generate_content(
+                model=model,
+                contents=contents,
+                config=config
+            )
+        except Exception as e:
+            if '503' in str(e) or 'UNAVAILABLE' in str(e):
+                if attempt < retries - 1:
+                    print(f'  ⚠️  Gemini overloaded, retrying in {delay}s... ({attempt + 2}/{retries})')
+                    await asyncio.sleep(delay)
+                else:
+                    raise
+            else:
+                raise
 
 
 async def synthesize_reports(
@@ -39,11 +59,8 @@ Full Report: {report.get('fullReport', '')[:500]}
     # No tools for synthesis — pure reasoning
     config = types.GenerateContentConfig(temperature=0.1)
 
-    response = await generate_content_with_retry(
-        ai_client=ai_client,
-        model=model,
-        contents=prompt,
-        config=config
+    response = await call_gemini_with_retry(
+        ai_client, model=model, contents=prompt, config=config
     )
 
     final_text = response.text or ""

@@ -1,6 +1,7 @@
 import asyncio
 from mcp import ClientSession
 from mcp.client.streamable_http import streamable_http_client
+from google.genai import types
 
 MCP_SERVER_URL = "https://datahub.noxiaohao.com/mcp"
 
@@ -35,45 +36,32 @@ def filter_tools_for_analyst(all_tools: dict, analyst: str) -> list:
     assigned = ANALYST_TOOLS.get(analyst, [])
     return [tool for name, tool in all_tools.items() if name in assigned]
 
-def clean_schema(schema: dict) -> dict:
-    """Clean JSON schema to match Gemini Type and remove unsupported keys"""
-    if not isinstance(schema, dict):
-        return schema
-        
-    cleaned = {}
-    
-    # Supported Schema keys in Gemini API
-    allowed_keys = ["type", "description", "properties", "required", "items", "enum"]
-    
-    for k, v in schema.items():
-        if k in allowed_keys:
-            if k == "type" and isinstance(v, str):
-                cleaned[k] = v.upper() # "object" -> "OBJECT", etc.
-            elif k == "properties" and isinstance(v, dict):
-                cleaned[k] = {prop_name: clean_schema(prop_val) for prop_name, prop_val in v.items()}
-            elif k == "items" and isinstance(v, dict):
-                cleaned[k] = clean_schema(v)
-            else:
-                cleaned[k] = v
-                
-    return cleaned
-
 def tools_to_gemini_format(tools: list) -> list:
-    """Convert MCP tool objects to Gemini function declaration format"""
-    if not tools:
-        return []
-        
-    declarations = []
+    """Convert MCP tool objects to Gemini Tool objects"""
+    function_declarations = []
     for tool in tools:
-        declarations.append({
-            "name": tool.name,
-            "description": tool.description or f"Execute {tool.name}",
-            "parameters": clean_schema(tool.inputSchema)
-        })
-        
-    return [{
-        "function_declarations": declarations
-    }]
+        # Clean the input schema
+        schema = tool.inputSchema or {}
+        properties = schema.get('properties', {})
+        required = schema.get('required', [])
+
+        # Build parameters schema
+        params = {
+            'type': 'object',
+            'properties': properties,
+        }
+        if required:
+            params['required'] = required
+
+        function_declarations.append(
+            types.FunctionDeclaration(
+                name=tool.name,
+                description=tool.description or f'Execute {tool.name}',
+                parameters=params
+            )
+        )
+
+    return [types.Tool(function_declarations=function_declarations)]
 
 async def call_mcp_tool(session: ClientSession, tool_name: str, arguments: dict) -> str:
     """Execute a tool call against the MCP server and return result as string"""
