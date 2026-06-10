@@ -44,7 +44,7 @@ async def run_specialist(
     analyst_key: str,
     coin: str,
     ai_client: genai.Client,
-    model: str = "gemini-2.0-flash-lite"
+    model: str = "gemini-2.0-flash"
 ) -> dict:
     """Run a single specialist analyst agent and return its structured report"""
 
@@ -135,7 +135,7 @@ async def run_all_specialists(
     all_tools: dict,
     coin: str,
     ai_client: genai.Client,
-    model: str = "gemini-2.0-flash-lite"
+    model: str = "gemini-2.0-flash"
 ) -> list:
     """Run all 5 specialist analysts in parallel and return their reports"""
     print(f"\n📊 Running 5 specialist analysts for {coin} in parallel...")

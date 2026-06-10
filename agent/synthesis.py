@@ -41,7 +41,7 @@ async def synthesize_reports(
     reports: list,
     coin: str,
     ai_client: genai.Client,
-    model: str = "gemini-2.0-flash-lite"
+    model: str = "gemini-2.0-flash"
 ) -> dict:
     """Synthesize all analyst reports into a final trading decision"""
 

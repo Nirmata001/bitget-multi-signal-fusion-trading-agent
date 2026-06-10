@@ -41,7 +41,7 @@ async def run_agent_cycle(coin: str = "BTC") -> dict | None:
 
     # Initialize Gemini client
     ai_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-    model = "gemini-2.0-flash-lite"
+    model = "gemini-2.0-flash"
 
     try:
         # Connect to MCP server — one session shared by all analysts
