@@ -137,33 +137,28 @@ async def run_all_specialists(
     ai_client: genai.Client,
     model: str = "gemini-2.0-flash"
 ) -> list:
-    """Run all 5 specialist analysts in parallel and return their reports"""
-    print(f"\n📊 Running 5 specialist analysts for {coin} in parallel...")
+    """Run all 5 specialist analysts sequentially and return their reports"""
+    print(f"\n📊 Running 5 specialist analysts for {coin} sequentially...")
 
     analysts = ["macro", "technical", "sentiment", "market_intel", "news"]
-
-    reports = await asyncio.gather(*[
-        run_specialist(session, all_tools, analyst, coin, ai_client, model)
-        for analyst in analysts
-    ], return_exceptions=True)
-
-    # Handle any exceptions
     clean_reports = []
-    for analyst, report in zip(analysts, reports):
-        if isinstance(report, Exception):
-            print(f"  ❌ {analyst} failed: {report}")
-            clean_reports.append({
-                "analyst": analyst,
-                "signal": "NEUTRAL",
-                "confidence": 0,
-                "summary": f"Analyst failed: {str(report)}",
-                "keyPoints": [],
-                "fullReport": str(report)
-            })
-        else:
+
+    for analyst in analysts:
+        try:
+            report = await run_specialist(session, all_tools, analyst, coin, ai_client, model)
             clean_reports.append(report)
             signal = report.get('signal', 'NEUTRAL')
             confidence = report.get('confidence', 0)
             print(f"  ✅ {analyst}: {signal} ({confidence}%)")
+        except Exception as e:
+            print(f"  ❌ {analyst} failed: {e}")
+            clean_reports.append({
+                "analyst": analyst,
+                "signal": "NEUTRAL",
+                "confidence": 0,
+                "summary": f"Analyst failed: {str(e)}",
+                "keyPoints": [],
+                "fullReport": str(e)
+            })
 
     return clean_reports
