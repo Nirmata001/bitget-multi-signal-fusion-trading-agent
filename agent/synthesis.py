@@ -8,7 +8,7 @@ from google.genai import types
 from agent.prompts import SYNTHESIS_PROMPT
 
 
-async def call_gemini_with_retry(ai_client, model, contents, config, retries=3):
+async def call_gemini_with_retry(ai_client, model, contents, config, retries=4):
     import re
     for attempt in range(retries):
         try:
@@ -21,7 +21,7 @@ async def call_gemini_with_retry(ai_client, model, contents, config, retries=3):
             err_str = str(e)
             if '429' in err_str or 'RESOURCE_EXHAUSTED' in err_str:
                 match = re.search(r'retry in (\d+)', err_str)
-                wait = int(match.group(1)) + 5 if match else 60
+                wait = int(match.group(1)) + 5 if match else 65
                 if attempt < retries - 1:
                     print(f'    ⚠️  Rate limited, waiting {wait}s... ({attempt + 2}/{retries})')
                     await asyncio.sleep(wait)
@@ -29,8 +29,8 @@ async def call_gemini_with_retry(ai_client, model, contents, config, retries=3):
                     raise
             elif '503' in err_str or 'UNAVAILABLE' in err_str:
                 if attempt < retries - 1:
-                    print(f'    ⚠️  Gemini overloaded, retrying in 10s... ({attempt + 2}/{retries})')
-                    await asyncio.sleep(10)
+                    print(f'    ⚠️  Gemini overloaded, retrying in 15s... ({attempt + 2}/{retries})')
+                    await asyncio.sleep(15)
                 else:
                     raise
             else:
@@ -41,7 +41,7 @@ async def synthesize_reports(
     reports: list,
     coin: str,
     ai_client: genai.Client,
-    model: str = "gemini-2.5-flash"
+    model: str = "gemini-2.0-flash-lite"
 ) -> dict:
     """Synthesize all analyst reports into a final trading decision"""
 
