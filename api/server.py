@@ -1,6 +1,11 @@
+import sys
+from pathlib import Path
+
+# Add workspace root to sys.path to ensure the 'agent' package is resolvable
+sys.path.append(str(Path(__file__).parent.parent))
+
 import json
 import asyncio
-from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel

@@ -10,7 +10,7 @@ async function startServer() {
   // 1. Spawn secondary Python FastAPI server on port 3001
   console.log("Spawning Python FastAPI server on port 3001...");
   const pythonServer = spawn("python3", ["api/server.py"], {
-    env: { ...process.env },
+    env: { ...process.env, PYTHONPATH: process.cwd() },
   });
 
   pythonServer.stdout.on("data", (data) => {

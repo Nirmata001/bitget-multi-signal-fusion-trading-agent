@@ -210,21 +210,47 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // Sync state data on mount - purely client-side offline mock mode
+  // Sync state data on mount from both static defaults and real backend API
   useEffect(() => {
     if (ledgerData.length > 0 && !latestDecision) {
       setLatestDecision(ledgerData[0]);
     }
+    fetchDecisions();
+    fetchStatus();
   }, []);
 
   const fetchStatus = async () => {
-    // Pure offline mode - state is preserved locally
-    console.log("Client-side design environment active. Status API is decoupled.");
+    try {
+      const res = await fetch("/api/status");
+      if (res.ok) {
+        const data = await res.json();
+        if (data) {
+          setSystemStatus({
+            status: data.status || "active",
+            lastRun: data.lastRun,
+            lastDecision: data.lastDecision,
+            lastConfidence: data.lastConfidence
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch system status from API:", err);
+    }
   };
 
   const fetchDecisions = async () => {
-    // Pure offline mode - state is preserved locally
-    console.log("Client-side design environment active. Decisions are loaded statically.");
+    try {
+      const res = await fetch("/api/decisions");
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setLedgerData(data);
+          setLatestDecision(data[0]);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch historical decisions from API:", err);
+    }
   };
 
   const executeAdvisoryAnalysis = async (coinSymbol: string) => {
