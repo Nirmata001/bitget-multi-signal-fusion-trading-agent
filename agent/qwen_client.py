@@ -3,27 +3,30 @@ import json
 import asyncio
 import urllib.request
 import urllib.error
+from dotenv import load_dotenv
 
-# Load values from environment
-QWEN_MODEL = os.getenv("QWEN_MODEL", "qwen3.6-plus")
-QWEN_API_KEY = os.getenv("QWEN_API_KEY")
-QWEN_BASE_URL = os.getenv("QWEN_BASE_URL")
+# Ensure dotenv is loaded immediately when this module is imported
+load_dotenv()
 
 async def call_qwen_api(messages: list, tools: list = None, temperature: float = 0.1) -> dict:
     """Make an asynchronous POST request via standard urllib in an executor thread to ensure non-blocking event loop"""
-    if not QWEN_API_KEY:
+    qwen_api_key = os.getenv("QWEN_API_KEY")
+    qwen_base_url = os.getenv("QWEN_BASE_URL")
+    qwen_model = os.getenv("QWEN_MODEL", "qwen3.6-plus")
+
+    if not qwen_api_key:
         raise ValueError("QWEN_API_KEY environment variable is not set.")
-    if not QWEN_BASE_URL:
+    if not qwen_base_url:
         raise ValueError("QWEN_BASE_URL environment variable is not set.")
         
-    url = f"{QWEN_BASE_URL.rstrip('/')}/chat/completions"
+    url = f"{qwen_base_url.rstrip('/')}/chat/completions"
     headers = {
         "Content-Type": "application/json",
-        "Authorization": f"Bearer {QWEN_API_KEY}"
+        "Authorization": f"Bearer {qwen_api_key}"
     }
 
     payload = {
-        "model": QWEN_MODEL,
+        "model": qwen_model,
         "messages": messages,
         "temperature": temperature
     }
