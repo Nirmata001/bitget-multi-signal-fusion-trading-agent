@@ -3,7 +3,6 @@ import json
 import os
 from pathlib import Path
 from datetime import datetime, timezone
-from google import genai
 from mcp import ClientSession
 from mcp.client.streamable_http import streamable_http_client
 from dotenv import load_dotenv
@@ -39,9 +38,9 @@ async def run_agent_cycle(coin: str = "BTC") -> dict | None:
     print(f"\n🚀 ===== FUSION AGENT CYCLE STARTED =====")
     print(f"📍 Coin: {coin} | Time: {datetime.now(timezone.utc).isoformat()}")
 
-    # Initialize Gemini client
-    ai_client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-    model = "gemini-2.0-flash"
+    # Initialize Qwen config parameters
+    ai_client = None
+    model = os.getenv("QWEN_MODEL", "qwen3.6-plus")
 
     try:
         # Connect to MCP server — one session shared by all analysts

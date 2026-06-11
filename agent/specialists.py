@@ -2,39 +2,10 @@ import asyncio
 import json
 import re
 import time
-from google import genai
-from google.genai import types
 from mcp import ClientSession
-from agent.mcp_client import filter_tools_for_analyst, tools_to_gemini_format, call_mcp_tool
+from agent.mcp_client import filter_tools_for_analyst, tools_to_openai_format, call_mcp_tool
 from agent.prompts import ANALYST_PROMPTS
-
-async def call_gemini_with_retry(ai_client, model, contents, config, retries=4):
-    import re
-    for attempt in range(retries):
-        try:
-            return ai_client.models.generate_content(
-                model=model,
-                contents=contents,
-                config=config
-            )
-        except Exception as e:
-            err_str = str(e)
-            if '429' in err_str or 'RESOURCE_EXHAUSTED' in err_str:
-                match = re.search(r'retry in (\d+)', err_str)
-                wait = int(match.group(1)) + 5 if match else 65
-                if attempt < retries - 1:
-                    print(f'    ⚠️  Rate limited, waiting {wait}s... ({attempt + 2}/{retries})')
-                    await asyncio.sleep(wait)
-                else:
-                    raise
-            elif '503' in err_str or 'UNAVAILABLE' in err_str:
-                if attempt < retries - 1:
-                    print(f'    ⚠️  Gemini overloaded, retrying in 15s... ({attempt + 2}/{retries})')
-                    await asyncio.sleep(15)
-                else:
-                    raise
-            else:
-                raise
+from agent.qwen_client import call_qwen_with_retry
 
 MAX_ITERATIONS = 8
 
@@ -43,8 +14,8 @@ async def run_specialist(
     all_tools: dict,
     analyst_key: str,
     coin: str,
-    ai_client: genai.Client,
-    model: str = "gemini-2.0-flash"
+    ai_client = None,
+    model: str = "qwen3.6-plus"
 ) -> dict:
     """Run a single specialist analyst agent and return its structured report"""
 
@@ -52,60 +23,69 @@ async def run_specialist(
 
     # Get tools for this analyst
     analyst_tools = filter_tools_for_analyst(all_tools, analyst_key)
-    gemini_tools = tools_to_gemini_format(analyst_tools)
+    openai_tools = tools_to_openai_format(analyst_tools)
 
     # Build system prompt
     system_prompt = ANALYST_PROMPTS[analyst_key].format(coin=coin)
     user_message = f"Analyze {coin} now. Use your tools to gather data then provide your structured JSON report."
 
-    # Conversation history
-    contents = [
-        types.Content(role="user", parts=[types.Part.from_text(text=user_message)])
+    # Conversation history with OpenAI roles/messages structure
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_message}
     ]
-
-    config = types.GenerateContentConfig(
-        system_instruction=system_prompt,
-        tools=gemini_tools,
-        temperature=0.1
-    )
 
     # Agentic loop
     for iteration in range(MAX_ITERATIONS):
-        response = await call_gemini_with_retry(
-            ai_client, model=model, contents=contents, config=config
+        # Only pass tools if the analyst actually has tools defined
+        qwen_tools = openai_tools if openai_tools else None
+        
+        response_data = await call_qwen_with_retry(
+            messages=messages,
+            tools=qwen_tools,
+            temperature=0.1
         )
 
-        # Check for function calls
-        function_calls = response.function_calls
+        choice = response_data['choices'][0]
+        message = choice['message']
 
-        if not function_calls:
+        # Add assistant response to history
+        messages.append(message)
+
+        # Check for tool/function calls
+        tool_calls = message.get("tool_calls")
+
+        if not tool_calls:
             # No more tool calls — extract final JSON response
-            final_text = response.text or ""
+            final_text = message.get("content") or ""
             return parse_analyst_report(final_text, analyst_key, coin)
 
-        # Add model response to history
-        contents.append(response.candidates[0].content)
-
         # Execute all tool calls in parallel
-        tool_results = await asyncio.gather(*[
-            call_mcp_tool(session, fc.name, dict(fc.args))
-            for fc in function_calls
-        ])
+        calls = []
+        for tc in tool_calls:
+            fn_name = tc['function']['name']
+            fn_args_str = tc['function'].get('arguments', '{}')
+            try:
+                fn_args = json.loads(fn_args_str) if isinstance(fn_args_str, str) else fn_args_str
+            except:
+                fn_args = {}
+            calls.append(call_mcp_tool(session, fn_name, fn_args))
+
+        tool_results = await asyncio.gather(*calls)
 
         # Add tool results to conversation
-        tool_parts = [
-            types.Part.from_function_response(
-                name=fc.name,
-                response={"result": result}
-            )
-            for fc, result in zip(function_calls, tool_results)
-        ]
-        contents.append(types.Content(role="user", parts=tool_parts))
+        for tc, result in zip(tool_calls, tool_results):
+            messages.append({
+                "role": "tool",
+                "tool_call_id": tc["id"],
+                "name": tc["function"]["name"],
+                "content": result
+            })
 
-        print(f"    ↳ [{analyst_key}] iter {iteration + 1}: called {[fc.name for fc in function_calls]}")
+        print(f"    ↳ [{analyst_key}] iter {iteration + 1}: called {[tc['function']['name'] for tc in tool_calls]}")
 
-    # Max iterations reached — return what we have
-    return parse_analyst_report(response.text or "", analyst_key, coin)
+    # Max iterations reached — return what we have (content of last message)
+    return parse_analyst_report(messages[-1].get("content") or "", analyst_key, coin)
 
 
 def parse_analyst_report(text: str, analyst_key: str, coin: str) -> dict:
@@ -134,31 +114,36 @@ async def run_all_specialists(
     session: ClientSession,
     all_tools: dict,
     coin: str,
-    ai_client: genai.Client,
-    model: str = "gemini-2.0-flash"
+    ai_client = None,
+    model: str = "qwen3.6-plus"
 ) -> list:
-    """Run all 5 specialist analysts sequentially and return their reports"""
-    print(f"\n📊 Running 5 specialist analysts for {coin} sequentially...")
+    """Run all 5 specialist analysts in parallel and return their reports"""
+    print(f"\n📊 Running 5 specialist analysts for {coin} in parallel...")
 
     analysts = ["macro", "technical", "sentiment", "market_intel", "news"]
-    clean_reports = []
 
-    for analyst in analysts:
-        try:
-            report = await run_specialist(session, all_tools, analyst, coin, ai_client, model)
-            clean_reports.append(report)
-            signal = report.get('signal', 'NEUTRAL')
-            confidence = report.get('confidence', 0)
-            print(f"  ✅ {analyst}: {signal} ({confidence}%)")
-        except Exception as e:
-            print(f"  ❌ {analyst} failed: {e}")
+    reports = await asyncio.gather(*[
+        run_specialist(session, all_tools, analyst, coin, ai_client, model)
+        for analyst in analysts
+    ], return_exceptions=True)
+
+    # Handle any exceptions
+    clean_reports = []
+    for analyst, report in zip(analysts, reports):
+        if isinstance(report, Exception):
+            print(f"  ❌ {analyst} failed: {report}")
             clean_reports.append({
                 "analyst": analyst,
                 "signal": "NEUTRAL",
                 "confidence": 0,
-                "summary": f"Analyst failed: {str(e)}",
+                "summary": f"Analyst failed: {str(report)}",
                 "keyPoints": [],
-                "fullReport": str(e)
+                "fullReport": str(report)
             })
+        else:
+            clean_reports.append(report)
+            signal = report.get('signal', 'NEUTRAL')
+            confidence = report.get('confidence', 0)
+            print(f"  ✅ {analyst}: {signal} ({confidence}%)")
 
     return clean_reports

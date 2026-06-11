@@ -1,8 +1,7 @@
 import asyncio
 from mcp import ClientSession
 from mcp.client.streamable_http import streamable_http_client
-from google.genai import types
-
+# Tool assignments per analyst
 MCP_SERVER_URL = "https://datahub.noxiaohao.com/mcp"
 
 # Tool assignments per analyst
@@ -36,9 +35,9 @@ def filter_tools_for_analyst(all_tools: dict, analyst: str) -> list:
     assigned = ANALYST_TOOLS.get(analyst, [])
     return [tool for name, tool in all_tools.items() if name in assigned]
 
-def tools_to_gemini_format(tools: list) -> list:
-    """Convert MCP tool objects to Gemini Tool objects"""
-    function_declarations = []
+def tools_to_openai_format(tools: list) -> list:
+    """Convert MCP tool objects to OpenAI standard Tool objects"""
+    openai_tools = []
     for tool in tools:
         # Clean the input schema
         schema = tool.inputSchema or {}
@@ -53,15 +52,16 @@ def tools_to_gemini_format(tools: list) -> list:
         if required:
             params['required'] = required
 
-        function_declarations.append(
-            types.FunctionDeclaration(
-                name=tool.name,
-                description=tool.description or f'Execute {tool.name}',
-                parameters=params
-            )
-        )
+        openai_tools.append({
+            "type": "function",
+            "function": {
+                "name": tool.name,
+                "description": tool.description or f'Execute {tool.name}',
+                "parameters": params
+            }
+        })
 
-    return [types.Tool(function_declarations=function_declarations)]
+    return openai_tools
 
 async def call_mcp_tool(session: ClientSession, tool_name: str, arguments: dict) -> str:
     """Execute a tool call against the MCP server and return result as string"""

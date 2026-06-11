@@ -3,45 +3,15 @@ import json
 import re
 import time
 from datetime import datetime, timezone
-from google import genai
-from google.genai import types
 from agent.prompts import SYNTHESIS_PROMPT
-
-
-async def call_gemini_with_retry(ai_client, model, contents, config, retries=4):
-    import re
-    for attempt in range(retries):
-        try:
-            return ai_client.models.generate_content(
-                model=model,
-                contents=contents,
-                config=config
-            )
-        except Exception as e:
-            err_str = str(e)
-            if '429' in err_str or 'RESOURCE_EXHAUSTED' in err_str:
-                match = re.search(r'retry in (\d+)', err_str)
-                wait = int(match.group(1)) + 5 if match else 65
-                if attempt < retries - 1:
-                    print(f'    ⚠️  Rate limited, waiting {wait}s... ({attempt + 2}/{retries})')
-                    await asyncio.sleep(wait)
-                else:
-                    raise
-            elif '503' in err_str or 'UNAVAILABLE' in err_str:
-                if attempt < retries - 1:
-                    print(f'    ⚠️  Gemini overloaded, retrying in 15s... ({attempt + 2}/{retries})')
-                    await asyncio.sleep(15)
-                else:
-                    raise
-            else:
-                raise
+from agent.qwen_client import call_qwen_with_retry
 
 
 async def synthesize_reports(
     reports: list,
     coin: str,
-    ai_client: genai.Client,
-    model: str = "gemini-2.0-flash"
+    ai_client = None,
+    model: str = "qwen3.6-plus"
 ) -> dict:
     """Synthesize all analyst reports into a final trading decision"""
 
@@ -66,14 +36,17 @@ Full Report: {report.get('fullReport', '')[:500]}
         timestamp=timestamp
     )
 
-    # No tools for synthesis — pure reasoning
-    config = types.GenerateContentConfig(temperature=0.1)
+    messages = [
+        {"role": "user", "content": prompt}
+    ]
 
-    response = await call_gemini_with_retry(
-        ai_client, model=model, contents=prompt, config=config
+    response_data = await call_qwen_with_retry(
+        messages=messages,
+        temperature=0.1
     )
 
-    final_text = response.text or ""
+    choice = response_data['choices'][0]
+    final_text = choice['message'].get('content') or ""
     return parse_final_decision(final_text, coin, reports, timestamp)
 
 
