@@ -96,24 +96,24 @@ After gathering sufficient data, output ONLY this JSON:
 }
 
 SYNTHESIS_PROMPT = """You are the Head of an AI Advisory Board for crypto trading.
-You have received reports from 5 specialist analysts. Synthesize them into ONE final decision.
+You have received reports from specialist analysts. Synthesize them into ONE final decision.
 
 COIN BEING ANALYZED: {coin}
 
 ANALYST REPORTS:
 {reports}
 
-Based on ALL five reports, output ONLY this JSON:
+Based on the provided reports, output ONLY this JSON:
 {{
   "coin": "{coin}",
   "action": "BUY" or "SELL" or "HOLD",
   "confidence": <number 0-100>,
   "rationale": "<2-3 sentence explanation>",
   "committeeVotes": {{
-    "bullish": <count of bullish analysts 0-5>,
-    "bearish": <count of bearish analysts 0-5>,
-    "neutral": <count of neutral analysts 0-5>
+    "bullish": <count of bullish analysts>,
+    "bearish": <count of bearish analysts>,
+    "neutral": <count of neutral analysts>
   }},
-  "analystReports": [<all 5 report objects>],
+  "analystReports": [<all analyst report objects>],
   "timestamp": "{timestamp}"
 }}"""

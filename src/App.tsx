@@ -69,18 +69,6 @@ const analystsList = [
     gradient: "from-blue-500/5 to-indigo-500/10 hover:border-blue-200 hover:shadow-blue-500/5"
   },
   {
-    id: "technical",
-    name: "Quantitative Signal Engine",
-    role: "Indicators, Order-Flow & CVD Logs",
-    icon: TrendingUp,
-    badge: "Technical Index",
-    description: "Computes exponential moving averages on multiple time intervals, relative strength index (RSI) ranges, and cumulative volume delta.",
-    telemetry: ["EMA Support Multi-Bands", "Consolidated Spot/Futures CVD", "Momentum RSI Intercept"],
-    status: "SCANNING DATA",
-    colorBg: "bg-emerald-500/10 border-emerald-500/20 text-emerald-600",
-    gradient: "from-emerald-500/5 to-teal-500/5 hover:border-emerald-200 hover:shadow-emerald-500/5"
-  },
-  {
     id: "sentiment",
     name: "Social Sentiment & Orderbook Swarm",
     role: "Social Media Mining & Depth Chart",
@@ -130,8 +118,8 @@ export default function App() {
       coin: "BTC",
       action: "BUY",
       confidence: 84,
-      rationale: "Bitcoin exhibits strong accumulation trends with institutional custody integrations. Cumulative Volume Delta (CVD) represents massive spot bidding across Coinbase and Binance desks, supported by stablecoin liquidity inflow.",
-      committeeVotes: { bullish: 4, bearish: 0, neutral: 1 },
+      rationale: "Bitcoin exhibits strong accumulation trends with institutional custody integrations. Whale wallet metrics represent active spot bidding, supported by strong stablecoin liquidity inflow.",
+      committeeVotes: { bullish: 3, bearish: 0, neutral: 1 },
       analystReports: [
         {
           analyst: "macro",
@@ -139,13 +127,6 @@ export default function App() {
           confidence: 80,
           summary: "Aggregated stablecoin minting velocities show active USD capital inflows.",
           keyPoints: ["USD stable liquidity expanding", "OTC desks reporting depletion"]
-        },
-        {
-          analyst: "technical",
-          signal: "BULLISH",
-          confidence: 85,
-          summary: "Consolidating key averages point to exponential support levels.",
-          keyPoints: ["200 EMA support tested", "Bullish MACD structures aligned"]
         },
         {
           analyst: "sentiment",
@@ -176,7 +157,7 @@ export default function App() {
       action: "BUY",
       confidence: 78,
       rationale: "Solana showcases exceptional transaction speed retention and parallel compute utilization. Decentralized exchange volumes have surpassed mainnet peers, reflecting massive retail momentum.",
-      committeeVotes: { bullish: 3, bearish: 1, neutral: 1 },
+      committeeVotes: { bullish: 2, bearish: 1, neutral: 1 },
       analystReports: [
         {
           analyst: "macro",
@@ -184,13 +165,6 @@ export default function App() {
           confidence: 76,
           summary: "Active validator stakes and on-chain fee generations are peaking.",
           keyPoints: ["Fee capture indexes high", "Validator growth uniform"]
-        },
-        {
-          analyst: "technical",
-          signal: "BULLISH",
-          confidence: 81,
-          summary: "Breakout confirmed on high volume above current regional ranges.",
-          keyPoints: ["RSI showing bullish diverging momentum", "Golden cross formation"]
         },
         {
           analyst: "sentiment",
@@ -266,11 +240,10 @@ export default function App() {
       { text: "⚡ Initializing Fusion advisory container node...", delay: 300 },
       { text: "🔌 Models connected. Simulating offline local server connect...", delay: 600 },
       { text: "📡 Model Context Protocol loaded mock dataset for prompt synthesis...", delay: 900 },
-      { text: "🧠 Technical Analyst initiated. Evaluating simulated EMA and CVD data...", delay: 1300 },
-      { text: "📊 Macro Analyst triggered. Plotting stablecoin volume indicators...", delay: 1700 },
-      { text: "💬 Sentiment and On-Chain swarm scanning social graphs...", delay: 2100 },
-      { text: "🗳️ News Analyst gathering mock filings and RSS ticker logs...", delay: 2500 },
-      { text: "🧩 Advisory algorithm compiling votes from 5 parallel containers...", delay: 2900 }
+      { text: "📊 Macro Analyst triggered. Plotting stablecoin volume indicators...", delay: 1300 },
+      { text: "💬 Sentiment and On-Chain swarm scanning social graphs...", delay: 1700 },
+      { text: "🗳️ News Analyst gathering mock filings and RSS ticker logs...", delay: 2100 },
+      { text: "🧩 Advisory algorithm compiling votes from 4 parallel containers...", delay: 2500 }
     ];
 
     let stepIndex = 0;
@@ -314,7 +287,7 @@ export default function App() {
       confidence: conf,
       rationale: `${symbol} exhibits consolidated price behavior hovering immediately over local key support zones. Derivatives funding rates show baseline resets while stablecoin issuance rates maintain expansion trends, reflecting organic buy momentum rather than speculative overleverage.`,
       committeeVotes: {
-        bullish: isBull ? 4 : 2,
+        bullish: isBull ? 3 : 1,
         bearish: 0,
         neutral: isBull ? 1 : 3
       },
@@ -325,13 +298,6 @@ export default function App() {
           confidence: 78,
           summary: "Improving stablecoin liquidity & softening Treasury pressures.",
           keyPoints: ["Treasury injection index active", "M2 money supply positive turn", "Sovereign liquidity inflow potential"]
-        },
-        {
-          analyst: "technical",
-          signal: isBull ? "BULLISH" : "NEUTRAL",
-          confidence: 82,
-          summary: "RSI consolidating at 54, EMA 200 acting as clear structural support.",
-          keyPoints: ["Bollinger Band squeezing on 4h timeframe", "MACD bullish histogram expand", "Spot CVD breakout"]
         },
         {
           analyst: "sentiment",
@@ -460,7 +426,7 @@ export default function App() {
             <div className="flex flex-wrap gap-2.5 mb-6">
               <div className="bg-[#0a152d]/5 border border-[#0a152d]/10 px-3 py-1.5 rounded-2xl flex items-center gap-1.5">
                 <Cpu className="w-3.5 h-3.5 text-[#0a152d]" />
-                <span className="text-[11px] font-semibold text-[#0a152d]">5 Autonomous Swarm Analysts</span>
+                <span className="text-[11px] font-semibold text-[#0a152d]">4 Autonomous Swarm Analysts</span>
               </div>
               <div className="bg-[#0a152d]/5 border border-[#0a152d]/10 px-3 py-1.5 rounded-2xl flex items-center gap-1.5">
                 <Workflow className="w-3.5 h-3.5 text-[#0a152d]" />
@@ -507,12 +473,12 @@ export default function App() {
 
       </div>
 
-      {/* 5. Premium Analysts Cards Grid */}
+      {/* 4. Premium Analysts Cards Grid */}
       <div 
         id="analysts-cards-section"
         className="mt-8 mb-4 w-full max-w-[1400px] mx-auto px-4 py-2"
       >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           {analystsList.map((analyst) => {
             const IconComponent = analyst.icon;
             return (
@@ -808,7 +774,7 @@ export default function App() {
                         <Workflow className="w-8 h-8 text-indigo-400/80 mb-2 animate-bounce" />
                         <h4 className="text-[12px] font-bold text-[#0a1b33]">No Active Advisory Files Loaded</h4>
                         <p className="text-[11px] text-slate-400 max-w-xs mt-1 leading-relaxed">
-                          Click \"Initialize Advisory Run\" or select a coin asset to engage the autonomous 5-agent advisory swarm.
+                          Click "Initialize Advisory Run" or select a coin asset to engage the autonomous 4-agent advisory swarm.
                         </p>
                       </div>
                     )}
@@ -908,7 +874,7 @@ export default function App() {
                               </span>
                               
                               <div className="flex gap-1 overflow-x-auto pb-1">
-                                {["macro", "technical", "sentiment", "market_intel", "news"].map((at) => (
+                                {["macro", "sentiment", "market_intel", "news"].map((at) => (
                                   <button
                                     key={at}
                                     onClick={() => setActiveAnalystTab(at)}

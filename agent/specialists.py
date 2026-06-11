@@ -117,10 +117,10 @@ async def run_all_specialists(
     ai_client = None,
     model: str = "qwen3.6-plus"
 ) -> list:
-    """Run all 5 specialist analysts in parallel and return their reports"""
-    print(f"\n📊 Running 5 specialist analysts for {coin} in parallel...")
+    """Run all 4 specialist analysts in parallel and return their reports"""
+    print(f"\n📊 Running 4 specialist analysts for {coin} in parallel...")
 
-    analysts = ["macro", "technical", "sentiment", "market_intel", "news"]
+    analysts = ["macro", "sentiment", "market_intel", "news"]
 
     reports = await asyncio.gather(*[
         run_specialist(session, all_tools, analyst, coin, ai_client, model)
