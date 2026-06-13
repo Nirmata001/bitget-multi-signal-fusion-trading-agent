@@ -57,7 +57,7 @@ function resolvePythonPath(): string {
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 
   // 1. Spawn secondary Python FastAPI server on port 3001
   const pythonPath = resolvePythonPath();
