@@ -1,0 +1,64 @@
+[
+  {
+    "coin": "BTC",
+    "action": "HOLD",
+    "confidence": 63,
+    "rationale": "While extreme fear metrics and institutional bottom calls suggest a high-probability contrarian bounce, persistent stagflationary macro pressures and declining trading volume indicate a near-term consolidation phase. A hold is recommended until volume confirms a decisive breakout above $65K, with accumulation only considered if the $61K support level holds firm.",
+    "committeeVotes": {
+      "bullish": 2,
+      "bearish": 0,
+      "neutral": 2
+    },
+    "analystReports": [
+      {
+        "analyst": "Macro Analyst",
+        "signal": "NEUTRAL",
+        "confidence": 65,
+        "summary": "Sticky inflation and slowing GDP growth create a stagflationary backdrop that caps BTC's upside, while its strong correlation with equities ties its near-term trajectory to broader risk sentiment.",
+        "keyPoints": [
+          "CPI remains elevated at 4.17% YoY while GDP growth slows to 1.6%, signaling stagflationary pressures that complicate Fed easing.",
+          "BTC maintains a moderate positive correlation with equities (~0.57-0.60 with NDX/SPX), making it highly sensitive to tech sector liquidity and risk appetite.",
+          "Rising inverse correlation with 10Y yields (-0.41) and stable negative VIX correlation (-0.47) indicate BTC will likely consolidate until clearer rate-cut signals emerge."
+        ],
+        "fullReport": "The current macroeconomic landscape presents a mixed-to-cautious environment for Bitcoin. Inflation remains stubbornly above target at 4.17% YoY, while real GDP growth has decelerated sharply to 1.6%, creating a stagflationary dynamic that limits the Federal Reserve's ability to aggressively cut rates. This 'higher for longer' rate environment exerts downward pressure on risk assets, reflected in BTC's moderate negative correlation with 10-year Treasury yields (-0.41). Simultaneously, Bitcoin's price action remains tightly coupled with traditional equities, showing a moderate positive correlation with the Nasdaq (0.57) and S&P 500 (0.60), meaning it will likely trade in tandem with broader market liquidity and tech sector performance rather than decoupling as a pure safe-haven asset. While its increasing correlation with gold (0.36) hints at growing institutional adoption as a macro hedge, the prevailing risk-off sentiment and sticky inflation suggest BTC will likely range-bound until clearer macro catalysts, such as definitive Fed pivot signals or a resolution in labor market softening, emerge."
+      },
+      {
+        "analyst": "Sentiment Analyst",
+        "signal": "BULLISH",
+        "confidence": 65,
+        "summary": "Extreme fear at 13 combined with a cooling long/short ratio suggests capitulation is nearing completion, setting up a contrarian bounce opportunity.",
+        "keyPoints": [
+          "Fear & Greed Index at 13 (Extreme Fear) historically marks high-probability reversal zones.",
+          "Long/Short ratio has cooled from ~2.14 to ~1.55, indicating long liquidation and weak hand washout.",
+          "Retail positioning remains net long but is rapidly normalizing, reducing downside leverage risk."
+        ],
+        "fullReport": "Market psychology is currently in a state of Extreme Fear with the Fear & Greed Index reading at 13, a level that has historically preceded significant short-term bounces as panic selling exhausts itself. Derivatives data supports this contrarian thesis: the long/short ratio has steadily declined from over 2.1 to approximately 1.55 over the recent period, signaling that leveraged longs are being flushed out and positioning is resetting. While the market remains net long, the rapid cooling of leverage reduces the risk of cascading liquidations. With sentiment at panic levels and derivatives positioning normalizing, the risk/reward favors a tactical long entry for a mean-reversion bounce, though confirmation of price stabilization is advised before full deployment."
+      },
+      {
+        "analyst": "Market Intelligence",
+        "signal": "NEUTRAL",
+        "confidence": 55,
+        "summary": "BTC consolidates near $63.8K with strong 56.4% dominance but declining volume suggests market indecision.",
+        "keyPoints": [
+          "BTC trades at $63,794 with a $1.28T market cap and slight 24h gain of +0.25%",
+          "Bitcoin dominance remains robust at 56.44%, indicating capital preference for BTC over altcoins",
+          "24h trading volume dropped 18.4% to $65.4B, signaling reduced conviction and potential consolidation phase"
+        ],
+        "fullReport": "Bitcoin is currently trading at $63,794 with a market capitalization of approximately $1.28 trillion, reflecting a modest 24-hour gain of 0.25%. Market structure shows Bitcoin maintaining a commanding 56.44% dominance, which typically signals capital flight to safety or institutional preference for BTC during uncertain macro conditions. However, the broader market is experiencing a notable 18.4% contraction in 24-hour trading volume, dropping to $65.4 billion, while total market cap only edged up 0.19%. This divergence between stable pricing and shrinking volume points to a consolidation phase where neither bulls nor bears have established clear control. Without a significant volume catalyst or breakout above key resistance, BTC is likely to range-bound trade in the near term. Traders should monitor stablecoin inflows and on-chain exchange reserves for early directional signals."
+      },
+      {
+        "analyst": "News Analyst",
+        "signal": "BULLISH",
+        "confidence": 68,
+        "summary": "Bitcoin is staging a recovery from the $60K region with institutional analysts calling a market bottom, bullish technical patterns targeting $69K-$70K, and improving macro conditions, though miner stress and liquidity drains warrant caution.",
+        "keyPoints": [
+          "Standard Chartered and Galaxy Research signal a likely market bottom, with BTC orderbook structure and RSI divergence supporting a rally toward $70K.",
+          "Macro tailwinds emerging from US-Iran peace deal hopes and potential profit rotation from SpaceX's record-breaking IPO.",
+          "Technical analysts flag an inverse head-and-shoulders pattern targeting $69K, though miner capitulation and $61K support levels remain key risk zones."
+        ],
+        "fullReport": "Bitcoin is currently trading in the $64K-$66K range, recovering from a recent dip below $60K. Major institutional voices like Standard Chartered are declaring the crypto winter over, while Galaxy Research data suggests BTC's floor price may hold higher than bearish estimates. On-chain and orderbook metrics show improving bid-ask dynamics and a bullish RSI divergence, reinforcing short-term upside momentum toward the $69K-$70K resistance zone. Macro conditions are also turning favorable, with growing optimism around a US-Iran peace deal and analysts noting that SpaceX's massive IPO could eventually rotate liquidity back into crypto markets. However, caution remains warranted: miner profit margins are under 5%, sparking capitulation concerns, and traders are closely watching the $61K support level. Overall, the narrative is shifting from capitulation to cautious accumulation, with institutional positioning and technical setups leaning bullish for the near term."
+      }
+    ],
+    "timestamp": "2026-06-13T11:01:13.367620+00:00"
+  }
+]

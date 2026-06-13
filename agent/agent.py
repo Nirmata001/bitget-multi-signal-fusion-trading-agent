@@ -3,12 +3,10 @@ import json
 import os
 from pathlib import Path
 from datetime import datetime, timezone
-from mcp import ClientSession
-from mcp.client.streamable_http import streamable_http_client
 from dotenv import load_dotenv
-from agent.mcp_client import get_all_tools, MCP_SERVER_URL
 from agent.specialists import run_all_specialists
 from agent.synthesis import synthesize_reports
+from agent.config import FAST_MODE, MAX_ITERATIONS
 
 load_dotenv()
 
@@ -43,23 +41,11 @@ async def run_agent_cycle(coin: str = "BTC") -> dict | None:
     model = os.getenv("QWEN_MODEL", "qwen3.6-plus")
 
     try:
-        # Connect to MCP server — one session shared by all analysts
-        print(f"🔌 Connecting to MCP server...")
-        async with streamable_http_client(MCP_SERVER_URL) as (read, write, _):
-            async with ClientSession(read, write) as session:
-                await session.initialize()
+        mode = "FAST" if FAST_MODE else "FULL"
+        print(f"🔌 Running analysts in {mode} mode (max {MAX_ITERATIONS} Qwen rounds each)...")
 
-                # Fetch all tools once
-                all_tools = await get_all_tools(session)
-                print(f"✅ MCP connected — {len(all_tools)} tools available")
-
-                # Run 5 specialists in parallel
-                reports = await run_all_specialists(
-                    session, all_tools, coin, ai_client, model
-                )
-
-                # Synthesize into final decision
-                decision = await synthesize_reports(reports, coin, ai_client, model)
+        reports = await run_all_specialists(None, {}, coin, ai_client, model)
+        decision = await synthesize_reports(reports, coin, ai_client, model)
 
         # Log results
         print(f"\n🎯 DECISION: {decision.get('action')} | Confidence: {decision.get('confidence')}%")

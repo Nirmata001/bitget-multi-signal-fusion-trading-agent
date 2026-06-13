@@ -53,6 +53,7 @@ interface SystemStatus {
   lastRun: string | null;
   lastDecision: string | null;
   lastConfidence: number | null;
+  model?: string | null;
 }
 
 const analystsList = [
@@ -106,6 +107,19 @@ const analystsList = [
   }
 ];
 
+const registeredTools = [
+  { name: "rates_yields", desc: "Monitors federal funds rate, sovereign bond yields, yield curves, and central bank macro directives." },
+  { name: "macro_indicators", desc: "Pulls inflation data (CPI/PCE), unemployment rates, global manufacturing/GDP growth statistics." },
+  { name: "global_assets", desc: "Correlates S&P500, Nasdaq, Gold, and US Dollar Index (DXY) aggregate performance metrics." },
+  { name: "cross_asset", desc: "Performs regression calculations regarding crypto assets vs legacy equity and liquidity indices." },
+  { name: "technical_analysis", desc: "Computes multi-timeframe moving averages, Relative Strength Indexes (RSI), MACD, and Bollinger Bands." },
+  { name: "sentiment_index", desc: "Analyzes social sentiment volumes, Reddit active threads, and social volatility matrices." },
+  { name: "derivatives_sentiment", desc: "Pulls options open interest, retail funding rates, liquidation ratios, and order book cumulative depths." },
+  { name: "crypto_market", desc: "Tracks global coin valuations, dominance scores, and daily stablecoin volume allocations." },
+  { name: "defi_analytics", desc: "Scans smart-contract metrics, protocol total value locked (TVL), and network-wide utility metrics." },
+  { name: "news_feed", desc: "Ingests live RSS crypto news wires, SEC regulatory filings, and ETF net flow statistics." }
+];
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<"console" | "ledger" | "status">("console");
   const [selectedCoin, setSelectedCoin] = useState<string>("BTC");
@@ -113,90 +127,14 @@ export default function App() {
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [logs, setLogs] = useState<string[]>([]);
   const [latestDecision, setLatestDecision] = useState<Decision | null>(null);
-  const [ledgerData, setLedgerData] = useState<Decision[]>([
-    {
-      coin: "BTC",
-      action: "BUY",
-      confidence: 84,
-      rationale: "Bitcoin exhibits strong accumulation trends with institutional custody integrations. Whale wallet metrics represent active spot bidding, supported by strong stablecoin liquidity inflow.",
-      committeeVotes: { bullish: 3, bearish: 0, neutral: 1 },
-      analystReports: [
-        {
-          analyst: "macro",
-          signal: "BULLISH",
-          confidence: 80,
-          summary: "Aggregated stablecoin minting velocities show active USD capital inflows.",
-          keyPoints: ["USD stable liquidity expanding", "OTC desks reporting depletion"]
-        },
-        {
-          analyst: "sentiment",
-          signal: "BULLISH",
-          confidence: 82,
-          summary: "Derivatives leverage resets completed during recent consolidation phases.",
-          keyPoints: ["Mempool mining rates healthy", "Orderbook depth positive bias"]
-        },
-        {
-          analyst: "market_intel",
-          signal: "BULLISH",
-          confidence: 88,
-          summary: "Whale inventory tracking networks report active transfers to long-term storage.",
-          keyPoints: ["Exchange reserves near lows", "OTC desks experiencing drawdowns"]
-        },
-        {
-          analyst: "news",
-          signal: "NEUTRAL",
-          confidence: 65,
-          summary: "Institutional ETF inflow volumes remain steady with positive net backing.",
-          keyPoints: ["Prospectus files verified", "ETF net absorption high"]
-        }
-      ],
-      timestamp: new Date(Date.now() - 3600000).toISOString()
-    },
-    {
-      coin: "SOL",
-      action: "BUY",
-      confidence: 78,
-      rationale: "Solana showcases exceptional transaction speed retention and parallel compute utilization. Decentralized exchange volumes have surpassed mainnet peers, reflecting massive retail momentum.",
-      committeeVotes: { bullish: 2, bearish: 1, neutral: 1 },
-      analystReports: [
-        {
-          analyst: "macro",
-          signal: "BULLISH",
-          confidence: 76,
-          summary: "Active validator stakes and on-chain fee generations are peaking.",
-          keyPoints: ["Fee capture indexes high", "Validator growth uniform"]
-        },
-        {
-          analyst: "sentiment",
-          signal: "BULLISH",
-          confidence: 75,
-          summary: "Extreme social volume multipliers combined with minor liquidation cascades.",
-          keyPoints: ["Leverage spikes cleared", "Social consensus absolute high"]
-        },
-        {
-          analyst: "market_intel",
-          signal: "NEUTRAL",
-          confidence: 60,
-          summary: "Venture allocation flow charts show consolidation before major ecosystem releases.",
-          keyPoints: ["Protocol lockups intact", "Grant funds active"]
-        },
-        {
-          analyst: "news",
-          signal: "BULLISH",
-          confidence: 72,
-          summary: "Approval of spot custodian vehicles driving high institutional speculative interest.",
-          keyPoints: ["Institutional prospectus draft", "Regulatory clearance positive"]
-        }
-      ],
-      timestamp: new Date(Date.now() - 7200000).toISOString()
-    }
-  ]);
+  const [ledgerData, setLedgerData] = useState<Decision[]>([]);
   const [selectedLedgerIndex, setSelectedLedgerIndex] = useState<number>(-1);
   const [systemStatus, setSystemStatus] = useState<SystemStatus>({
     status: "active",
-    lastRun: new Date().toISOString(),
-    lastDecision: "BUY",
-    lastConfidence: 84
+    lastRun: null,
+    lastDecision: null,
+    lastConfidence: null,
+    model: "qwen3.6-plus"
   });
   const [activeAnalystTab, setActiveAnalystTab] = useState<string>("macro");
   const [currentTime, setCurrentTime] = useState<string>("");
@@ -210,11 +148,7 @@ export default function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // Sync state data on mount from both static defaults and real backend API
   useEffect(() => {
-    if (ledgerData.length > 0 && !latestDecision) {
-      setLatestDecision(ledgerData[0]);
-    }
     fetchDecisions();
     fetchStatus();
   }, []);
@@ -229,7 +163,8 @@ export default function App() {
             status: data.status || "active",
             lastRun: data.lastRun,
             lastDecision: data.lastDecision,
-            lastConfidence: data.lastConfidence
+            lastConfidence: data.lastConfidence,
+            model: data.model || "qwen3.6-plus"
           });
         }
       }
@@ -253,105 +188,136 @@ export default function App() {
     }
   };
 
+  const appendLog = (text: string) => {
+    setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${text}`]);
+  };
+
+  const normalizeAnalystName = (name: string): string => {
+    if (!name) return "";
+    const n = name.toLowerCase().replace(/[\s_-]/g, "");
+    if (n.includes("macro")) return "macro";
+    if (n.includes("sentiment")) return "sentiment";
+    if (n.includes("market")) return "market_intel";
+    if (n.includes("news")) return "news";
+    return n;
+  };
+
+  const cancelAnalysis = async () => {
+    try {
+      appendLog("🛑 Sending cancellation signal to server...");
+      const res = await fetch("/api/analyze/stop", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      });
+      if (res.ok) {
+        appendLog("✅ Server analysis stopped. Workspace reset.");
+      } else {
+        appendLog("⚠️ Server returned non-ok response for stop request.");
+      }
+    } catch (err) {
+      console.error("Failed to stop analysis:", err);
+      appendLog("❌ Failed to contact server to stop analysis.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const executeAdvisoryAnalysis = async (coinSymbol: string) => {
     if (isAnalyzing) return;
-    
+
     setIsAnalyzing(true);
     setLogs([]);
-    
+
     const targetSymbol = coinSymbol.toUpperCase().trim() || "BTC";
-    
-    // Detailed step-by-step interactive log feed
+
     const steps = [
-      { text: "⚡ Initializing Fusion advisory container node...", delay: 300 },
-      { text: "🔌 Models connected. Simulating offline local server connect...", delay: 600 },
-      { text: "📡 Model Context Protocol loaded mock dataset for prompt synthesis...", delay: 900 },
-      { text: "📊 Macro Analyst triggered. Plotting stablecoin volume indicators...", delay: 1300 },
-      { text: "💬 Sentiment and On-Chain swarm scanning social graphs...", delay: 1700 },
-      { text: "🗳️ News Analyst gathering mock filings and RSS ticker logs...", delay: 2100 },
-      { text: "🧩 Advisory algorithm compiling votes from 4 parallel containers...", delay: 2500 }
+      "⚡ Initializing Fusion advisory container node...",
+      "🔌 Connecting to Qwen model and MCP DataHub...",
+      "📡 Model Context Protocol loading market data tools...",
+      "📊 Macro Analyst triggered — gathering liquidity indicators...",
+      "💬 Sentiment swarm scanning derivatives and social signals...",
+      "🐋 Market Intel analyst monitoring whale wallet flows...",
+      "🗳️ News Analyst ingesting filings and breaking headlines...",
+      "🧩 Head of Advisory synthesizing committee votes...",
+      "⏳ Analysis in progress — this may take several minutes."
     ];
 
     let stepIndex = 0;
+    appendLog(steps[0]);
+    stepIndex = 1;
+
     const logInterval = setInterval(() => {
       if (stepIndex < steps.length) {
-        setLogs(prev => [...prev, `[${new Date().toLocaleTimeString()}] ${steps[stepIndex].text}`]);
+        appendLog(steps[stepIndex]);
         stepIndex++;
-      } else {
-        clearInterval(logInterval);
       }
-    }, 400);
+    }, 3000);
 
-    // Dynamic, responsive client-side simulated generation
-    setTimeout(() => {
-      clearInterval(logInterval);
-      const fallback = generateSyntheticDecision(targetSymbol);
-      setLatestDecision(fallback);
-      setLedgerData(prev => [fallback, ...prev]);
-      setLogs(prev => [
-        ...prev,
-        `[${new Date().toLocaleTimeString()}] 🪐 SYNTHESIS COMPLETE (Offline Safe Mode). Recommendation: ${fallback.action} (${fallback.confidence}% Conf)`
-      ]);
-      setSystemStatus({
-        status: "running",
-        lastRun: new Date().toISOString(),
-        lastDecision: fallback.action,
-        lastConfidence: fallback.confidence
-      });
-      setIsAnalyzing(false);
-    }, 3800);
-  };
+    const pollForResult = async (): Promise<Decision | null> => {
+      const maxWaitMs = 25 * 60 * 1000;
+      const startedAt = Date.now();
 
-  const generateSyntheticDecision = (symbol: string): Decision => {
-    const isBull = symbol === "BTC" || symbol === "SOL";
-    const act = isBull ? "BUY" : "HOLD";
-    const conf = isBull ? 84 : 58;
+      while (Date.now() - startedAt < maxWaitMs) {
+        await new Promise((resolve) => setTimeout(resolve, 3000));
 
-    return {
-      coin: symbol,
-      action: act,
-      confidence: conf,
-      rationale: `${symbol} exhibits consolidated price behavior hovering immediately over local key support zones. Derivatives funding rates show baseline resets while stablecoin issuance rates maintain expansion trends, reflecting organic buy momentum rather than speculative overleverage.`,
-      committeeVotes: {
-        bullish: isBull ? 3 : 1,
-        bearish: 0,
-        neutral: isBull ? 1 : 3
-      },
-      analystReports: [
-        {
-          analyst: "macro",
-          signal: "BULLISH",
-          confidence: 78,
-          summary: "Improving stablecoin liquidity & softening Treasury pressures.",
-          keyPoints: ["Treasury injection index active", "M2 money supply positive turn", "Sovereign liquidity inflow potential"]
-        },
-        {
-          analyst: "sentiment",
-          signal: "BULLISH",
-          confidence: 80,
-          summary: "Spot order books report strong buy grids matching local key liquidity levels.",
-          keyPoints: ["Spot exchange balances negative", "Short liquidations ready to cascade", "High social conversation rates"]
-        },
-        {
-          analyst: "market_intel",
-          signal: "BULLISH",
-          confidence: 76,
-          summary: "Active whale wallet accumulation addresses rising dramatically.",
-          keyPoints: ["Multi-sig cold storage intake up", "OTC desk inventories severely low", "Exchange reserve outflux trend"]
-        },
-        {
-          analyst: "news",
-          signal: "NEUTRAL",
-          confidence: 65,
-          summary: "Pending Q3 custody product announcement of major institutional asset desks.",
-          keyPoints: ["Custodial framework updates", "Macro inflation reviews safe", "Volume multipliers active"]
+        const statusRes = await fetch("/api/analyze/status");
+        if (!statusRes.ok) continue;
+
+        const status = await statusRes.json();
+
+        if (status.running) continue;
+
+        if (status.error) {
+          throw new Error(status.error);
         }
-      ],
-      timestamp: new Date().toISOString()
+
+        if (status.decision) {
+          return status.decision as Decision;
+        }
+
+        throw new Error("Analysis ended without a result");
+      }
+
+      throw new Error("Analysis timed out after 25 minutes");
     };
+
+    try {
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ coin: targetSymbol }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        const errorMsg = data.error || data.message || `Request failed (${res.status})`;
+        appendLog(`❌ Analysis failed: ${errorMsg}`);
+        return;
+      }
+
+      appendLog(`🛰️ Background job started for ${targetSymbol} — polling for results...`);
+
+      const decision = await pollForResult();
+      if (!decision) return;
+
+      setLatestDecision(decision);
+      setLedgerData((prev) => [decision, ...prev]);
+      appendLog(
+        `🪐 SYNTHESIS COMPLETE. Recommendation: ${decision.action} (${decision.confidence}% confidence)`
+      );
+      await fetchStatus();
+      await fetchDecisions();
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      appendLog(`❌ Analysis failed: ${message}`);
+      await fetchDecisions();
+      console.error("Advisory analysis failed:", err);
+    } finally {
+      clearInterval(logInterval);
+      setIsAnalyzing(false);
+    }
   };
-
-
 
   const getActionTheme = (action: string) => {
     switch (action?.toUpperCase()) {
@@ -374,15 +340,15 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f9fafb] flex flex-col justify-between py-6 px-4 md:px-8 overflow-hidden font-sans select-none">
+    <div className="min-h-screen bg-[#f9fafb] flex flex-col justify-between py-6 px-4 md:px-8 overflow-x-hidden font-sans select-none">
       
       {/* Platform Header Metadata Panel */}
       <header className="max-w-[1400px] w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 mb-4 px-4">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-[#0a152d] flex items-center justify-center text-white font-bold select-none text-sm">
+          <div className="w-8 h-8 rounded-full bg-[#0a152d] flex items-center justify-center text-white font-bold select-none text-sm animate-pulse">
             ✦
           </div>
-          <div>
+          <div className="text-left">
             <h2 className="text-[13px] font-bold text-[#0a1b33] tracking-tight uppercase flex items-center gap-2">
               Fusion Autonomous Advisory Platform
               <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[9px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
@@ -397,7 +363,7 @@ export default function App() {
         </div>
         <div className="flex items-center gap-4 text-right">
           <div className="font-mono text-[11px] text-slate-500 bg-white border border-slate-200/60 px-3 py-1 rounded-full shadow-xs flex items-center gap-2">
-            <Clock className="w-32.5 h-3.5 text-slate-400 shrink-0" />
+            <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
             {currentTime || "Connecting to atomic clock..."}
           </div>
         </div>
@@ -432,7 +398,7 @@ export default function App() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 1.0, ease: [0.16, 1, 0.3, 1] }}
-            className="flex-1 flex flex-col justify-center"
+            className="flex-1 flex flex-col justify-center text-left"
           >
             {/* Headline */}
             <h1 
@@ -462,18 +428,37 @@ export default function App() {
 
             {/* Contact Button */}
             <div className="flex items-center gap-3">
-              <motion.button 
-                id="hero-contact-button"
-                whileHover={{ scale: 1.04 }} 
-                whileTap={{ scale: 0.97 }}
-                onClick={() => executeAdvisoryAnalysis(selectedCoin)}
-                className="bg-[#0a152d] text-white rounded-full px-7 py-3 text-[13px] font-semibold tracking-wide hover:shadow-lg hover:shadow-[#0a152d]/15 transition-all cursor-pointer flex items-center gap-2"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-white" />
-                Initialize Advisory Run
-              </motion.button>
+              {isAnalyzing ? (
+                <>
+                  <button 
+                    disabled
+                    className="bg-indigo-900/10 text-[#0a152d] border border-indigo-200/50 rounded-full px-7 py-3 text-[13px] font-semibold tracking-wide flex items-center gap-2"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    Analyzing {selectedCoin}...
+                  </button>
+                  <button 
+                    onClick={cancelAnalysis}
+                    className="bg-rose-600 hover:bg-rose-700 text-white rounded-full px-5 py-3 text-[13px] font-semibold tracking-wide hover:shadow-lg transition-all cursor-pointer flex items-center gap-2"
+                  >
+                    <X className="w-3.5 h-3.5 text-white" />
+                    Stop Run
+                  </button>
+                </>
+              ) : (
+                <motion.button 
+                  id="hero-contact-button"
+                  whileHover={{ scale: 1.04 }} 
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => executeAdvisoryAnalysis(selectedCoin)}
+                  className="bg-[#0a152d] text-white rounded-full px-7 py-3 text-[13px] font-semibold tracking-wide hover:shadow-lg hover:shadow-[#0a152d]/15 transition-all cursor-pointer flex items-center gap-2"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-white" />
+                  Initialize Advisory Run
+                </motion.button>
+              )}
               
-              <div className="hidden sm:inline-flex flex-col text-[10px] text-slate-500 font-mono">
+              <div className="hidden sm:inline-flex flex-col text-[10px] text-slate-500 font-mono text-left">
                 <span>Active Target: {selectedCoin}</span>
                 <span>Committee Verdict: {latestDecision ? latestDecision.action : "Standby"}</span>
               </div>
@@ -574,7 +559,7 @@ export default function App() {
         </div>
       </div>
 
-      {/* 4. Floating Bottom Navbar positioned just under the cards */}
+      {/* 4. Floating Bottom Navbar */}
       <div 
         id="floating-nav-wrapper"
         className="mt-2 mb-8 flex justify-center w-full max-w-[1400px] mx-auto px-4 relative z-30"
@@ -595,7 +580,6 @@ export default function App() {
             ✦
           </div>
 
-          {/* Standard Navigation Links */}
           <button 
             id="nav-link-products"
             onClick={() => setActiveTab("console")}
@@ -615,7 +599,6 @@ export default function App() {
             Committee Ledger
           </button>
 
-          {/* "Get in touch" Action Button */}
           <button 
             id="nav-action-button"
             onClick={() => setActiveTab("status")}
@@ -644,9 +627,8 @@ export default function App() {
             transition={{ delay: 0.2, duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
             className="w-full bg-white border border-slate-200/60 rounded-[32px] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.04)] h-[510px] flex flex-col justify-between text-left"
           >
-            {/* Header tab details based on current view selected in nav */}
             <div className="flex items-center justify-between border-b border-slate-200/50 pb-3 mb-2 shrink-0">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono flex items-center gap-1.5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono flex items-center gap-1.5 animate-pulse">
                 <Terminal className="w-3.5 h-3.5 text-slate-500" />
                 {activeTab === "console" && "Swarm Advisor Laboratory"}
                 {activeTab === "ledger" && `Committee Historical Ledger (${ledgerData.length})`}
@@ -673,7 +655,7 @@ export default function App() {
                   <div className="space-y-4 flex-1 overflow-y-auto pr-1 pb-1">
                     
                     {/* Token selectors */}
-                    <div className="bg-slate-50/60 p-3 rounded-2xl border border-slate-100">
+                    <div className="bg-slate-50/60 p-3 rounded-2xl border border-slate-100/50">
                       <span className="text-[10px] font-extrabold text-slate-400 uppercase font-mono block mb-1.5">
                         Target Cryptocurrency Symbol
                       </span>
@@ -711,27 +693,36 @@ export default function App() {
                       </div>
                     </div>
 
-                    {/* Active Work Console display when running */}
-                    {isAnalyzing ? (
-                      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 h-[250px] flex flex-col justify-between font-mono">
-                        <div className="overflow-y-auto space-y-1.5 text-[10px] text-slate-300 flex-1 pr-1 scrollbar-thin">
+                    {/* Process log console */}
+                    {(isAnalyzing || logs.length > 0) && (
+                      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 h-[180px] flex flex-col justify-between font-mono mb-3">
+                        <div className="overflow-y-auto space-y-1.5 text-[10px] text-slate-300 flex-1 pr-1 scrollbar-thin text-left">
                           {logs.map((log, index) => (
                             <div key={index} className="leading-relaxed border-l-2 border-slate-700 pl-2">
                               {log}
                             </div>
                           ))}
                         </div>
-                        <div className="pt-2 border-t border-slate-800 shrink-0 flex items-center justify-between">
-                          <span className="text-[9px] text-[#0a1b33] animate-pulse flex items-center gap-1">
-                            <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-ping" />
-                            Parallel MCP Containers Active...
-                          </span>
-                          <span className="text-[10px] text-slate-500">Processing Node</span>
+                        <div className="pt-2 border-t border-slate-800 shrink-0 flex items-center justify-between text-[9px]">
+                          {isAnalyzing ? (
+                            <span className="text-indigo-300 animate-pulse flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-ping" />
+                              Parallel MCP Containers Active...
+                            </span>
+                          ) : (
+                            <span className="text-emerald-400 flex items-center gap-1">
+                              <Check className="w-3 h-3" />
+                              Run complete — logs retained
+                            </span>
+                          )}
+                          <span className="text-slate-500">Processing Node</span>
                         </div>
                       </div>
-                    ) : latestDecision ? (
-                      /* Display actual outcome if decision present */
-                      <div className="space-y-3">
+                    )}
+
+                    {/* Decision results */}
+                    {!isAnalyzing && latestDecision ? (
+                      <div className="space-y-3 text-left">
                         <div className="bg-white border border-slate-200/60 p-3.5 rounded-2xl shadow-xs">
                           <div className="flex items-center justify-between pointer-events-none mb-1.5">
                             <div className="flex items-center gap-2">
@@ -745,7 +736,7 @@ export default function App() {
                           </div>
 
                           <div className="flex items-center gap-4">
-                            <div className={`px-4 py-2.5 rounded-2xl border text-center ${getActionTheme(latestDecision.action).bg}`}>
+                            <div className={`px-4 py-2.5 rounded-2xl border text-center min-w-[100px] ${getActionTheme(latestDecision.action).bg}`}>
                               <span className="text-[10px] font-extrabold font-mono uppercase text-slate-400 block tracking-wider leading-none">Recommendation</span>
                               <span className="text-xl font-bold tracking-tight">{latestDecision.action}</span>
                             </div>
@@ -764,7 +755,7 @@ export default function App() {
                             </div>
                           </div>
 
-                          <p className="text-[11px] text-slate-600 line-clamp-3 mt-3 leading-relaxed border-l-2 border-indigo-200/60 pl-2 whitespace-pre-line">
+                          <p className="text-[11px] text-slate-600 line-clamp-3 mt-3 leading-relaxed border-l-2 border-indigo-200/60 pl-2 whitespace-pre-line text-left">
                             {latestDecision.rationale}
                           </p>
                         </div>
@@ -772,7 +763,7 @@ export default function App() {
                         {/* Split analyst votes and keys */}
                         <div className="grid grid-cols-2 gap-2">
                           <div className="bg-slate-50 border border-slate-100/80 p-2.5 rounded-xl flex flex-col justify-between">
-                            <span className="text-[9px] font-extrabold text-slate-400 uppercase font-mono block">Council Votes</span>
+                            <span className="text-[9px] font-extrabold text-slate-400 uppercase font-mono block text-left">Council Votes</span>
                             <div className="flex items-center gap-3 mt-1.5 font-mono">
                               <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">🟢 {latestDecision.committeeVotes?.bullish || 0} Bull</span>
                               <span className="text-[10px] font-bold text-[#64748b] flex items-center gap-1">⚪ {latestDecision.committeeVotes?.neutral || 0} Neu</span>
@@ -786,15 +777,15 @@ export default function App() {
                             }}
                             className="bg-indigo-50/40 hover:bg-indigo-50/80 border border-indigo-100/50 p-2.5 rounded-xl flex items-center justify-between text-left cursor-pointer transition-colors"
                           >
-                            <div>
+                            <div className="text-left">
                               <span className="text-[9px] font-bold text-slate-400 uppercase block">Detailed Reports</span>
                               <span className="text-[10px] font-extrabold text-indigo-600">Browse Swarm Logs →</span>
                             </div>
-                            <History className="w-4 h-4 text-indigo-500" />
+                            <History className="w-4 h-4 text-indigo-500 shrink-0" />
                           </button>
                         </div>
                       </div>
-                    ) : (
+                    ) : !isAnalyzing && logs.length === 0 ? (
                       /* Welcome Prompt */
                       <div className="flex flex-col items-center justify-center h-[245px] border-2 border-dashed border-slate-200/80 rounded-2xl bg-slate-50/30 p-4 text-center">
                         <Workflow className="w-8 h-8 text-indigo-400/80 mb-2 animate-bounce" />
@@ -803,27 +794,50 @@ export default function App() {
                           Click "Initialize Advisory Run" or select a coin asset to engage the autonomous 4-agent advisory swarm.
                         </p>
                       </div>
-                    )}
+                    ) : null}
                   </div>
 
-                  <div className="pt-2 border-t border-slate-200/40 shrink-0">
-                    <button
-                      onClick={() => executeAdvisoryAnalysis(selectedCoin)}
-                      disabled={isAnalyzing}
-                      className="w-full bg-[#0a152d] text-white rounded-2xl py-3 text-[12px] font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-xs hover:bg-[#122345] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isAnalyzing ? (
-                        <>
+                  <div className="pt-2 border-t border-slate-200/40 shrink-0 flex gap-2 w-full">
+                    {isAnalyzing ? (
+                      <>
+                        <button
+                          disabled
+                          className="flex-1 bg-[#0a152d]/5 border border-indigo-100 text-[#0a152d]/60 rounded-2xl py-3 text-[12px] font-semibold flex items-center justify-center gap-2"
+                        >
                           <RefreshCw className="w-4 h-4 animate-spin" />
-                          Running Autopilot Analysts...
-                        </>
-                      ) : (
-                        <>
+                          Analyzing {selectedCoin}...
+                        </button>
+                        <button
+                          onClick={cancelAnalysis}
+                          className="px-4 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl py-3 text-[12px] font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all"
+                        >
+                          <X className="w-4 h-4" />
+                          Stop
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => executeAdvisoryAnalysis(selectedCoin)}
+                          className="flex-1 bg-[#0a152d] text-white rounded-2xl py-3 text-[12px] font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-xs hover:bg-[#122345] transition-all"
+                        >
                           <Sparkles className="w-4 h-4" />
                           Activate Swarm Advisory Consensus Mode (✦)
-                        </>
-                      )}
-                    </button>
+                        </button>
+                        {(logs.length > 0 || latestDecision) && (
+                          <button
+                            onClick={() => {
+                              setLogs([]);
+                              setLatestDecision(null);
+                            }}
+                            className="px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/80 rounded-2xl py-3 text-[12px] font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all shrink-0"
+                          >
+                            <RefreshCw className="w-4 h-4" />
+                            Reset
+                          </button>
+                        )}
+                      </>
+                    )}
                   </div>
                 </motion.div>
               )}
@@ -836,11 +850,11 @@ export default function App() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
-                  className="flex-1 flex flex-col justify-between overflow-hidden"
+                  className="flex-1 flex flex-col justify-between overflow-hidden text-left"
                 >
                   <div className="flex-1 overflow-hidden flex flex-col md:flex-row gap-3">
                     {/* Left side: List of runs */}
-                    <div className="w-full md:w-[35%] overflow-y-auto border-r border-slate-200/40 pr-2 space-y-1.5 max-h-[380px] md:max-h-full">
+                    <div className="w-full md:w-[35%] overflow-y-auto border-r border-slate-200/40 pr-2 space-y-1.5 max-h-[140px] md:max-h-full text-left">
                       <span className="text-[9px] font-extrabold text-slate-400 uppercase font-mono block mb-1">
                         Select Run File
                       </span>
@@ -859,7 +873,7 @@ export default function App() {
                                 : "bg-slate-50/50 hover:bg-slate-100 border-slate-200/40"
                             }`}
                           >
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between text-left">
                               <span className="font-bold text-[#0a1b33]">{item.coin}</span>
                               <span className={`text-[9px] px-1.5 py-0.5 rounded-sm font-bold font-mono ${
                                 item.action === "BUY" ? "text-emerald-600 bg-emerald-50" : "text-amber-500 bg-amber-50"
@@ -875,26 +889,26 @@ export default function App() {
                     </div>
 
                     {/* Right side: Detailed view of selection or latest */}
-                    <div className="flex-1 overflow-y-auto max-h-[380px] md:max-h-full bg-slate-50/50 rounded-2xl p-3 border border-slate-100">
+                    <div className="flex-1 overflow-y-auto max-h-[220px] md:max-h-full bg-slate-50/50 rounded-2xl p-3 border border-slate-100 text-left">
                       {(() => {
                         const activeItem = ledgerData[selectedLedgerIndex !== -1 ? selectedLedgerIndex : 0];
                         if (!activeItem) return <div className="text-slate-400 text-center py-10 text-[11px]">No run payload selected.</div>;
                         
                         return (
-                          <div className="space-y-3">
+                          <div className="space-y-3 text-left">
                             <div className="flex items-center justify-between border-b border-slate-200/50 pb-2">
-                              <h5 className="text-[12px] font-bold text-[#0a1b33]">Swarm Payload: {activeItem.coin}</h5>
+                              <h5 className="text-[12px] font-bold text-[#0a1b33] text-left">Swarm Payload: {activeItem.coin}</h5>
                               <span className="text-[9px] text-slate-400 font-mono">
                                 {new Date(activeItem.timestamp).toLocaleString()}
                               </span>
                             </div>
 
-                            <p className="text-[11px] text-slate-500 italic">
+                            <p className="text-[11px] text-slate-500 italic text-left">
                               "{activeItem.rationale}"
                             </p>
 
                             {/* Reports Accordion Tab */}
-                            <div className="space-y-2">
+                            <div className="space-y-2 text-left">
                               <span className="text-[9px] font-extrabold text-slate-400 uppercase font-mono block">
                                 Swarm Analyst Segment Files
                               </span>
@@ -904,7 +918,7 @@ export default function App() {
                                   <button
                                     key={at}
                                     onClick={() => setActiveAnalystTab(at)}
-                                    className={`px-2 py-1 rounded-lg text-[9px] uppercase font-bold tracking-wider shrink-0 transition-all ${
+                                    className={`px-2 py-1 rounded-lg text-[9px] uppercase font-bold tracking-wider shrink-0 transition-all cursor-pointer ${
                                       activeAnalystTab === at
                                         ? "bg-slate-800 text-white"
                                         : "bg-white text-slate-500 border border-slate-200/70 hover:border-slate-300"
@@ -916,25 +930,25 @@ export default function App() {
                               </div>
 
                               {(() => {
-                                const rep = activeItem.analystReports?.find(r => r.analyst === activeAnalystTab) || 
+                                const rep = activeItem.analystReports?.find(r => normalizeAnalystName(r.analyst) === normalizeAnalystName(activeAnalystTab)) || 
                                             activeItem.analystReports?.[0];
                                 if (!rep) return <div className="text-[10px] text-slate-400">Analyst file omitted.</div>;
                                 return (
-                                  <div className="bg-white border border-slate-200/60 p-2.5 rounded-xl space-y-1.5 shadow-2xs">
+                                  <div className="bg-white border border-slate-200/60 p-2.5 rounded-xl space-y-1.5 shadow-2xs text-left">
                                     <div className="flex items-center justify-between">
                                       <span className="text-[10px] font-bold uppercase text-indigo-600">{rep.analyst} file report</span>
                                       <span className="text-[9px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
                                         Signal: {rep.signal} | Conf: {rep.confidence}%
                                       </span>
                                     </div>
-                                    <p className="text-[10px] text-slate-600 leading-relaxed font-sans">{rep.summary}</p>
+                                    <p className="text-[10px] text-slate-600 leading-relaxed font-sans text-left">{rep.summary}</p>
                                     
                                     {rep.keyPoints && rep.keyPoints.length > 0 && (
-                                      <div className="pt-1.5 border-t border-slate-100 space-y-1">
-                                        <span className="text-[8px] font-extrabold text-slate-400 uppercase font-mono block">Core telemetry data:</span>
+                                      <div className="pt-1.5 border-t border-slate-100 space-y-1 text-left">
+                                        <span className="text-[8px] font-extrabold text-slate-400 uppercase font-mono block text-left">Core telemetry data:</span>
                                         <div className="flex flex-wrap gap-1">
                                           {rep.keyPoints.map((kp, ki) => (
-                                            <span key={ki} className="text-[8.5px] bg-slate-50 border border-slate-200/40 text-slate-600 px-2 py-0.5 rounded-full font-mono">
+                                            <span key={ki} className="text-[8.5px] bg-slate-50 border border-slate-200/40 text-slate-600 px-2 py-0.5 rounded-full font-mono shrink-0">
                                               ✦ {kp}
                                             </span>
                                           ))}
@@ -951,7 +965,7 @@ export default function App() {
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-200/40 flex justify-between gap-2 shrink-0">
+                  <div className="pt-2 border-t border-slate-200/40 flex justify-between gap-2 shrink-0 w-full">
                     <button 
                       onClick={fetchDecisions}
                       className="w-full text-slate-600 hover:text-[#0a1b33] border border-slate-200 hover:border-slate-300 text-[11px] font-semibold py-2.5 rounded-xl flex items-center justify-center gap-1.5 cursor-pointer"
@@ -971,86 +985,108 @@ export default function App() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
-                  className="flex-1 flex flex-col justify-between overflow-hidden"
+                  className="flex-1 flex flex-col justify-between overflow-hidden text-left"
                 >
                   <div className="space-y-4 flex-1 overflow-y-auto pr-1">
-                    <div className="space-y-3">
-                      <h4 className="text-[12px] font-bold text-[#0a1b33]">System Config: Swarm Node Coordinates</h4>
+                    <div className="space-y-2">
+                      <h4 className="text-[12px] font-bold text-[#0a1b33] text-left">System Config: Swarm Node Coordinates</h4>
                       
-                      <div className="grid grid-cols-2 gap-2.5">
+                      <div className="grid grid-cols-2 gap-2.5 text-left">
                         <div className="bg-white border border-slate-200/60 p-3 rounded-2xl flex flex-col justify-between shadow-xs">
                           <span className="text-[10px] text-slate-400 font-mono">Model Engine</span>
                           <span className="text-[11px] font-extrabold text-[#0a1b33] mt-1 flex items-center gap-1 bg-slate-50 px-2 py-1 rounded border border-slate-100">
-                            <Cpu className="w-3.5 h-3.5 text-[#0a1b33]" />
-                            gemini-2.5-flash
+                            <Cpu className="w-3.5 h-3.5 text-[#0a1b33] shrink-0" />
+                            {systemStatus.model || "qwen3.6-plus"}
                           </span>
                         </div>
                         
                         <div className="bg-white border border-slate-200/60 p-3 rounded-2xl flex flex-col justify-between shadow-xs">
                           <span className="text-[10px] text-slate-400 font-mono">MCP Protocol Tunnel</span>
                           <span className="text-[11px] font-extrabold text-indigo-600 mt-1 flex items-center gap-1 bg-slate-50 px-2 py-1 rounded border border-slate-100">
-                            <Workflow className="w-3.5 h-3.5 text-[#0a1b33]" />
+                            <Workflow className="w-3.5 h-3.5 text-[#0a1b33] shrink-0" />
                             DataHub MCPS
                           </span>
                         </div>
                       </div>
 
-                      <div className="bg-white border border-slate-200/60 p-3.5 rounded-2xl space-y-2">
-                        <span className="text-[9px] font-extrabold text-slate-400 uppercase font-mono block">Registered Tools Inventory</span>
-                        <div className="space-y-1.5">
-                          <div className="flex items-center justify-between text-[11px] text-slate-600 font-mono p-1 rounded hover:bg-slate-50">
-                            <span>🛠️ get_balance / get_supply</span>
-                            <span className="text-emerald-600">Attached</span>
-                          </div>
-                          <div className="flex items-center justify-between text-[11px] text-slate-600 font-mono p-1 rounded hover:bg-slate-50">
-                            <span>📊 query_index / fetch_indicators</span>
-                            <span className="text-emerald-600">Attached</span>
-                          </div>
-                          <div className="flex items-center justify-between text-[11px] text-slate-600 font-mono p-1 rounded hover:bg-slate-50 font-sans">
-                            <span>📰 fetch_breaking_news / RSS</span>
-                            <span className="text-emerald-700 font-mono">Attached</span>
-                          </div>
+                      <div className="bg-white border border-slate-200/60 p-3.5 rounded-2xl space-y-2 text-left">
+                        <span className="text-[9px] font-extrabold text-slate-400 uppercase font-mono block text-left">Registered Tools Inventory</span>
+                        <div className="space-y-1.5 overflow-y-auto max-h-[160px] pr-1 scrollbar-thin text-left">
+                          {registeredTools.map((t, idx) => (
+                            <div key={idx} className="flex flex-col border-b border-slate-100 pb-1.5 last:border-0">
+                              <span className="text-[10px] font-mono font-bold text-slate-800">✦ {t.name}</span>
+                              <span className="text-[9px] text-slate-400">{t.desc}</span>
+                            </div>
+                          ))}
                         </div>
-                      </div>
-
-                      <div className="bg-amber-500/5 border border-amber-500/20 p-3 rounded-2xl flex items-start gap-2">
-                        <ShieldAlert className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
-                        <p className="text-[10px] text-slate-500 leading-relaxed font-sans">
-                          <strong>Note about API execution Keys:</strong> Credentials and environment secrets reside inside host `.env` settings. The proxy layer bridges requests directly to container microservices without displaying them to the browser client.
-                        </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-200/40 shrink-0">
-                    <span className="text-[10px] text-slate-400 font-mono block text-center">
-                      FastAPI microserver running at 0.0.0.0:3001
-                    </span>
+                  <div className="pt-2 border-t border-slate-200/40 shrink-0 w-full flex justify-between gap-2">
+                    <div className="text-[9.5px] text-slate-400 font-mono flex items-center gap-1.5">
+                      <ShieldAlert className="w-3.5 h-3.5 text-slate-400" />
+                      Advisory container nodes in compliance.
+                    </div>
                   </div>
                 </motion.div>
               )}
             </AnimatePresence>
-
           </motion.div>
         </div>
 
-        {/* Right column: Reserved workspace slot for upcoming elements */}
+        {/* Right Column: Dynamic Banner / Auxiliary Presentation Layer */}
         <div id="right-workspace-column" className="w-full">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full h-[510px] bg-slate-50 border border-dashed border-slate-200/80 rounded-[32px] flex flex-col items-center justify-center p-8 text-center"
+            className="w-full bg-white border border-slate-200/60 rounded-[32px] p-6 shadow-[0_12px_40px_rgba(0,0,0,0.04)] h-[510px] flex flex-col justify-between items-start text-left"
           >
-            <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mb-4 text-slate-400">
-              <Sparkles className="w-5 h-5 animate-pulse" />
+            <div className="w-full">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono block mb-3">
+                Decentralized Web Ecosystem
+              </span>
+              <h3 className="font-display text-[26px] md:text-[30px] font-medium leading-[1.1] tracking-tight text-[#0a1b33] mb-4">
+                Redefining sovereign financial intelligence
+              </h3>
+              <p className="text-[12.5px] text-slate-500 leading-relaxed max-w-md">
+                We design and distribute open tools enabling individual consensus nodes. Our dual-server model fuses speed/iteration rules of a lightweight Node client layer with the heavy parallel MCP calculations of a secondary Python container swarm.
+              </p>
             </div>
-            <h3 className="text-[13px] font-bold text-[#0a1b33] font-sans">Workspace Slot</h3>
-            <p className="text-[11px] text-slate-400 max-w-sm mt-1.5 leading-relaxed font-sans">
-              This space resides on the right column. It is ready for custom charts, deep research outputs, or additional monitoring modules of your choice.
-            </p>
+
+            {/* Micro infographics or animated logo loop */}
+            <div className="w-full bg-slate-50 border border-slate-100/80 p-4.5 rounded-[24px] space-y-3">
+              <span className="text-[9px] font-extrabold text-[#0a1b33] uppercase font-mono block">Node Consensus Ratios</span>
+              <div className="flex gap-4 font-mono text-left">
+                <div className="flex-1">
+                  <span className="text-[9px] text-slate-400 block uppercase">Network Latency</span>
+                  <span className="text-sm font-bold text-emerald-600 flex items-center gap-1 font-mono">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    31ms
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <span className="text-[9px] text-slate-400 block uppercase">Gateway Proxy</span>
+                  <span className="text-sm font-bold text-[#0a1b33] font-mono">127.0.0.1:3000</span>
+                </div>
+                <div className="flex-1">
+                  <span className="text-[9px] text-slate-400 block uppercase">Calculations Zone</span>
+                  <span className="text-sm font-bold text-indigo-600 font-mono">Swarm (4 Nodes)</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="w-full pt-4 border-t border-slate-200/40 flex items-center justify-between gap-2">
+              <span className="text-[10px] text-slate-400 font-mono">Foundation ✦ v2.4.0</span>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[10px] text-slate-600 font-semibold font-mono">Core Hub Normal</span>
+              </div>
+            </div>
           </motion.div>
         </div>
+
       </div>
 
     </div>

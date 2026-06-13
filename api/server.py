@@ -1,11 +1,16 @@
-import sys
-from pathlib import Path
-
-# Add workspace root to sys.path to ensure the 'agent' package is resolvable
-sys.path.append(str(Path(__file__).parent.parent))
-
 import json
+import os
+import sys
 import asyncio
+from datetime import datetime, timezone
+
+if sys.platform == "win32":
+    os.environ.setdefault("PYTHONUTF8", "1")
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
+
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -23,6 +28,17 @@ app.add_middleware(
 DATA_DIR = Path("data")
 DECISIONS_FILE = DATA_DIR / "decisions.json"
 
+analysis_job: dict = {
+    "running": False,
+    "coin": None,
+    "started_at": None,
+    "error": None,
+    "decision": None,
+}
+
+analysis_task = None
+
+
 def read_json(path: Path):
     try:
         if path.exists():
@@ -31,28 +47,110 @@ def read_json(path: Path):
     except:
         return []
 
+
 @app.get("/api/decisions")
 async def get_decisions():
     return read_json(DECISIONS_FILE)[:20]
+
 
 @app.get("/api/status")
 async def get_status():
     decisions = read_json(DECISIONS_FILE)
     latest = decisions[0] if decisions else None
     return {
-        "status": "running",
+        "status": "running" if analysis_job["running"] else "idle",
+        "analysisRunning": analysis_job["running"],
+        "analysisCoin": analysis_job["coin"],
         "lastRun": latest.get("timestamp") if latest else None,
         "lastDecision": latest.get("action") if latest else None,
         "lastConfidence": latest.get("confidence") if latest else None,
+        "model": os.getenv("QWEN_MODEL", "qwen3.6-plus"),
     }
+
 
 class AnalyzeRequest(BaseModel):
     coin: str = "BTC"
 
+
+async def _run_analysis_job(coin: str):
+    try:
+        decision = await run_agent_cycle(coin)
+        if decision is None:
+            analysis_job["error"] = "Agent cycle failed"
+        else:
+            analysis_job["decision"] = decision
+    except asyncio.CancelledError:
+        analysis_job["error"] = "Analysis stopped by user"
+    except Exception as e:
+        analysis_job["error"] = str(e)
+    finally:
+        analysis_job["running"] = False
+
+
 @app.post("/api/analyze")
 async def analyze(request: AnalyzeRequest):
-    decision = await run_agent_cycle(request.coin.upper())
-    return {"success": True, "decision": decision}
+    global analysis_task
+    coin = request.coin.upper()
+
+    if analysis_job["running"]:
+        return {
+            "success": True,
+            "status": "running",
+            "coin": analysis_job["coin"],
+        }
+
+    analysis_job.update({
+        "running": True,
+        "coin": coin,
+        "started_at": datetime.now(timezone.utc).isoformat(),
+        "error": None,
+        "decision": None,
+    })
+    analysis_task = asyncio.create_task(_run_analysis_job(coin))
+
+    return {"success": True, "status": "started", "coin": coin}
+
+
+@app.post("/api/analyze/stop")
+async def stop_analyze():
+    global analysis_task
+    if not analysis_job["running"]:
+        return {"success": False, "message": "No analysis is currently running"}
+
+    if analysis_task and not analysis_task.done():
+        analysis_task.cancel()
+        try:
+            await asyncio.wait_for(analysis_task, timeout=2.0)
+        except (asyncio.TimeoutError, asyncio.CancelledError):
+            pass
+        except Exception:
+            pass
+
+    analysis_job.update({
+        "running": False,
+        "coin": None,
+        "started_at": None,
+        "error": "Analysis stopped by user",
+        "decision": None,
+    })
+    return {"success": True, "message": "Analysis stopped"}
+
+
+@app.get("/api/analyze/status")
+async def analyze_status():
+    return {
+        "running": analysis_job["running"],
+        "coin": analysis_job["coin"],
+        "startedAt": analysis_job["started_at"],
+        "error": analysis_job["error"],
+        "decision": analysis_job["decision"],
+        "success": (
+            not analysis_job["running"]
+            and analysis_job["decision"] is not None
+            and analysis_job["error"] is None
+        ),
+    }
+
 
 if __name__ == "__main__":
     import uvicorn

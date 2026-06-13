@@ -1,16 +1,44 @@
 import express from "express";
 import path from "path";
+import os from "os";
 import { createServer as createViteServer } from "vite";
 import { spawn } from "child_process";
+
+function resolvePythonPath(): string {
+  if (process.env.PYTHON_PATH) {
+    return process.env.PYTHON_PATH;
+  }
+  if (process.platform === "win32") {
+    const userProfile = process.env.USERPROFILE || os.homedir();
+    return path.join(
+      userProfile,
+      "AppData",
+      "Local",
+      "Programs",
+      "Python",
+      "Python312",
+      "python.exe"
+    );
+  }
+  return "python3";
+}
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
   // 1. Spawn secondary Python FastAPI server on port 3001
-  console.log("Spawning Python FastAPI server on port 3001...");
-  const pythonServer = spawn("python3", ["api/server.py"], {
-    env: { ...process.env, PYTHONPATH: process.cwd() },
+  const pythonPath = resolvePythonPath();
+  console.log(`Spawning Python FastAPI server on port 3001 (${pythonPath})...`);
+  const projectRoot = process.cwd();
+  const pythonServer = spawn(pythonPath, ["api/server.py"], {
+    env: {
+      ...process.env,
+      PYTHONPATH: projectRoot,
+      PYTHONIOENCODING: "utf-8",
+      PYTHONUTF8: "1",
+    },
+    cwd: projectRoot,
   });
 
   pythonServer.stdout.on("data", (data) => {
@@ -60,9 +88,14 @@ async function startServer() {
       }
       headers["host"] = "127.0.0.1:3001";
 
+      const isAnalyzeRequest =
+        req.method === "POST" && req.originalUrl.startsWith("/api/analyze");
+      const timeoutMs = isAnalyzeRequest ? 20 * 60 * 1000 : 60_000;
+
       const fetchOptions: RequestInit = {
         method: req.method,
         headers: headers,
+        signal: AbortSignal.timeout(timeoutMs),
       };
 
       if (req.method !== "GET" && req.method !== "HEAD" && req.body) {
@@ -103,9 +136,14 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  const ANALYZE_TIMEOUT_MS = 20 * 60 * 1000;
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
+  // Agent analysis can run 10+ minutes; Node defaults to 5 min request timeout
+  server.requestTimeout = ANALYZE_TIMEOUT_MS;
+  server.headersTimeout = ANALYZE_TIMEOUT_MS + 60_000;
+  server.keepAliveTimeout = ANALYZE_TIMEOUT_MS;
 }
 
 startServer();

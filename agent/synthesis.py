@@ -42,7 +42,8 @@ Full Report: {report.get('fullReport', '')[:500]}
 
     response_data = await call_qwen_with_retry(
         messages=messages,
-        temperature=0.1
+        temperature=0.1,
+        timeout=300.0,  # Synthesis payload is large — needs extra time
     )
 
     choice = response_data['choices'][0]
