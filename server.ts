@@ -1,11 +1,27 @@
 import express from "express";
 import path from "path";
 import os from "os";
+import fs from "fs";
 import { createServer as createViteServer } from "vite";
 import { spawn } from "child_process";
 
 function resolvePythonPath(): string {
   if (process.env.PYTHON_PATH) {
+    try {
+      if (fs.existsSync(process.env.PYTHON_PATH)) {
+        const stat = fs.statSync(process.env.PYTHON_PATH);
+        if (stat.isDirectory()) {
+          const binPath = path.join(process.env.PYTHON_PATH, "bin", "python3");
+          if (fs.existsSync(binPath)) {
+            return binPath;
+          }
+          const binPath2 = path.join(process.env.PYTHON_PATH, "bin", "python");
+          if (fs.existsSync(binPath2)) {
+            return binPath2;
+          }
+        }
+      }
+    } catch (e) {}
     return process.env.PYTHON_PATH;
   }
   if (process.platform === "win32") {
