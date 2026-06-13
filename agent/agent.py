@@ -33,7 +33,7 @@ def save_decision(decision: dict):
 
 async def run_agent_cycle(coin: str = "BTC") -> dict | None:
     """Run one full analysis cycle for a given coin"""
-    print(f"\n🚀 ===== FUSION AGENT CYCLE STARTED =====")
+    print(f"\n🚀 ===== OMNISIGNAL AGENT CYCLE STARTED =====")
     print(f"📍 Coin: {coin} | Time: {datetime.now(timezone.utc).isoformat()}")
 
     # Initialize Qwen config parameters

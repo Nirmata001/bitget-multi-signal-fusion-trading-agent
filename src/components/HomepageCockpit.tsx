@@ -154,7 +154,7 @@ export default function HomepageCockpit({
           </button>
           <div className="text-left">
             <h2 className="text-[13px] font-bold text-[#0a1b33] tracking-tight uppercase flex items-center gap-2 flex-wrap">
-              Fusion Autonomous Advisory Platform
+              Omnisignal Autonomous Advisory Platform
             </h2>
           </div>
         </div>
@@ -178,15 +178,6 @@ export default function HomepageCockpit({
           transition={{ delay: 0.1, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           className="flex items-center bg-white/95 backdrop-blur-2xl px-1.5 py-1.5 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.06)] border border-slate-200/40 w-max whitespace-nowrap"
         >
-          {/* Logo */}
-          <div 
-            id="nav-logo"
-            onClick={() => setActiveTab("console")}
-            className="flex items-center justify-center rounded-full w-9 h-9 bg-white border border-slate-100 shadow-sm text-[#0a1b33] text-sm font-bold mr-2 select-none cursor-pointer hover:bg-slate-50 transition-all"
-          >
-            ✦
-          </div>
-
           <button 
             id="nav-link-products"
             onClick={() => setActiveTab("console")}
@@ -384,7 +375,6 @@ export default function HomepageCockpit({
                           disabled
                           className="flex-1 bg-[#0a152d]/5 border border-indigo-100 text-[#0a152d]/60 rounded-2xl py-3 text-[12px] font-semibold flex items-center justify-center gap-2"
                         >
-                          <RefreshCw className="w-4 h-4 animate-spin" />
                           Analyzing {selectedCoin}...
                         </button>
                         <button
@@ -401,7 +391,6 @@ export default function HomepageCockpit({
                           onClick={() => executeAdvisoryAnalysis(selectedCoin)}
                           className="flex-1 bg-[#0a152d] hover:bg-[#122345] text-white rounded-2xl py-3 text-[12px] font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all"
                         >
-                          <Sparkles className="w-4 h-4 text-indigo-200" />
                           Activate Swarm Advisory Consensus Mode (✦)
                         </button>
                         {(logs.length > 0 || latestDecision) && (
@@ -622,27 +611,21 @@ export default function HomepageCockpit({
           >
             <div className="w-full flex-1 flex flex-col overflow-hidden text-left">
               <div className="flex items-center justify-between pb-3 border-b border-slate-200/60 mb-4 font-mono w-full">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                  Swarm Consensus Live Ledger / Terminal
-                </span>
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full flex items-center gap-1.5 ${
-                  isAnalyzing 
-                    ? "text-indigo-600 bg-indigo-50 border border-indigo-100/50" 
-                    : "text-slate-500 bg-slate-50 border border-slate-200/40"
-                }`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${isAnalyzing ? "bg-indigo-500 animate-pulse" : "bg-emerald-500"}`} />
-                  {isAnalyzing ? "Syncing Feed" : "Standby Nodes"}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#ff5f56]" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
+                </div>
               </div>
 
               {/* Terminal Log Output List */}
               <div className="flex-1 overflow-y-auto space-y-2 pr-1 pb-2 w-full font-mono text-left scrollbar-thin">
                 {(logs.length > 0 ? logs : [
-                  `[FUSION-OS/BOOT] Gateway port 3000 online and fully responsive.`,
-                  `[FUSION-OS/DEVICES] Secondary Python container swarm linked via parallel IPC channels.`,
-                  `[FUSION-OS/STANDBY] Awaiting new consensus simulation for asset: ${selectedCoin.toUpperCase() || 'BTC'}...`,
-                  `[FUSION-OS/SYSTEM] Status: 100% operational | Core processing matrix: stable.`,
-                  `[FUSION-OS/TIPS] Click 'Synthesize Swarm Consensus' to activate parallel worker nodes.`
+                  `[OMNISIGNAL-OS/BOOT] Gateway port 3000 online and fully responsive.`,
+                  `[OMNISIGNAL-OS/DEVICES] Secondary Python container swarm linked via parallel IPC channels.`,
+                  `[OMNISIGNAL-OS/STANDBY] Awaiting new consensus simulation for asset: ${selectedCoin.toUpperCase() || 'BTC'}...`,
+                  `[OMNISIGNAL-OS/SYSTEM] Status: 100% operational | Core processing matrix: stable.`,
+                  `[OMNISIGNAL-OS/TIPS] Click 'Synthesize Swarm Consensus' to activate parallel worker nodes.`
                 ]).map((log, index) => (
                   <motion.div 
                     initial={{ opacity: 0, x: -5 }}
@@ -656,19 +639,7 @@ export default function HomepageCockpit({
               </div>
             </div>
 
-            <div className="w-full pt-4 border-t border-slate-200/40 flex items-center justify-between gap-4 font-mono">
-              {isAnalyzing ? (
-                <span className="text-indigo-600 animate-pulse flex items-center gap-1.5 text-[10px] font-bold">
-                  <span className="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-ping" />
-                  Synthesizing council consensus...
-                </span>
-              ) : (
-                <span className="text-emerald-600 flex items-center gap-1.5 text-[10px] font-bold">
-                  <Check className="w-3.5 h-3.5 text-emerald-500" />
-                  Execution complete — Consensus recorded
-                </span>
-              )}
-              <span className="text-[9.5px] text-slate-400 bg-slate-100 px-2.5 py-0.5 rounded-sm">node@fusion-core</span>
+            <div className="w-full pt-4 border-t border-slate-200/40 flex items-center justify-end gap-4 font-mono">
             </div>
           </motion.div>
         </div>

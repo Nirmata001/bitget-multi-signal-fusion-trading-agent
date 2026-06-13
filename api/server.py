@@ -16,7 +16,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from agent.agent import run_agent_cycle
 
-app = FastAPI(title="Fusion Agent API")
+app = FastAPI(title="Omnisignal Agent API")
 
 app.add_middleware(
     CORSMiddleware,

@@ -116,7 +116,7 @@ export default function App() {
     const targetSymbol = coinSymbol.toUpperCase().trim() || "BTC";
 
     const steps = [
-      "⚡ Initializing Fusion advisory container node...",
+      "⚡ Initializing Omnisignal advisory container node...",
       "🔌 Connecting to Qwen model and MCP DataHub...",
       "📡 Model Context Protocol loading market data tools...",
       "📊 Macro Analyst triggered — gathering liquidity indicators...",
