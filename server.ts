@@ -10,19 +10,35 @@ function resolvePythonPath(): string {
     try {
       if (fs.existsSync(process.env.PYTHON_PATH)) {
         const stat = fs.statSync(process.env.PYTHON_PATH);
+        if (stat.isFile()) {
+          return process.env.PYTHON_PATH;
+        }
         if (stat.isDirectory()) {
           const binPath = path.join(process.env.PYTHON_PATH, "bin", "python3");
           if (fs.existsSync(binPath)) {
-            return binPath;
+            const binStat = fs.statSync(binPath);
+            if (binStat.isFile()) return binPath;
           }
           const binPath2 = path.join(process.env.PYTHON_PATH, "bin", "python");
           if (fs.existsSync(binPath2)) {
-            return binPath2;
+            const binStat2 = fs.statSync(binPath2);
+            if (binStat2.isFile()) return binPath2;
+          }
+          const binPath3 = path.join(process.env.PYTHON_PATH, "python3");
+          if (fs.existsSync(binPath3)) {
+            const binStat3 = fs.statSync(binPath3);
+            if (binStat3.isFile()) return binPath3;
+          }
+          const binPath4 = path.join(process.env.PYTHON_PATH, "python");
+          if (fs.existsSync(binPath4)) {
+            const binStat4 = fs.statSync(binPath4);
+            if (binStat4.isFile()) return binPath4;
           }
         }
       }
-    } catch (e) {}
-    return process.env.PYTHON_PATH;
+    } catch (e) {
+      console.error("[resolvePythonPath Warning]:", e);
+    }
   }
   if (process.platform === "win32") {
     const userProfile = process.env.USERPROFILE || os.homedir();
