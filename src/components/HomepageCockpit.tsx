@@ -74,16 +74,25 @@ const analystsList = [
 ];
 
 const registeredTools = [
-  { name: "rates_yields", desc: "Monitors federal funds rate, sovereign bond yields, yield curves, and central bank macro directives." },
-  { name: "macro_indicators", desc: "Pulls inflation data (CPI/PCE), unemployment rates, global manufacturing/GDP growth statistics." },
-  { name: "global_assets", desc: "Correlates S&P500, Nasdaq, Gold, and US Dollar Index (DXY) aggregate performance metrics." },
-  { name: "cross_asset", desc: "Performs regression calculations regarding crypto assets vs legacy equity and liquidity indices." },
-  { name: "technical_analysis", desc: "Computes multi-timeframe moving averages, Relative Strength Indexes (RSI), MACD, and Bollinger Bands." },
-  { name: "sentiment_index", desc: "Analyzes social sentiment volumes, Reddit active threads, and social volatility matrices." },
-  { name: "derivatives_sentiment", desc: "Pulls options open interest, retail funding rates, liquidation ratios, and order book cumulative depths." },
-  { name: "crypto_market", desc: "Tracks global coin valuations, dominance scores, and daily stablecoin volume allocations." },
-  { name: "defi_analytics", desc: "Scans smart-contract metrics, protocol total value locked (TVL), and network-wide utility metrics." },
-  { name: "news_feed", desc: "Ingests live RSS crypto news wires, SEC regulatory filings, and ETF net flow statistics." }
+  { name: "rates_yields", desc: "Monitors central bank policies, sovereign bond yields, interest rate changes, and yield curve spreads." },
+  { name: "macro_indicators", desc: "Pulls inflation data (CPI/PCE), unemployment rates, and global industrial manufacturing/GDP growth metrics." },
+  { name: "global_assets", desc: "Correlates traditional equity indices (S&P 500, Nasdaq), Gold, and US Dollar Index (DXY) aggregate performance." },
+  { name: "cross_asset", desc: "Calculates regressions and correlations of crypto assets against legacy assets and global liquidity index variations." },
+  { name: "tradfi_news", desc: "Pulls institutional macro commentary, Wall Street market notes, and economic policy releases." },
+  { name: "cn_market", desc: "Monitors Chinese macroeconomic vectors, equity indices, renminbi liquidity, and policy directives." },
+  { name: "global_data", desc: "Broad macro database index query tool linking liquidity, commodities, and credit market conditions." },
+  { name: "technical_analysis", desc: "Computes multi-timeband Simple/Exponential Moving Averages, RSI, MACD, and Bollinger Bands." },
+  { name: "crypto_derivatives", desc: "Fetches futures trading volume, open interest changes, futures-to-spot ratio, and options distributions." },
+  { name: "backtest", desc: "Synthesizes multi-period quantitative rule backtests based on customized trend-following parameters." },
+  { name: "sentiment_index", desc: "Analyzes social sentiment intensity, active Reddit discussion volume, and keyword fear/greed velocity." },
+  { name: "derivatives_sentiment", desc: "Monitors real-time contract funding rates, leverage ratios, and aggregate long/short account skews." },
+  { name: "crypto_market", desc: "Checks global cryptocurrency market capitalization, dominance indexes, and daily transaction volume counts." },
+  { name: "defi_analytics", desc: "Tracks aggregate Total Value Locked (TVL) metrics, gas fee levels, and protocol-specific pool variations." },
+  { name: "dex_market", desc: "Audits decentralized exchange liquidity pools, slippage curves, arbitrage margins, and smart-contract volume." },
+  { name: "network_status", desc: "Pulls blockchain network health status, average hash rates, active validators, and block propagation velocities." },
+  { name: "crypto_price", desc: "Queries precise, sub-second spot exchange prices and cumulative historical candlestick datasets." },
+  { name: "news_feed", desc: "Aggregates real-time crypto news publications, premium wire summaries, and ETF flow reports." },
+  { name: "social_trending", desc: "Monitors viral social terms, ticker velocity on major platforms, and high-impact developer activity." }
 ];
 
 interface HomepageCockpitProps {
@@ -397,60 +406,46 @@ export default function HomepageCockpit({
                     ) : null}
                   </div>
 
-                  {/* Dynamic Mode Switcher with Education Panel */}
-                  <div className="pt-3 border-t border-slate-200/40 mt-3 flex flex-col w-full text-left">
-                    <div className="mb-3 p-3 bg-slate-50 border border-slate-200/50 rounded-2xl">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-extrabold text-[#0a152d] uppercase tracking-wider font-mono">
-                          Swarm Execution Mode
-                        </span>
-                        <span className="text-[8.5px] font-bold text-indigo-500 bg-indigo-50 border border-indigo-100 rounded-sm px-1.5 py-0.5 uppercase font-mono">
-                          Default: Fast
-                        </span>
-                      </div>
-
-                      {/* Segments */}
-                      <div className="grid grid-cols-2 gap-1 bg-white border border-slate-200/55 p-1 rounded-xl">
+                  {/* Dynamic Mode Switcher (Space-Saving Inline Refinement) */}
+                  <div className="pt-2.5 border-t border-slate-200/40 mt-2 flex items-center justify-between gap-2 w-full text-left">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider font-mono">
+                        Mode:
+                      </span>
+                      <div className="flex gap-0.5 bg-slate-100/85 p-0.5 rounded-lg border border-slate-200/50">
                         <button
                           type="button"
                           disabled={isAnalyzing}
                           onClick={() => setAnalysisMode("fast")}
-                          className={`py-1.5 text-[11px] font-bold rounded-lg cursor-pointer transition-all flex items-center justify-center gap-1.5 ${
+                          className={`px-2 py-1 text-[9.5px] font-bold rounded-md cursor-pointer transition-all flex items-center gap-1 ${
                             analysisMode === "fast"
                               ? "bg-[#0a152d] text-white shadow-xs"
                               : "text-slate-500 hover:text-slate-700 bg-transparent disabled:opacity-50"
                           }`}
+                          title="⚡ Fast Mode: Est. 30-45s run, 2-round reasoning, streamlined indicator sets."
                         >
-                          <Zap className="w-3.5 h-3.5" />
-                          ⚡ Fast Mode
+                          <Zap className="w-2.5 h-2.5" />
+                          Fast
                         </button>
                         <button
                           type="button"
                           disabled={isAnalyzing}
                           onClick={() => setAnalysisMode("full")}
-                          className={`py-1.5 text-[11px] font-bold rounded-lg cursor-pointer transition-all flex items-center justify-center gap-1.5 ${
+                          className={`px-2 py-1 text-[9.5px] font-bold rounded-md cursor-pointer transition-all flex items-center gap-1 ${
                             analysisMode === "full"
                               ? "bg-[#0a152d] text-white shadow-xs"
                               : "text-slate-500 hover:text-slate-700 bg-transparent disabled:opacity-50"
                           }`}
+                          title="🔬 Comprehensive Mode: Est. 2 min run, 4-round deep reasoning, incorporates historical archives, SEC filings under macro vectors & social consensus tracking."
                         >
-                          <Cpu className="w-3.5 h-3.5" />
-                          🔬 Comprehensive Mode
+                          <Cpu className="w-2.5 h-2.5" />
+                          Full
                         </button>
                       </div>
+                    </div>
 
-                      {/* Educational Text based on selected mode */}
-                      <div className="mt-2 text-[10.5px] text-slate-500 leading-relaxed font-sans bg-white/70 rounded-lg p-2 border border-slate-100/50">
-                        {analysisMode === "fast" ? (
-                          <p>
-                            <strong>⚡ Fast Mode:</strong> Employs streamlined indicator sets and caps specialists at 2 rounds of reasoning. Rapid consensus completed in <strong>30-45s</strong>. Low token latency, highly efficient.
-                          </p>
-                        ) : (
-                          <p>
-                            <strong>🔬 Comprehensive Mode:</strong> Unleashes deep derivatives data, SEC filings, macro curves, and crawls complete social/Reddit consensus. Resolves 4 iterative reasoning rounds. Best for high-conviction decision backing (~<strong>2 mins</strong>).
-                          </p>
-                        )}
-                      </div>
+                    <div className="text-[10px] text-slate-400 font-medium italic select-none">
+                      {analysisMode === "fast" ? "⚡ Core consensus (~30s)" : "🔬 Deep analysis (~2m)"}
                     </div>
                   </div>
 
@@ -661,8 +656,13 @@ export default function HomepageCockpit({
                       </div>
 
                       <div className="bg-white border border-slate-200/60 p-3.5 rounded-2xl space-y-2 text-left">
-                        <span className="text-[9px] font-extrabold text-slate-400 uppercase font-mono block text-left">Registered Tools Inventory</span>
-                        <div className="space-y-1.5 overflow-y-auto max-h-[160px] pr-1 scrollbar-thin text-left">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] font-extrabold text-slate-400 uppercase font-mono block text-left">Registered Tools Inventory</span>
+                          <span className="text-[8px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded px-1 py-0.5 font-mono">
+                            {registeredTools.length} Tools Active
+                          </span>
+                        </div>
+                        <div className="space-y-1.5 text-left">
                           {registeredTools.map((t, idx) => (
                             <div key={idx} className="flex flex-col border-b border-slate-100 pb-1.5 last:border-0 text-left">
                               <span className="text-[10px] font-mono font-bold text-slate-800">✦ {t.name}</span>
