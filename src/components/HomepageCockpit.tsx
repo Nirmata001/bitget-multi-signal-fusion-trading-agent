@@ -95,6 +95,7 @@ interface HomepageCockpitProps {
   logs: string[];
   latestDecision: Decision | null;
   ledgerData: Decision[];
+  analyzedCoinsInSession: string[];
   selectedLedgerIndex: number;
   setSelectedLedgerIndex: (idx: number) => void;
   systemStatus: SystemStatus;
@@ -120,6 +121,7 @@ export default function HomepageCockpit({
   logs,
   latestDecision,
   ledgerData,
+  analyzedCoinsInSession,
   selectedLedgerIndex,
   setSelectedLedgerIndex,
   systemStatus,
@@ -134,6 +136,21 @@ export default function HomepageCockpit({
   getActionTheme,
   onBack
 }: HomepageCockpitProps) {
+  const terminalContainerRef = React.useRef<HTMLDivElement | null>(null);
+
+  const matchedDecision = ledgerData.find(
+    (d) => d.coin?.trim().toUpperCase() === selectedCoin.trim().toUpperCase()
+  );
+  const isSessionReport = analyzedCoinsInSession.some(
+    (c) => c.trim().toUpperCase() === selectedCoin.trim().toUpperCase()
+  );
+
+  React.useEffect(() => {
+    if (terminalContainerRef.current) {
+      terminalContainerRef.current.scrollTop = terminalContainerRef.current.scrollHeight;
+    }
+  }, [logs]);
+
   return (
     <motion.div
       key="homepage-view"
@@ -292,42 +309,52 @@ export default function HomepageCockpit({
                     </div>
 
                      {/* Decision results */}
-                    {!isAnalyzing && latestDecision ? (
+                    {!isAnalyzing && matchedDecision ? (
                       <div className="space-y-3 text-left">
                         <div className="bg-white border border-slate-200/60 p-3.5 rounded-2xl shadow-xs text-left">
-                          <div className="flex items-center justify-between mb-1.5">
-                            <div className="flex items-center gap-2">
+                          <div className="flex items-center justify-between mb-1.5 flex-wrap gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <span className="text-[11px] font-extrabold text-slate-400 uppercase font-mono">
-                                Council Consensus for {latestDecision.coin}
+                                Council Consensus for {matchedDecision.coin}
                               </span>
+                              {!isSessionReport ? (
+                                <span className="text-[9.5px] font-semibold text-amber-700 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md font-mono flex items-center gap-1 select-none whitespace-nowrap">
+                                  LAST REPORT
+                                </span>
+                              ) : (
+                                <span className="text-[9.5px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200/40 px-2 py-0.5 rounded-md font-mono flex items-center gap-1 select-none animate-pulse whitespace-nowrap">
+                                  <span className="w-1 h-1 rounded-full bg-emerald-500 animate-ping" />
+                                  CURRENT SESSION
+                                </span>
+                              )}
                             </div>
                             <span className="text-[10px] text-slate-400 font-mono">
-                              {latestDecision.timestamp ? new Date(latestDecision.timestamp).toLocaleTimeString() : ""}
+                              {matchedDecision.timestamp ? new Date(matchedDecision.timestamp).toLocaleTimeString() : ""}
                             </span>
                           </div>
 
                           <div className="flex items-center gap-4">
-                            <div className={`px-4 py-2.5 rounded-2xl border text-center min-w-[100px] ${getActionTheme(latestDecision.action).bg}`}>
+                            <div className={`px-4 py-2.5 rounded-2xl border text-center min-w-[100px] ${getActionTheme(matchedDecision.action).bg}`}>
                               <span className="text-[10px] font-extrabold font-mono uppercase text-slate-400 block tracking-wider leading-none">Recommendation</span>
-                              <span className="text-xl font-bold tracking-tight">{latestDecision.action}</span>
+                              <span className="text-xl font-bold tracking-tight">{matchedDecision.action}</span>
                             </div>
                             
                             <div className="flex-1">
                               <div className="flex items-center justify-between text-[11px] font-bold text-[#0a1b33] mb-1">
                                 <span>Synthesis Confidence</span>
-                                <span className="font-mono text-indigo-600">{latestDecision.confidence}%</span>
+                                <span className="font-mono text-indigo-600">{matchedDecision.confidence}%</span>
                               </div>
                               <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200/50">
                                 <div 
                                   className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full animate-pulse" 
-                                  style={{ width: `${latestDecision.confidence}%` }}
+                                  style={{ width: `${matchedDecision.confidence}%` }}
                                 />
                               </div>
                             </div>
                           </div>
 
                           <p className="text-[11px] text-slate-600 line-clamp-3 mt-3 leading-relaxed border-l-2 border-indigo-200/60 pl-2 whitespace-pre-line text-left">
-                            {latestDecision.rationale}
+                            {matchedDecision.rationale}
                           </p>
                         </div>
 
@@ -336,9 +363,9 @@ export default function HomepageCockpit({
                           <div className="bg-slate-50 border border-slate-100/80 p-2.5 rounded-xl flex flex-col justify-between">
                             <span className="text-[9px] font-extrabold text-slate-400 uppercase font-mono block text-left">Council Votes</span>
                             <div className="flex items-center gap-3 mt-1.5 font-mono">
-                              <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">🟢 {latestDecision.committeeVotes?.bullish || 0} Bull</span>
-                              <span className="text-[10px] font-bold text-[#64748b] flex items-center gap-1">⚪ {latestDecision.committeeVotes?.neutral || 0} Neu</span>
-                              <span className="text-[10px] font-bold text-rose-600 flex items-center gap-1">🔴 {latestDecision.committeeVotes?.bearish || 0} Bear</span>
+                              <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">🟢 {matchedDecision.committeeVotes?.bullish || 0} Bull</span>
+                              <span className="text-[10px] font-bold text-[#64748b] flex items-center gap-1">⚪ {matchedDecision.committeeVotes?.neutral || 0} Neu</span>
+                              <span className="text-[10px] font-bold text-rose-600 flex items-center gap-1">🔴 {matchedDecision.committeeVotes?.bearish || 0} Bear</span>
                             </div>
                           </div>
                           
@@ -393,7 +420,7 @@ export default function HomepageCockpit({
                         >
                           Activate Swarm Advisory Consensus Mode (✦)
                         </button>
-                        {(logs.length > 0 || latestDecision) && (
+                        {(logs.length > 0 || matchedDecision) && (
                           <button
                             onClick={fetchDecisions}
                             className="px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/80 rounded-2xl py-3 text-[12px] font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all shrink-0"
@@ -619,7 +646,10 @@ export default function HomepageCockpit({
               </div>
 
               {/* Terminal Log Output List */}
-              <div className="flex-1 overflow-y-auto space-y-2 pr-1 pb-2 w-full font-mono text-left scrollbar-thin">
+              <div 
+                ref={terminalContainerRef}
+                className="flex-1 overflow-y-auto space-y-2 pr-1 pb-2 w-full font-mono text-left scrollbar-thin"
+              >
                 {(logs.length > 0 ? logs : [
                   `[OMNISIGNAL-OS/BOOT] Gateway port 3000 online and fully responsive.`,
                   `[OMNISIGNAL-OS/DEVICES] Secondary Python container swarm linked via parallel IPC channels.`,

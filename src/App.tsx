@@ -13,6 +13,7 @@ export default function App() {
   const [latestDecision, setLatestDecision] = useState<Decision | null>(null);
   const [ledgerData, setLedgerData] = useState<Decision[]>([]);
   const [selectedLedgerIndex, setSelectedLedgerIndex] = useState<number>(-1);
+  const [analyzedCoinsInSession, setAnalyzedCoinsInSession] = useState<string[]>([]);
   const [systemStatus, setSystemStatus] = useState<SystemStatus>({
     status: "active",
     lastRun: null,
@@ -203,6 +204,7 @@ export default function App() {
 
       setLatestDecision(decision);
       setLedgerData((prev) => [decision, ...prev]);
+      setAnalyzedCoinsInSession((prev) => [...prev, targetSymbol]);
       await fetchStatus();
       await fetchDecisions();
     } catch (err) {
@@ -261,6 +263,7 @@ export default function App() {
             logs={logs}
             latestDecision={latestDecision}
             ledgerData={ledgerData}
+            analyzedCoinsInSession={analyzedCoinsInSession}
             selectedLedgerIndex={selectedLedgerIndex}
             setSelectedLedgerIndex={setSelectedLedgerIndex}
             systemStatus={systemStatus}
