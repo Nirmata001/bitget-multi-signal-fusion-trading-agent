@@ -16,7 +16,8 @@ import {
   Globe,
   Users,
   Newspaper,
-  Coins
+  Coins,
+  Zap
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Decision, SystemStatus } from "../types";
@@ -103,7 +104,7 @@ interface HomepageCockpitProps {
   setActiveTab: (tab: "console" | "ledger" | "status") => void;
   activeAnalystTab: string;
   setActiveAnalystTab: (tab: string) => void;
-  executeAdvisoryAnalysis: (coin: string) => void;
+  executeAdvisoryAnalysis: (coin: string, mode?: string) => void;
   cancelAnalysis: () => void;
   fetchDecisions: () => void;
   normalizeAnalystName: (name: string) => string;
@@ -137,6 +138,7 @@ export default function HomepageCockpit({
   onBack
 }: HomepageCockpitProps) {
   const terminalContainerRef = React.useRef<HTMLDivElement | null>(null);
+  const [analysisMode, setAnalysisMode] = React.useState<"fast" | "full">("fast");
 
   const matchedDecision = ledgerData.find(
     (d) => d.coin?.trim().toUpperCase() === selectedCoin.trim().toUpperCase()
@@ -395,6 +397,63 @@ export default function HomepageCockpit({
                     ) : null}
                   </div>
 
+                  {/* Dynamic Mode Switcher with Education Panel */}
+                  <div className="pt-3 border-t border-slate-200/40 mt-3 flex flex-col w-full text-left">
+                    <div className="mb-3 p-3 bg-slate-50 border border-slate-200/50 rounded-2xl">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-extrabold text-[#0a152d] uppercase tracking-wider font-mono">
+                          Swarm Execution Mode
+                        </span>
+                        <span className="text-[8.5px] font-bold text-indigo-500 bg-indigo-50 border border-indigo-100 rounded-sm px-1.5 py-0.5 uppercase font-mono">
+                          Default: Fast
+                        </span>
+                      </div>
+
+                      {/* Segments */}
+                      <div className="grid grid-cols-2 gap-1 bg-white border border-slate-200/55 p-1 rounded-xl">
+                        <button
+                          type="button"
+                          disabled={isAnalyzing}
+                          onClick={() => setAnalysisMode("fast")}
+                          className={`py-1.5 text-[11px] font-bold rounded-lg cursor-pointer transition-all flex items-center justify-center gap-1.5 ${
+                            analysisMode === "fast"
+                              ? "bg-[#0a152d] text-white shadow-xs"
+                              : "text-slate-500 hover:text-slate-700 bg-transparent disabled:opacity-50"
+                          }`}
+                        >
+                          <Zap className="w-3.5 h-3.5" />
+                          ⚡ Fast Mode
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isAnalyzing}
+                          onClick={() => setAnalysisMode("full")}
+                          className={`py-1.5 text-[11px] font-bold rounded-lg cursor-pointer transition-all flex items-center justify-center gap-1.5 ${
+                            analysisMode === "full"
+                              ? "bg-[#0a152d] text-white shadow-xs"
+                              : "text-slate-500 hover:text-slate-700 bg-transparent disabled:opacity-50"
+                          }`}
+                        >
+                          <Cpu className="w-3.5 h-3.5" />
+                          🔬 Comprehensive Mode
+                        </button>
+                      </div>
+
+                      {/* Educational Text based on selected mode */}
+                      <div className="mt-2 text-[10.5px] text-slate-500 leading-relaxed font-sans bg-white/70 rounded-lg p-2 border border-slate-100/50">
+                        {analysisMode === "fast" ? (
+                          <p>
+                            <strong>⚡ Fast Mode:</strong> Employs streamlined indicator sets and caps specialists at 2 rounds of reasoning. Rapid consensus completed in <strong>30-45s</strong>. Low token latency, highly efficient.
+                          </p>
+                        ) : (
+                          <p>
+                            <strong>🔬 Comprehensive Mode:</strong> Unleashes deep derivatives data, SEC filings, macro curves, and crawls complete social/Reddit consensus. Resolves 4 iterative reasoning rounds. Best for high-conviction decision backing (~<strong>2 mins</strong>).
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="pt-2 border-t border-slate-200/40 shrink-0 flex gap-2 w-full text-left">
                     {isAnalyzing ? (
                       <>
@@ -402,11 +461,11 @@ export default function HomepageCockpit({
                           disabled
                           className="flex-1 bg-[#0a152d]/5 border border-indigo-100 text-[#0a152d]/60 rounded-2xl py-3 text-[12px] font-semibold flex items-center justify-center gap-2"
                         >
-                          Analyzing {selectedCoin}...
+                          Analyzing {selectedCoin} ({analysisMode === "fast" ? "⚡ Fast" : "🔬 Comprehensive"})...
                         </button>
                         <button
                           onClick={cancelAnalysis}
-                          className="px-4 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl py-3 text-[12px] font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all"
+                          className="px-4 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl py-3 text-[12px] font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all animate-pulse"
                         >
                           <X className="w-4 h-4" />
                           Stop
@@ -415,10 +474,10 @@ export default function HomepageCockpit({
                     ) : (
                       <>
                         <button
-                          onClick={() => executeAdvisoryAnalysis(selectedCoin)}
+                          onClick={() => executeAdvisoryAnalysis(selectedCoin, analysisMode)}
                           className="flex-1 bg-[#0a152d] hover:bg-[#122345] text-white rounded-2xl py-3 text-[12px] font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all"
                         >
-                          Activate Swarm Advisory Consensus Mode (✦)
+                          Activate New Swarm Advisory
                         </button>
                         {(logs.length > 0 || matchedDecision) && (
                           <button

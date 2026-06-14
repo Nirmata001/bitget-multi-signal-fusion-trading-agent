@@ -1,7 +1,7 @@
 import asyncio
 from mcp import ClientSession
 from mcp.client.streamable_http import streamable_http_client
-from agent.config import FAST_MODE, FAST_ANALYST_TOOLS
+from agent.config import is_fast_mode, get_max_tool_result_chars, FAST_ANALYST_TOOLS
 # Tool assignments per analyst
 MCP_SERVER_URL = "https://datahub.noxiaohao.com/mcp"
 
@@ -35,7 +35,7 @@ def filter_tools_for_analyst(all_tools: dict, analyst: str) -> list:
     """Return only the tools assigned to a specific analyst"""
     assigned = (
         FAST_ANALYST_TOOLS.get(analyst, [])
-        if FAST_MODE
+        if is_fast_mode()
         else ANALYST_TOOLS.get(analyst, [])
     )
     return [tool for name, tool in all_tools.items() if name in assigned]
@@ -69,9 +69,6 @@ def tools_to_openai_format(tools: list) -> list:
 
     return openai_tools
 
-MAX_TOOL_RESULT_CHARS = 6_000 if FAST_MODE else 12_000
-
-
 async def call_mcp_tool(session: ClientSession, tool_name: str, arguments: dict) -> str:
     """Execute a tool call against the MCP server and return result as string"""
     try:
@@ -82,8 +79,9 @@ async def call_mcp_tool(session: ClientSession, tool_name: str, arguments: dict)
         ])
         if not text.strip():
             return f"Tool '{tool_name}' returned no data."
-        if len(text) > MAX_TOOL_RESULT_CHARS:
-            return text[:MAX_TOOL_RESULT_CHARS] + "\n...[truncated]"
+        limit = get_max_tool_result_chars()
+        if len(text) > limit:
+            return text[:limit] + "\n...[truncated]"
         return text
     except Exception as e:
         return f"Tool error: {str(e)}"

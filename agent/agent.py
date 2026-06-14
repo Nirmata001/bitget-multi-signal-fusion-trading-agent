@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from dotenv import load_dotenv
 from agent.specialists import run_all_specialists
 from agent.synthesis import synthesize_reports
-from agent.config import FAST_MODE, MAX_ITERATIONS
+from agent.config import is_fast_mode, get_max_iterations
 
 load_dotenv()
 
@@ -41,8 +41,9 @@ async def run_agent_cycle(coin: str = "BTC") -> dict | None:
     model = os.getenv("QWEN_MODEL", "qwen3.6-plus")
 
     try:
-        mode = "FAST" if FAST_MODE else "FULL"
-        print(f"🔌 Running analysts in {mode} mode (max {MAX_ITERATIONS} Qwen rounds each)...")
+        mode_str = "FAST" if is_fast_mode() else "FULL"
+        iterations_limit = get_max_iterations()
+        print(f"🔌 Running analysts in {mode_str} mode (max {iterations_limit} Qwen rounds each)...")
 
         reports = await run_all_specialists(None, {}, coin, ai_client, model)
         decision = await synthesize_reports(reports, coin, ai_client, model)

@@ -34,6 +34,7 @@ analysis_job: dict = {
     "started_at": None,
     "error": None,
     "decision": None,
+    "mode": "fast",
 }
 
 analysis_task = None
@@ -61,6 +62,7 @@ async def get_status():
         "status": "running" if analysis_job["running"] else "idle",
         "analysisRunning": analysis_job["running"],
         "analysisCoin": analysis_job["coin"],
+        "analysisMode": analysis_job.get("mode", "fast"),
         "lastRun": latest.get("timestamp") if latest else None,
         "lastDecision": latest.get("action") if latest else None,
         "lastConfidence": latest.get("confidence") if latest else None,
@@ -70,10 +72,13 @@ async def get_status():
 
 class AnalyzeRequest(BaseModel):
     coin: str = "BTC"
+    mode: str = "fast"
 
 
-async def _run_analysis_job(coin: str):
+async def _run_analysis_job(coin: str, mode: str):
     try:
+        # Dynamically switch mode variables
+        os.environ["AGENT_FAST_MODE"] = "true" if mode == "fast" else "false"
         decision = await run_agent_cycle(coin)
         if decision is None:
             analysis_job["error"] = "Agent cycle failed"
@@ -91,12 +96,14 @@ async def _run_analysis_job(coin: str):
 async def analyze(request: AnalyzeRequest):
     global analysis_task
     coin = request.coin.upper()
+    mode = request.mode.lower() if request.mode else "fast"
 
     if analysis_job["running"]:
         return {
             "success": True,
             "status": "running",
             "coin": analysis_job["coin"],
+            "mode": analysis_job.get("mode", "fast"),
         }
 
     analysis_job.update({
@@ -105,10 +112,11 @@ async def analyze(request: AnalyzeRequest):
         "started_at": datetime.now(timezone.utc).isoformat(),
         "error": None,
         "decision": None,
+        "mode": mode,
     })
-    analysis_task = asyncio.create_task(_run_analysis_job(coin))
+    analysis_task = asyncio.create_task(_run_analysis_job(coin, mode))
 
-    return {"success": True, "status": "started", "coin": coin}
+    return {"success": True, "status": "started", "coin": coin, "mode": mode}
 
 
 @app.post("/api/analyze/stop")

@@ -4,8 +4,27 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Speed vs quality tradeoff (set AGENT_FAST_MODE=true in .env for faster runs)
-FAST_MODE = os.getenv("AGENT_FAST_MODE", "true").lower() in ("1", "true", "yes")
+FAST_MODE_DEFAULT = os.getenv("AGENT_FAST_MODE", "true").lower() in ("1", "true", "yes")
 
+def is_fast_mode() -> bool:
+    return os.getenv("AGENT_FAST_MODE", "true" if FAST_MODE_DEFAULT else "false").lower() in ("1", "true", "yes")
+
+def get_max_iterations() -> int:
+    return int(os.getenv("AGENT_MAX_ITERATIONS", "2" if is_fast_mode() else "4"))
+
+def get_qwen_timeout() -> float:
+    return float(os.getenv("QWEN_TIMEOUT", "90" if is_fast_mode() else "180"))
+
+def get_max_tool_result_chars() -> int:
+    return 6_000 if is_fast_mode() else 12_000
+
+def get_max_content_per_message() -> int:
+    return 8_000 if is_fast_mode() else 16_000
+
+def get_max_total_input_chars() -> int:
+    return 400_000 if is_fast_mode() else 900_000
+
+FAST_MODE = FAST_MODE_DEFAULT
 MAX_ITERATIONS = int(os.getenv("AGENT_MAX_ITERATIONS", "2" if FAST_MODE else "4"))
 MAX_TOOLS_PER_ROUND = int(os.getenv("AGENT_MAX_TOOLS_PER_ROUND", "2"))
 QWEN_RETRIES = int(os.getenv("QWEN_RETRIES", "4"))

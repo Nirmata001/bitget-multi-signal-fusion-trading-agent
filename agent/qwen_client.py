@@ -9,13 +9,12 @@ from agent.config import (
     QWEN_RETRY_DELAY,
     QWEN_TIMEOUT,
     QWEN_MAX_CONCURRENT,
-    FAST_MODE,
+    is_fast_mode,
+    get_max_content_per_message,
+    get_max_total_input_chars,
 )
 
 load_dotenv()
-
-MAX_CONTENT_PER_MESSAGE = 8_000 if FAST_MODE else 16_000
-MAX_TOTAL_INPUT_CHARS = 400_000 if FAST_MODE else 900_000
 
 RETRYABLE_HTTP_CODES = (429, 502, 503, 504)
 
@@ -43,14 +42,16 @@ def sanitize_messages(messages: list) -> list:
             else:
                 content = "Continue."
 
-        if len(content) > MAX_CONTENT_PER_MESSAGE:
-            content = content[:MAX_CONTENT_PER_MESSAGE] + "\n...[truncated]"
+        max_content_limit = get_max_content_per_message()
+        if len(content) > max_content_limit:
+            content = content[:max_content_limit] + "\n...[truncated]"
 
         clean["content"] = content
         sanitized.append(clean)
 
     total = sum(len(m.get("content", "")) for m in sanitized)
-    while total > MAX_TOTAL_INPUT_CHARS and len(sanitized) > 2:
+    max_total_limit = get_max_total_input_chars()
+    while total > max_total_limit and len(sanitized) > 2:
         removed = False
         for i in range(1, len(sanitized) - 1):
             if sanitized[i].get("role") in ("tool", "assistant"):

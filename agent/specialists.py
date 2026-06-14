@@ -13,7 +13,7 @@ from agent.mcp_client import (
 from agent.prompts import ANALYST_PROMPTS
 from agent.qwen_client import call_qwen_with_retry
 from agent.config import (
-    MAX_ITERATIONS,
+    get_max_iterations,
     MAX_TOOLS_PER_ROUND,
     SPEED_INSTRUCTION,
     ANALYST_STAGGER_SECONDS,
@@ -47,9 +47,10 @@ async def run_specialist(
         {"role": "user", "content": user_message},
     ]
 
-    for iteration in range(MAX_ITERATIONS):
+    iterations_limit = get_max_iterations()
+    for iteration in range(iterations_limit):
         # On the last iteration, withhold tools so the model must return JSON
-        allow_tools = iteration < MAX_ITERATIONS - 1 and openai_tools
+        allow_tools = iteration < iterations_limit - 1 and openai_tools
         qwen_tools = openai_tools if allow_tools else None
 
         response_data = await call_qwen_with_retry(
