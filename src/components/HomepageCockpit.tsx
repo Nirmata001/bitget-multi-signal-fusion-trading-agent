@@ -477,7 +477,7 @@ export default function HomepageCockpit({
                           onClick={() => executeAdvisoryAnalysis(selectedCoin, analysisMode)}
                           className="flex-1 bg-[#0a152d] hover:bg-[#122345] text-white rounded-2xl py-3 text-[12px] font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all"
                         >
-                          Activate New Swarm Advisory
+                          Activate New Swarm Advisory for {selectedCoin.toUpperCase()}
                         </button>
                         {(logs.length > 0 || matchedDecision) && (
                           <button
@@ -485,7 +485,7 @@ export default function HomepageCockpit({
                             className="px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/80 rounded-2xl py-3 text-[12px] font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all shrink-0"
                           >
                             <RefreshCw className="w-4 h-4" />
-                            Reset
+                            Refresh
                           </button>
                         )}
                       </>
