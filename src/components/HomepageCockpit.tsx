@@ -25,7 +25,7 @@ import { Decision, SystemStatus } from "../types";
 const analystsList = [
   {
     id: "macro",
-    name: "Macro Liquidity Suite",
+    name: "Macro Analyst",
     role: "Global Macro & Stablecoin Flows",
     icon: Globe,
     badge: "Liquidity Index",
@@ -37,7 +37,7 @@ const analystsList = [
   },
   {
     id: "sentiment",
-    name: "Social Sentiment & Orderbook Swarm",
+    name: "Sentiment Analyst",
     role: "Social Media Mining & Depth Chart",
     icon: Users,
     badge: "Sentiment Index",
@@ -49,7 +49,7 @@ const analystsList = [
   },
   {
     id: "market_intel",
-    name: "Smart Money & Wallet Analytics",
+    name: "Market Intel Analyst",
     role: "Whale Wallet Inflows & Cold Storage Intake",
     icon: Coins,
     badge: "Whale Tracker",
@@ -61,7 +61,7 @@ const analystsList = [
   },
   {
     id: "news",
-    name: "Global News & Fundamental Agent",
+    name: "News & Narrative Analyst",
     role: "Breaking News & Regulatory Filings",
     icon: Newspaper,
     badge: "News Feed",
@@ -182,7 +182,7 @@ export default function HomepageCockpit({
           </button>
           <div className="text-left">
             <h2 className="text-[13px] font-bold text-[#0a1b33] tracking-tight uppercase flex items-center gap-2 flex-wrap">
-              Omnisignal Autonomous Advisory Platform
+              Omnisignal Equity Intelligence
             </h2>
           </div>
         </div>
@@ -734,80 +734,6 @@ export default function HomepageCockpit({
         </div>
       </div>
 
-      {/* Premium Analysts Cards Grid */}
-      <div 
-        id="analysts-cards-section"
-        className="mt-6 mb-16 w-full max-w-[1400px] mx-auto px-4 py-2"
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {analystsList.map((analyst) => {
-            const IconComponent = analyst.icon;
-            return (
-              <motion.div 
-                id={`analyst-card-${analyst.id}`}
-                key={analyst.id}
-                whileHover={{ y: -6, scale: 1.015 }}
-                transition={{ duration: 0.3, ease: "easeOut" }}
-                className="group relative rounded-[32px] bg-white border border-slate-200/60 p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.02)] hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.06)] transition-all overflow-hidden flex flex-col justify-between min-h-[300px] cursor-pointer text-left"
-              >
-                {/* Background Hover Accent */}
-                <div 
-                  className={`absolute inset-0 bg-gradient-to-tr ${analyst.gradient} opacity-0 group-hover:opacity-100 transition-all duration-500 rounded-[32px]`}
-                />
-                
-                {/* Top Section with badge and Icon */}
-                <div className="relative z-10 flex flex-col flex-1">
-                  <div className="flex items-center justify-between mb-4 font-mono">
-                    <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">
-                      {analyst.badge}
-                    </span>
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[8.5px] font-bold bg-slate-50 border border-slate-100/50 text-slate-500 group-hover:bg-white transition-all">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                      {analyst.status}
-                    </span>
-                  </div>
-
-                  {/* Icon and Name */}
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className={`p-2.5 rounded-2xl border transition-all ${analyst.colorBg} group-hover:scale-105 duration-300 shrink-0`}>
-                      <IconComponent className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <h3 className="text-[13px] font-bold text-[#0a1b33] font-sans leading-tight group-hover:text-indigo-950 transition-colors">
-                        {analyst.name}
-                      </h3>
-                      <p className="text-[9.5px] text-slate-400 mt-0.5 leading-snug font-sans">
-                        {analyst.role}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Detailed Description */}
-                  <p className="text-[11px] text-slate-500 leading-relaxed font-sans">
-                    {analyst.description}
-                  </p>
-                </div>
-
-                {/* Bottom Section: Telemetry Indicators */}
-                <div className="relative z-10 pt-4 border-t border-slate-100 mt-4">
-                  <span className="text-[8px] font-extrabold text-slate-400 uppercase font-mono block mb-1.5 tracking-wider">
-                    Core Swarm Signals
-                  </span>
-                  <div className="flex flex-col gap-1">
-                    {analyst.telemetry.map((tel, idx) => (
-                      <div key={idx} className="flex items-center gap-1.5 text-[9.5px] text-slate-600 font-medium font-mono">
-                        <span className="text-[8.5px] text-indigo-400">✦</span>
-                        <span className="truncate">{tel}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-              </motion.div>
-            );
-          })}
-        </div>
-      </div>
     </motion.div>
   );
 }

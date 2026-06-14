@@ -1,6 +1,6 @@
 {
   "name": "AI Trading Agent Project",
-  "description": "A Python-based AI trading agent project structure.",
+  "description": "A synchronized council of specialized equity analysts evaluating macroeconomic conditions, earnings fundamentals, market sentiment, and technical structure to generate institutional-grade investment decisions",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
