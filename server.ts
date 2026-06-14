@@ -63,30 +63,55 @@ async function startServer() {
   const pythonPath = resolvePythonPath();
   console.log(`Spawning Python FastAPI server on port 3001 (${pythonPath})...`);
   const projectRoot = process.cwd();
+  
+  // In-memory log buffer to hold capture of stdout and stderr
+  const logBuffer: string[] = [];
+  const MAX_LOGS = 1000;
+
+  function addLogToBuffer(text: string) {
+    const lines = text.split(/\r?\n/);
+    for (const line of lines) {
+      const cleaned = line.trim();
+      if (cleaned) {
+        logBuffer.push(cleaned);
+        if (logBuffer.length > MAX_LOGS) {
+          logBuffer.shift();
+        }
+      }
+    }
+  }
+
   const pythonServer = spawn(pythonPath, ["api/server.py"], {
     env: {
       ...process.env,
       PYTHONPATH: projectRoot,
       PYTHONIOENCODING: "utf-8",
       PYTHONUTF8: "1",
+      PYTHONUNBUFFERED: "1", // Force Python to flush stdout and stderr immediately
     },
     cwd: projectRoot,
   });
 
   pythonServer.stdout.on("data", (data) => {
-    console.log(`[Python API] ${data.toString().trim()}`);
+    const str = data.toString();
+    console.log(`[Python API] ${str.trim()}`);
+    addLogToBuffer(str);
   });
 
   pythonServer.stderr.on("data", (data) => {
-    console.error(`[Python API Error] ${data.toString().trim()}`);
+    const str = data.toString();
+    console.error(`[Python API Error] ${str.trim()}`);
+    addLogToBuffer(`[Python API Server] ${str}`);
   });
 
   pythonServer.on("error", (err) => {
     console.error("Failed to start Python server process:", err);
+    addLogToBuffer(`[SYSTEM Error] Failed to start Python server process: ${err.message}`);
   });
 
   pythonServer.on("exit", (code) => {
     console.log(`Python API process exited with code ${code}`);
+    addLogToBuffer(`[SYSTEM Log] Python API process exited with code ${code}`);
   });
 
   // Kill child process on exit
@@ -107,6 +132,16 @@ async function startServer() {
 
   // Enable JSON parsing middleware
   app.use(express.json());
+
+  // Real-time server-side log routes (Intercepts before general proxy block)
+  app.post("/api/realtime-logs/clear", (req, res) => {
+    logBuffer.length = 0;
+    res.json({ success: true });
+  });
+
+  app.get("/api/realtime-logs", (req, res) => {
+    res.json({ logs: logBuffer });
+  });
 
   // 2. Gateway Proxy for /api/* routed straight to the FastAPI server
   app.all("/api/*", async (req, res) => {

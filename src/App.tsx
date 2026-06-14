@@ -36,7 +36,22 @@ export default function App() {
   useEffect(() => {
     fetchDecisions();
     fetchStatus();
+    fetchStartupLogs();
   }, []);
+
+  const fetchStartupLogs = async () => {
+    try {
+      const res = await fetch("/api/realtime-logs");
+      if (res.ok) {
+        const data = await res.json();
+        if (data && Array.isArray(data.logs) && data.logs.length > 0) {
+          setLogs(data.logs);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to fetch startup logs from server:", err);
+    }
+  };
 
   const fetchStatus = async () => {
     try {
@@ -115,28 +130,30 @@ export default function App() {
 
     const targetSymbol = coinSymbol.toUpperCase().trim() || "BTC";
 
-    const steps = [
-      "⚡ Initializing Omnisignal advisory container node...",
-      "🔌 Connecting to Qwen model and MCP DataHub...",
-      "📡 Model Context Protocol loading market data tools...",
-      "📊 Macro Analyst triggered — gathering liquidity indicators...",
-      "💬 Sentiment swarm scanning derivatives and social signals...",
-      "🐋 Market Intel analyst monitoring whale wallet flows...",
-      "🗳️ News Analyst ingesting filings and breaking headlines...",
-      "🧩 Head of Advisory synthesizing committee votes...",
-      "⏳ Analysis in progress — this may take several minutes."
-    ];
+    // Clear server logs first to start fresh for this analysis run
+    try {
+      await fetch("/api/realtime-logs/clear", { method: "POST" });
+    } catch (e) {
+      console.error("Failed to clear server logs:", e);
+    }
 
-    let stepIndex = 0;
-    appendLog(steps[0]);
-    stepIndex = 1;
-
-    const logInterval = setInterval(() => {
-      if (stepIndex < steps.length) {
-        appendLog(steps[stepIndex]);
-        stepIndex++;
+    const pollLogs = async () => {
+      try {
+        const res = await fetch("/api/realtime-logs");
+        if (res.ok) {
+          const data = await res.json();
+          if (data && Array.isArray(data.logs)) {
+            setLogs(data.logs);
+          }
+        }
+      } catch (err) {
+        console.error("Error polling logs:", err);
       }
-    }, 3000);
+    };
+
+    // Begin polling real-time logs every 1.5 seconds
+    pollLogs();
+    const logInterval = setInterval(pollLogs, 1500);
 
     const pollForResult = async (): Promise<Decision | null> => {
       const maxWaitMs = 25 * 60 * 1000;
@@ -177,29 +194,26 @@ export default function App() {
 
       if (!res.ok || !data.success) {
         const errorMsg = data.error || data.message || `Request failed (${res.status})`;
-        appendLog(`❌ Analysis failed: ${errorMsg}`);
+        setLogs(prev => [...prev, `❌ Analysis failed: ${errorMsg}`]);
         return;
       }
-
-      appendLog(`🛰️ Background job started for ${targetSymbol} — polling for results...`);
 
       const decision = await pollForResult();
       if (!decision) return;
 
       setLatestDecision(decision);
       setLedgerData((prev) => [decision, ...prev]);
-      appendLog(
-        `🪐 SYNTHESIS COMPLETE. Recommendation: ${decision.action} (${decision.confidence}% confidence)`
-      );
       await fetchStatus();
       await fetchDecisions();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
-      appendLog(`❌ Analysis failed: ${message}`);
+      setLogs(prev => [...prev, `❌ Analysis failed: ${message}`]);
       await fetchDecisions();
       console.error("Advisory analysis failed:", err);
     } finally {
       clearInterval(logInterval);
+      // Final poll to get absolute trailing output
+      await pollLogs();
       setIsAnalyzing(false);
     }
   };
