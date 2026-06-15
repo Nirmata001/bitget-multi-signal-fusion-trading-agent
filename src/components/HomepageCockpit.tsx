@@ -448,13 +448,14 @@ export default function HomepageCockpit({
                                       <p className="text-[10px] text-slate-600 leading-relaxed font-sans text-left">{rep.summary}</p>
                                       
                                       {rep.keyPoints && rep.keyPoints.length > 0 && (
-                                        <div className="pt-1.5 border-t border-slate-105 space-y-1 text-left">
+                                        <div className="pt-1.5 border-t border-slate-100 space-y-1 text-left">
                                           <span className="text-[8px] font-extrabold text-slate-400 uppercase font-mono block text-left">Core telemetry:</span>
-                                          <div className="flex flex-wrap gap-1">
+                                          <div className="space-y-1">
                                             {rep.keyPoints.map((kp, ki) => (
-                                              <span key={ki} className="text-[8.5px] bg-slate-50 border border-slate-200/40 text-slate-600 px-1.5 py-0.5 rounded-md font-mono shrink-0">
-                                                ✦ {kp}
-                                              </span>
+                                              <div key={ki} className="flex items-start gap-1.5 text-[9.5px] text-slate-600 leading-relaxed font-sans text-left">
+                                                <span className="text-indigo-500 font-bold select-none leading-none pt-[3px]">✦</span>
+                                                <span className="flex-1">{kp}</span>
+                                              </div>
                                             ))}
                                           </div>
                                         </div>
@@ -664,11 +665,12 @@ export default function HomepageCockpit({
                                     {rep.keyPoints && rep.keyPoints.length > 0 && (
                                       <div className="pt-1.5 border-t border-slate-100 space-y-1 text-left">
                                         <span className="text-[8px] font-extrabold text-slate-400 uppercase font-mono block text-left">Core telemetry data:</span>
-                                        <div className="flex flex-wrap gap-1">
+                                        <div className="space-y-1">
                                           {rep.keyPoints.map((kp, ki) => (
-                                            <span key={ki} className="text-[8.5px] bg-slate-50 border border-slate-200/40 text-slate-600 px-2 py-0.5 rounded-full font-mono shrink-0">
-                                              ✦ {kp}
-                                            </span>
+                                            <div key={ki} className="flex items-start gap-1.5 text-[9.5px] text-slate-600 leading-relaxed font-sans text-left">
+                                              <span className="text-indigo-500 font-bold select-none leading-none pt-[3px]">✦</span>
+                                              <span className="flex-1">{kp}</span>
+                                            </div>
                                           ))}
                                         </div>
                                       </div>
