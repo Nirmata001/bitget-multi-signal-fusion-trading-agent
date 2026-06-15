@@ -284,16 +284,15 @@ export default function HomepageCockpit({
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -10 }}
                   transition={{ duration: 0.3 }}
-                  className="flex-1 flex flex-col justify-between overflow-hidden text-left"
+                  className="flex-1 flex flex-col justify-between overflow-hidden text-left h-full"
                 >
-                  <div className="space-y-4 flex-1 overflow-y-auto pr-1 pb-1 text-left">
-                    
-                    {/* Tokenised Equity selectors */}
-                    <div className="bg-slate-50/60 p-3 rounded-2xl border border-slate-100/50">
-                      <span className="text-[10px] font-extrabold text-slate-400 uppercase font-mono block mb-2 text-left">
-                        Target US Tokenized Equity
-                      </span>
-                      <div className="grid grid-cols-4 lg:grid-cols-8 gap-1.5 mb-2">
+                  <div className="flex-1 flex gap-4 overflow-hidden min-h-0 text-left w-full h-full pb-1">
+                    {/* Left Sidebar for Stocks & Custom Inputs */}
+                    <div className="w-[140px] shrink-0 border-r border-slate-100 pr-3 flex flex-col justify-between h-full py-0.5">
+                      <div className="space-y-1.5 overflow-y-auto pr-1 flex-1">
+                        <span className="text-[10px] font-extrabold text-slate-400 uppercase font-mono block mb-2 text-left">
+                          Target Asset
+                        </span>
                         {[
                           { symbol: "AAPL", name: "Apple", logo: "https://img.icons8.com/ios-filled/100/000000/mac-os.png" },
                           { symbol: "NVDA", name: "NVIDIA", logo: "https://img.icons8.com/color/100/nvidia.png" },
@@ -307,210 +306,216 @@ export default function HomepageCockpit({
                           <button
                             key={stock.symbol}
                             onClick={() => { setSelectedCoin(stock.symbol); setCustomCoinInput(""); }}
-                            className={`flex flex-col items-center justify-center p-1.5 rounded-lg border text-center transition-all cursor-pointer ${
+                            className={`flex items-center gap-2 p-1.5 w-full rounded-lg border text-left transition-all cursor-pointer ${
                               selectedCoin === stock.symbol && !customCoinInput
-                                ? "bg-white text-[#0a152d] border-2 border-[#0a152d] font-black shadow-sm scale-[1.02]"
+                                ? "bg-white text-[#0a152d] border-2 border-[#0a152d] font-bold shadow-xs scale-[1.01]"
                                 : "bg-white/60 text-slate-500 border-slate-200/70 hover:border-slate-300 hover:text-slate-700 opacity-80 hover:opacity-100"
                             }`}
                           >
                             <img 
                               src={stock.logo} 
                               alt={stock.symbol} 
-                              className="w-4 h-4 object-contain mb-1" 
+                              className="w-3.5 h-3.5 object-contain shrink-0" 
                               referrerPolicy="no-referrer"
                             />
-                            <span className="text-[10px] font-bold tracking-tight">{stock.symbol}</span>
-                            <span className="text-[7.5px] text-slate-400 font-sans truncate max-w-[65px] leading-none mt-0.5">
-                              {stock.name}
-                            </span>
+                            <div className="min-w-0">
+                              <span className="text-[10px] font-bold tracking-tight block leading-none">{stock.symbol}</span>
+                            </div>
                           </button>
                         ))}
                       </div>
-                      
-                      {/* Custom Stock Input */}
-                      <div className="relative w-full">
+
+                      {/* Custom Stock Input at the bottom of the left sidebar */}
+                      <div className="pt-2 border-t border-slate-200/50 shrink-0">
+                        <span className="text-[8px] font-extrabold text-[#0a152d] uppercase font-mono block mb-1">
+                          CUSTOM
+                        </span>
                         <input 
                           type="text"
-                          placeholder="ADD OTHER EQUITY SYMBOL (e.g. AMZN, GOOG)..."
+                          placeholder="e.g. NFLX"
                           value={customCoinInput}
                           onChange={(e) => {
                             const v = e.target.value.toUpperCase();
                             setCustomCoinInput(v);
                             setSelectedCoin(v || "AAPL");
                           }}
-                          className={`w-full px-3 py-1.5 rounded-xl text-[11px] font-bold border text-slate-700 uppercase focus:outline-none focus:ring-1 focus:ring-[#0a152d] transition-all bg-white ${
+                          className={`w-full px-2 py-1 rounded-lg text-[9.5px] font-bold border text-slate-700 uppercase focus:outline-none focus:ring-1 focus:ring-[#0a152d] transition-all bg-white ${
                             customCoinInput ? "border-[#0a152d]" : "border-slate-200/70"
                           }`}
                         />
                       </div>
                     </div>
 
-                     {/* Decision results */}
-                    {!isAnalyzing && matchedDecision ? (
-                      <div className="space-y-3 text-left">
-                        <div className="bg-white border border-slate-200/60 p-3.5 rounded-2xl shadow-xs text-left">
-                          <div className="flex items-center justify-between mb-1.5 flex-wrap gap-2">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-[11px] font-extrabold text-slate-400 uppercase font-mono">
-                                Council Consensus for {matchedDecision.coin}
-                              </span>
-                              {!isSessionReport ? (
-                                <span className="text-[9.5px] font-semibold text-amber-700 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md font-mono flex items-center gap-1 select-none whitespace-nowrap">
-                                  LAST REPORT
+                    {/* Right Workspace: Advisory Report & Decision Actions */}
+                    <div className="flex-1 flex flex-col justify-between overflow-hidden h-full min-w-0">
+                      {/* Scrollable outputs of advisory */}
+                      <div className="flex-1 overflow-y-auto pr-1 pb-1 scrollbar-thin space-y-3">
+                        {!isAnalyzing && matchedDecision ? (
+                          <div className="space-y-3 text-left">
+                            <div className="bg-white border border-slate-200/60 p-3.5 rounded-2xl shadow-xs text-left">
+                              <div className="flex items-center justify-between mb-1.5 flex-wrap gap-2">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-[11px] font-extrabold text-slate-400 uppercase font-mono">
+                                    Council Consensus for {matchedDecision.coin}
+                                  </span>
+                                  {!isSessionReport ? (
+                                    <span className="text-[9.5px] font-semibold text-amber-700 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md font-mono flex items-center gap-1 select-none whitespace-nowrap">
+                                      LAST REPORT
+                                    </span>
+                                  ) : (
+                                    <span className="text-[9.5px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200/40 px-2 py-0.5 rounded-md font-mono flex items-center gap-1 select-none animate-pulse whitespace-nowrap">
+                                      <span className="w-1 h-1 rounded-full bg-emerald-500 animate-ping" />
+                                      CURRENT SESSION
+                                    </span>
+                                  )}
+                                </div>
+                                <span className="text-[10px] text-slate-400 font-mono">
+                                  {matchedDecision.timestamp ? new Date(matchedDecision.timestamp).toLocaleTimeString() : ""}
                                 </span>
-                              ) : (
-                                <span className="text-[9.5px] font-bold text-emerald-600 bg-emerald-50 border border-emerald-200/40 px-2 py-0.5 rounded-md font-mono flex items-center gap-1 select-none animate-pulse whitespace-nowrap">
-                                  <span className="w-1 h-1 rounded-full bg-emerald-500 animate-ping" />
-                                  CURRENT SESSION
-                                </span>
-                              )}
-                            </div>
-                            <span className="text-[10px] text-slate-400 font-mono">
-                              {matchedDecision.timestamp ? new Date(matchedDecision.timestamp).toLocaleTimeString() : ""}
-                            </span>
-                          </div>
-
-                          <div className="flex items-center gap-4">
-                            <div className={`px-4 py-2.5 rounded-2xl border text-center min-w-[100px] ${getActionTheme(matchedDecision.action).bg}`}>
-                              <span className="text-[10px] font-extrabold font-mono uppercase text-slate-400 block tracking-wider leading-none">Recommendation</span>
-                              <span className="text-xl font-bold tracking-tight">{matchedDecision.action}</span>
-                            </div>
-                            
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between text-[11px] font-bold text-[#0a1b33] mb-1">
-                                <span>Synthesis Confidence</span>
-                                <span className="font-mono text-indigo-600">{matchedDecision.confidence}%</span>
                               </div>
-                              <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200/50">
-                                <div 
-                                  className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full animate-pulse" 
-                                  style={{ width: `${matchedDecision.confidence}%` }}
-                                />
+
+                              <div className="flex items-center gap-3.5">
+                                <div className={`px-3 py-2 rounded-xl border text-center min-w-[85px] shrink-0 ${getActionTheme(matchedDecision.action).bg}`}>
+                                  <span className="text-[9px] font-extrabold font-mono uppercase text-slate-400 block tracking-wider leading-none mb-1">Recommendation</span>
+                                  <span className="text-lg font-black tracking-tight leading-none">{matchedDecision.action}</span>
+                                </div>
+                                
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-center justify-between text-[10.5px] font-bold text-[#0a1b33] mb-0.5">
+                                    <span>Synthesis Confidence</span>
+                                    <span className="font-mono text-indigo-600">{matchedDecision.confidence}%</span>
+                                  </div>
+                                  <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden border border-slate-200/50">
+                                    <div 
+                                      className="h-full bg-gradient-to-r from-indigo-500 to-indigo-600 rounded-full animate-pulse" 
+                                      style={{ width: `${matchedDecision.confidence}%` }}
+                                    />
+                                  </div>
+                                </div>
                               </div>
+
+                              <p className="text-[11px] text-slate-600 line-clamp-3 mt-2.5 leading-relaxed border-l-2 border-indigo-200/60 pl-2 whitespace-pre-line text-left font-sans">
+                                {matchedDecision.rationale}
+                              </p>
+                            </div>
+
+                            {/* Split analyst votes and keys */}
+                            <div className="grid grid-cols-2 gap-2 text-left">
+                              <div className="bg-slate-50 border border-slate-100/80 p-2 rounded-xl flex flex-col justify-between">
+                                <span className="text-[9px] font-extrabold text-slate-400 uppercase font-mono block text-left leading-none">Council Votes</span>
+                                <div className="flex items-center gap-2 mt-1 font-mono flex-wrap">
+                                  <span className="text-[9.5px] font-bold text-emerald-600">🟢 {matchedDecision.committeeVotes?.bullish || 0} Bull</span>
+                                  <span className="text-[9.5px] font-bold text-[#64748b]">⚪ {matchedDecision.committeeVotes?.neutral || 0} Neu</span>
+                                  <span className="text-[9.5px] font-bold text-rose-600">🔴 {matchedDecision.committeeVotes?.bearish || 0} Bear</span>
+                                </div>
+                              </div>
+                              
+                              <button 
+                                onClick={() => {
+                                  setActiveTab("ledger");
+                                }}
+                                className="bg-indigo-50/40 hover:bg-indigo-50/80 border border-indigo-100/50 p-2 rounded-xl flex items-center justify-between text-left cursor-pointer transition-colors min-w-0"
+                              >
+                                <div className="text-left min-w-0">
+                                  <span className="text-[8px] font-bold text-slate-400 uppercase block">Reports</span>
+                                  <span className="text-[10px] font-extrabold text-indigo-600 truncate block">Browse Logs →</span>
+                                </div>
+                                <History className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
+                              </button>
                             </div>
                           </div>
+                        ) : !isAnalyzing && logs.length === 0 ? (
+                          /* Welcome Prompt */
+                          <div className="flex flex-col items-center justify-center h-[240px] border-2 border-dashed border-slate-200/80 rounded-2xl bg-slate-50/30 p-4 text-center my-auto">
+                            <Terminal className="w-6 h-6 text-indigo-400/80 mb-2" />
+                            <h4 className="text-[12px] font-bold text-[#0a1b33]">System Standby</h4>
+                            <p className="text-[11px] text-slate-400 max-w-xs mt-1 leading-relaxed">
+                              Select a target asset from the left panel and click 'Trigger Swarm' to initiate a multi-agent consensus run.
+                            </p>
+                          </div>
+                        ) : null}
+                      </div>
 
-                          <p className="text-[11px] text-slate-600 line-clamp-3 mt-3 leading-relaxed border-l-2 border-indigo-200/60 pl-2 whitespace-pre-line text-left">
-                            {matchedDecision.rationale}
-                          </p>
+                      {/* Mode Switcher Block inside right container */}
+                      <div className="pt-2 border-t border-slate-200/40 flex items-center justify-between gap-2 w-full text-left shrink-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-[10.5px] font-extrabold text-slate-500 uppercase tracking-wider font-mono">
+                            Mode:
+                          </span>
+                          <div className="flex gap-0.5 bg-slate-100/85 p-0.5 rounded-lg border border-slate-200/50">
+                            <button
+                              type="button"
+                              disabled={isAnalyzing}
+                              onClick={() => setAnalysisMode("fast")}
+                              className={`px-2 py-0.5 text-[9.5px] font-bold rounded-md cursor-pointer transition-all flex items-center gap-1 ${
+                                analysisMode === "fast"
+                                  ? "bg-[#0a152d] text-white shadow-xs"
+                                  : "text-slate-500 hover:text-slate-700 bg-transparent disabled:opacity-50"
+                              }`}
+                              title="⚡ Fast Mode: Est. 30-45s run, 2-round reasoning, streamlined indicator sets."
+                            >
+                              <Zap className="w-2.5 h-2.5" />
+                              Fast
+                            </button>
+                            <button
+                              type="button"
+                              disabled={isAnalyzing}
+                              onClick={() => setAnalysisMode("full")}
+                              className={`px-2 py-0.5 text-[9.5px] font-bold rounded-md cursor-pointer transition-all flex items-center gap-1 ${
+                                analysisMode === "full"
+                                  ? "bg-[#0a152d] text-white shadow-xs"
+                                  : "text-slate-500 hover:text-slate-700 bg-transparent disabled:opacity-50"
+                              }`}
+                              title="🔬 Comprehensive Mode: Est. 2 min run, 4-round deep reasoning, incorporates historical archives, SEC filings under macro vectors & social consensus tracking."
+                            >
+                              <Cpu className="w-2.5 h-2.5" />
+                              Full
+                            </button>
+                          </div>
                         </div>
 
-                        {/* Split analyst votes and keys */}
-                        <div className="grid grid-cols-2 gap-2 text-left">
-                          <div className="bg-slate-50 border border-slate-100/80 p-2.5 rounded-xl flex flex-col justify-between">
-                            <span className="text-[9px] font-extrabold text-slate-400 uppercase font-mono block text-left">Council Votes</span>
-                            <div className="flex items-center gap-3 mt-1.5 font-mono">
-                              <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1">🟢 {matchedDecision.committeeVotes?.bullish || 0} Bull</span>
-                              <span className="text-[10px] font-bold text-[#64748b] flex items-center gap-1">⚪ {matchedDecision.committeeVotes?.neutral || 0} Neu</span>
-                              <span className="text-[10px] font-bold text-rose-600 flex items-center gap-1">🔴 {matchedDecision.committeeVotes?.bearish || 0} Bear</span>
-                            </div>
-                          </div>
-                          
-                          <button 
-                            onClick={() => {
-                              setActiveTab("ledger");
-                            }}
-                            className="bg-indigo-50/40 hover:bg-indigo-50/80 border border-indigo-100/50 p-2.5 rounded-xl flex items-center justify-between text-left cursor-pointer transition-colors"
-                          >
-                            <div className="text-left">
-                              <span className="text-[9px] font-bold text-slate-400 uppercase block">Detailed Reports</span>
-                              <span className="text-[10px] font-extrabold text-indigo-600">Browse Swarm Logs →</span>
-                            </div>
-                            <History className="w-4 h-4 text-indigo-500 shrink-0" />
-                          </button>
+                        <div className="text-[9.5px] text-slate-400 font-medium italic select-none">
+                          {analysisMode === "fast" ? "⚡ Core (~30s)" : "🔬 Deep (~2m)"}
                         </div>
                       </div>
-                    ) : !isAnalyzing && logs.length === 0 ? (
-                      /* Welcome Prompt */
-                      <div className="flex flex-col items-center justify-center h-[245px] border-2 border-dashed border-slate-200/80 rounded-2xl bg-slate-50/30 p-4 text-center">
-                        <Terminal className="w-8 h-8 text-indigo-400/80 mb-2" />
-                        <h4 className="text-[12px] font-bold text-[#0a1b33]">Swarm Console Ready</h4>
-                        <p className="text-[11px] text-slate-400 max-w-xs mt-1 leading-relaxed">
-                          Select an asset above and trigger the autonomous multi-agent advisory swarm below.
-                        </p>
-                      </div>
-                    ) : null}
-                  </div>
 
-                  {/* Dynamic Mode Switcher (Space-Saving Inline Refinement) */}
-                  <div className="pt-2.5 border-t border-slate-200/40 mt-2 flex items-center justify-between gap-2 w-full text-left">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider font-mono">
-                        Mode:
-                      </span>
-                      <div className="flex gap-0.5 bg-slate-100/85 p-0.5 rounded-lg border border-slate-200/50">
-                        <button
-                          type="button"
-                          disabled={isAnalyzing}
-                          onClick={() => setAnalysisMode("fast")}
-                          className={`px-2 py-1 text-[9.5px] font-bold rounded-md cursor-pointer transition-all flex items-center gap-1 ${
-                            analysisMode === "fast"
-                              ? "bg-[#0a152d] text-white shadow-xs"
-                              : "text-slate-500 hover:text-slate-700 bg-transparent disabled:opacity-50"
-                          }`}
-                          title="⚡ Fast Mode: Est. 30-45s run, 2-round reasoning, streamlined indicator sets."
-                        >
-                          <Zap className="w-2.5 h-2.5" />
-                          Fast
-                        </button>
-                        <button
-                          type="button"
-                          disabled={isAnalyzing}
-                          onClick={() => setAnalysisMode("full")}
-                          className={`px-2 py-1 text-[9.5px] font-bold rounded-md cursor-pointer transition-all flex items-center gap-1 ${
-                            analysisMode === "full"
-                              ? "bg-[#0a152d] text-white shadow-xs"
-                              : "text-slate-500 hover:text-slate-700 bg-transparent disabled:opacity-50"
-                          }`}
-                          title="🔬 Comprehensive Mode: Est. 2 min run, 4-round deep reasoning, incorporates historical archives, SEC filings under macro vectors & social consensus tracking."
-                        >
-                          <Cpu className="w-2.5 h-2.5" />
-                          Full
-                        </button>
-                      </div>
-                    </div>
-
-                    <div className="text-[10px] text-slate-400 font-medium italic select-none">
-                      {analysisMode === "fast" ? "⚡ Core consensus (~30s)" : "🔬 Deep analysis (~2m)"}
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t border-slate-200/40 shrink-0 flex gap-2 w-full text-left">
-                    {isAnalyzing ? (
-                      <>
-                        <button
-                          disabled
-                          className="flex-1 bg-[#0a152d]/5 border border-indigo-100 text-[#0a152d]/60 rounded-2xl py-3 text-[12px] font-semibold flex items-center justify-center gap-2"
-                        >
-                          Analyzing {selectedCoin} ({analysisMode === "fast" ? "⚡ Fast" : "🔬 Comprehensive"})...
-                        </button>
-                        <button
-                          onClick={cancelAnalysis}
-                          className="px-4 bg-rose-600 hover:bg-rose-700 text-white rounded-2xl py-3 text-[12px] font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all animate-pulse"
-                        >
-                          <X className="w-4 h-4" />
-                          Stop
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => executeAdvisoryAnalysis(selectedCoin, analysisMode)}
-                          className="flex-1 bg-[#0a152d] hover:bg-[#122345] text-white rounded-2xl py-3 text-[12px] font-semibold flex items-center justify-center gap-2 cursor-pointer shadow-xs transition-all"
-                        >
-                          Activate New Swarm Advisory for {selectedCoin.toUpperCase()}
-                        </button>
-                        {(logs.length > 0 || matchedDecision) && (
-                          <button
-                            onClick={fetchDecisions}
-                            className="px-4 bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/80 rounded-2xl py-3 text-[12px] font-semibold flex items-center justify-center gap-2 cursor-pointer transition-all shrink-0"
-                          >
-                            <RefreshCw className="w-4 h-4" />
-                            Refresh
-                          </button>
+                      {/* Execution Action buttons at bottom of right container */}
+                      <div className="pt-2 mt-1 border-t border-slate-200/40 shrink-0 flex gap-1.5 w-full text-left">
+                        {isAnalyzing ? (
+                          <>
+                            <button
+                              disabled
+                              className="flex-1 bg-[#0a152d]/5 border border-indigo-100 text-[#0a152d]/60 rounded-xl py-2.5 text-[11px] font-semibold flex items-center justify-center gap-2"
+                            >
+                              Analyzing {selectedCoin}...
+                            </button>
+                            <button
+                              onClick={cancelAnalysis}
+                              className="px-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl py-2.5 text-[11px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-all animate-pulse shrink-0"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              onClick={() => executeAdvisoryAnalysis(selectedCoin, analysisMode)}
+                              className="flex-1 bg-[#0a152d] hover:bg-[#122345] text-white rounded-xl py-2.5 text-[11.5px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-all"
+                            >
+                              Trigger Swarm for {selectedCoin.toUpperCase()}
+                            </button>
+                            {(logs.length > 0 || matchedDecision) && (
+                              <button
+                                onClick={fetchDecisions}
+                                className="px-2.5 bg-slate-100 hover:bg-slate-200 text-slate-705 border border-slate-200/80 rounded-xl py-2.5 text-[11px] font-semibold flex items-center justify-center gap-1 cursor-pointer transition-all shrink-0"
+                              >
+                                <RefreshCw className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </>
                         )}
-                      </>
-                    )}
+                      </div>
+                    </div>
                   </div>
                 </motion.div>
               )}
