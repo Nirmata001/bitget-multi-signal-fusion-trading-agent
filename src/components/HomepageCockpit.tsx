@@ -399,29 +399,70 @@ export default function HomepageCockpit({
                               </p>
                             </div>
 
-                            {/* Split analyst votes and keys */}
-                            <div className="grid grid-cols-2 gap-2 text-left">
-                              <div className="bg-slate-50 border border-slate-100/80 p-2 rounded-xl flex flex-col justify-between">
-                                <span className="text-[9px] font-extrabold text-slate-400 uppercase font-mono block text-left leading-none">Council Votes</span>
-                                <div className="flex items-center gap-2 mt-1 font-mono flex-wrap">
-                                  <span className="text-[9.5px] font-bold text-emerald-600">🟢 {matchedDecision.committeeVotes?.bullish || 0} Bull</span>
-                                  <span className="text-[9.5px] font-bold text-[#64748b]">⚪ {matchedDecision.committeeVotes?.neutral || 0} Neu</span>
-                                  <span className="text-[9.5px] font-bold text-rose-600">🔴 {matchedDecision.committeeVotes?.bearish || 0} Bear</span>
+                            {/* Council Votes and Embedded Analyst Segment Files layout */}
+                            <div className="space-y-3.5 text-left">
+                              <div className="bg-slate-50 border border-slate-100/80 p-2.5 rounded-xl flex items-center justify-between font-sans">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-[9.5px] font-extrabold text-slate-400 uppercase font-mono">Council Votes:</span>
+                                  <span className="text-[10px] font-bold text-emerald-600">🟢 {matchedDecision.committeeVotes?.bullish || 0} Bull</span>
+                                  <span className="text-[10px] font-bold text-slate-400">⚪ {matchedDecision.committeeVotes?.neutral || 0} Neu</span>
+                                  <span className="text-[10px] font-bold text-rose-600">🔴 {matchedDecision.committeeVotes?.bearish || 0} Bear</span>
                                 </div>
+                                <span className="text-[9.5px] text-slate-400 font-mono font-medium">Consensus Consolidated</span>
                               </div>
-                              
-                              <button 
-                                onClick={() => {
-                                  setActiveTab("ledger");
-                                }}
-                                className="bg-indigo-50/40 hover:bg-indigo-50/80 border border-indigo-100/50 p-2 rounded-xl flex items-center justify-between text-left cursor-pointer transition-colors min-w-0"
-                              >
-                                <div className="text-left min-w-0">
-                                  <span className="text-[8px] font-bold text-slate-400 uppercase block">Reports</span>
-                                  <span className="text-[10px] font-extrabold text-indigo-600 truncate block">Browse Logs →</span>
+
+                              {/* Swarm Analyst Segment Files */}
+                              <div className="space-y-2 text-left">
+                                <span className="text-[9px] font-extrabold text-slate-400 uppercase font-mono block">
+                                  Swarm Analyst Segment Files
+                                </span>
+                                
+                                <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-none">
+                                  {["macro", "sentiment", "market_intel", "news"].map((at) => (
+                                    <button
+                                      key={at}
+                                      onClick={() => setActiveAnalystTab(at)}
+                                      className={`px-2 py-0.5 rounded-md text-[8.5px] uppercase font-bold tracking-wider shrink-0 transition-colors cursor-pointer ${
+                                        activeAnalystTab === at
+                                          ? "bg-slate-800 text-white"
+                                          : "bg-white text-slate-500 border border-slate-200/70 hover:border-slate-300"
+                                      }`}
+                                    >
+                                      {at.replace("_", " ")}
+                                    </button>
+                                  ))}
                                 </div>
-                                <History className="w-3.5 h-3.5 text-indigo-500 shrink-0" />
-                              </button>
+
+                                {(() => {
+                                  const rep = matchedDecision.analystReports?.find(r => normalizeAnalystName(r.analyst) === normalizeAnalystName(activeAnalystTab)) || 
+                                              matchedDecision.analystReports?.[0];
+                                  if (!rep) return <div className="text-[9.5px] text-slate-400 italic">Analyst file omitted for this run.</div>;
+                                  return (
+                                    <div className="bg-white border border-slate-200/60 p-2.5 rounded-xl space-y-1.5 shadow-2xs text-left">
+                                      <div className="flex items-center justify-between">
+                                        <span className="text-[9.5px] font-bold uppercase text-indigo-600">{rep.analyst} file report</span>
+                                        <span className="text-[8.5px] font-mono px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">
+                                          Signal: {rep.signal} | Conf: {rep.confidence}%
+                                        </span>
+                                      </div>
+                                      <p className="text-[10px] text-slate-600 leading-relaxed font-sans text-left">{rep.summary}</p>
+                                      
+                                      {rep.keyPoints && rep.keyPoints.length > 0 && (
+                                        <div className="pt-1.5 border-t border-slate-105 space-y-1 text-left">
+                                          <span className="text-[8px] font-extrabold text-slate-400 uppercase font-mono block text-left">Core telemetry:</span>
+                                          <div className="flex flex-wrap gap-1">
+                                            {rep.keyPoints.map((kp, ki) => (
+                                              <span key={ki} className="text-[8.5px] bg-slate-50 border border-slate-200/40 text-slate-600 px-1.5 py-0.5 rounded-md font-mono shrink-0">
+                                                ✦ {kp}
+                                              </span>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  );
+                                })()}
+                              </div>
                             </div>
                           </div>
                         ) : !isAnalyzing && logs.length === 0 ? (
