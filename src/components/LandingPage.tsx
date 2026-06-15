@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Decision, SystemStatus } from "../types";
+import StockBackground from "./StockBackground";
 
 interface LandingPageProps {
   currentTime: string;
@@ -70,7 +71,7 @@ const AGENT_SPECS: AgentSpec[] = [
     inputs: [
       "Interest rates, yield curve, Fed policy",
       "Inflation indicators (CPI, PCE, NFP)",
-      "Cross-asset correlations (BTC vs DXY, Gold, Nasdaq, VIX)",
+      "Cross-asset correlations (Equities vs DXY, Gold, Bonds, VIX)",
       "Global market conditions",
       "Upcoming macro catalysts"
     ],
@@ -88,13 +89,13 @@ const AGENT_SPECS: AgentSpec[] = [
     indigoAccent: "text-indigo-500",
     textColor: "text-indigo-700",
     bulletColor: "bg-indigo-500",
-    description: "Evaluates token price patterns, market capitalization, dominance indexes, protocol TVL, network transaction fees, and stablecoin dry powder indices.",
+    description: "Evaluates tokenized equity price patterns, market capitalization, market weight, equity capital flows, equities orderbook depth & settlement fees, and corporate treasury indices.",
     inputs: [
-      "Current price, market cap, dominance",
-      "DeFi TVL and protocol activity",
-      "DEX trending tokens and liquidity",
-      "Network health (gas fees, mempool)",
-      "Stablecoin market cap as dry powder indicator"
+      "Current price, market cap, market weight / equity share",
+      "Equity Capital Flows & Earnings Valuation",
+      "Growth Equities and liquidity",
+      "Equities Orderbook Depth & Settlement Fees",
+      "Corporate Treasury & Cash Reserves indicator"
     ],
     tools: ["crypto_market", "defi_analytics", "dex_market", "network_status", "crypto_price"],
     promptExample: ""
@@ -132,10 +133,10 @@ const AGENT_SPECS: AgentSpec[] = [
     indigoAccent: "text-amber-500",
     textColor: "text-amber-700",
     bulletColor: "bg-amber-500",
-    description: "Monitors daily crypto headliners, geopolitical developments, trending social topics, Key Opinion Leader insights, and prominent narrative cycles.",
+    description: "Monitors daily equity headliners, macroeconomic developments, trending social topics, analyst insights, and prominent narrative cycles.",
     inputs: [
-      "Latest crypto news from major outlets",
-      "Macro and geopolitical news that could affect crypto",
+      "Latest equity news from major financial outlets",
+      "Macro and geopolitical news that could affect equities",
       "Social media trending topics",
       "KOL and analyst opinions",
       "Current market narrative and dominant theme"
@@ -230,15 +231,19 @@ export default function LandingPage({
       className="w-full h-full flex flex-col flex-1"
     >
       {/* Platform Header Metadata Panel */}
-      <header className="max-w-[1400px] w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 mb-4 px-4 shrink-0">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-full bg-[#0a152d] flex items-center justify-center text-white select-none">
-            <Activity className="w-4 h-4 text-emerald-400 stroke-[2.5]" />
+      <header className="max-w-[1400px] w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 px-4 shrink-0 pt-4">
+        <div className="flex items-center gap-3.5">
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#0a152d] to-[#1e293b] flex items-center justify-center text-white select-none shadow-md shadow-[#0a152d]/10 border border-slate-700/50 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#6366f1]/25 to-transparent opacity-30" />
+            <Activity className="w-5.5 h-5.5 text-emerald-400 stroke-[2.5] relative z-10 animate-pulse" />
           </div>
           <div className="text-left">
-            <h2 className="text-[13px] font-bold text-[#0a1b33] tracking-tight uppercase">
-              Omnisignal Equity Intelligence
+            <h2 className="text-[17px] font-display font-extrabold text-[#0a1b33] tracking-tight uppercase block leading-none">
+              OMNISIGNAL
             </h2>
+            <p className="text-[9px] font-mono text-slate-500 font-bold uppercase tracking-wider mt-1.5">
+              Autonomous Equity Intelligence
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-4 text-right">
@@ -261,15 +266,7 @@ export default function LandingPage({
             id="bg-video-layer"
             className="absolute inset-0 pointer-events-none z-0 overflow-hidden select-none"
           >
-            <video 
-              src="https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260505_101331_74f9b798-3f00-4e86-8a01-377aa16ffeaa.mp4" 
-              autoPlay 
-              loop 
-              muted 
-              playsInline 
-              className="w-full h-full object-cover scale-105 transition-transform duration-1000"
-              referrerPolicy="no-referrer"
-            />
+            <StockBackground />
           </div>
 
           {/* Hero Text Content Wrapper (Left 65%) */}
@@ -279,7 +276,7 @@ export default function LandingPage({
               <h1 
                 id="hero-headline"
                 className="font-display text-[42px] md:text-[52px] font-medium leading-[1.05] tracking-tight text-[#0a1b33] mb-4 text-left"
-                dangerouslySetInnerHTML={{ __html: "Autonomous crypto intelligence<br />driven by AI swarm consensus" }}
+                dangerouslySetInnerHTML={{ __html: "Autonomous equity intelligence<br />driven by AI swarm consensus" }}
               />
 
               {/* Subheadline & Active Metrics */}
@@ -577,71 +574,86 @@ export default function LandingPage({
             <motion.div variants={childVariants} className="lg:col-span-5 flex flex-col gap-4">
               
               {/* Agent Technical Spec Sheet Card */}
-              <div className="bg-[#0a152d] border border-slate-800 rounded-[32px] p-6 text-white flex-grow flex flex-col justify-between relative overflow-hidden shadow-xl">
-                {/* Decorative mesh background */}
-                <div className="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:24px_24px] opacity-20 pointer-events-none" />
+              <div className="bg-white/80 backdrop-blur-md border border-slate-200/60 rounded-[28px] p-7 flex-grow flex flex-col justify-between relative overflow-hidden shadow-[0_12px_38px_-10px_rgba(15,23,42,0.04)] transition-all duration-300">
+                {/* Dynamically matched subtle color radial background glow */}
+                <div 
+                  className="absolute -top-32 -right-32 w-80 h-80 rounded-full blur-3xl opacity-35 pointer-events-none transition-all duration-500" 
+                  style={{ backgroundColor: selectedAgent.color }}
+                />
+                <div 
+                  className="absolute -top-16 -right-16 w-40 h-40 rounded-full blur-2xl opacity-25 pointer-events-none transition-all duration-500" 
+                  style={{ backgroundColor: selectedAgent.color }}
+                />
 
-                <div className="relative z-10">
+                <div className="relative z-10 space-y-6">
                   {/* Top Header Card Info */}
-                  <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-800">
-                    <span className="text-[9px] font-mono text-slate-400 uppercase tracking-widest font-extrabold flex items-center gap-1.5">
-                      <Terminal className="w-3.5 h-3.5 text-indigo-400" />
-                      Agent Profile
+                  <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+                    <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest font-extrabold flex items-center gap-2">
+                      <Terminal className="w-3.5 h-3.5 text-slate-500" />
+                      Agent Configuration
+                    </span>
+                    <span className="text-[9px] font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
+                      Specialist Node
                     </span>
                   </div>
 
                   {/* Active Agent Icon + Title */}
-                  <div className="flex items-center gap-4 mb-5">
-                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ backgroundColor: `${selectedAgent.color}20`, border: `1px solid ${selectedAgent.color}40` }}>
-                      {React.createElement(selectedAgent.icon, { className: "w-6 h-6", style: { color: selectedAgent.color } })}
+                  <div className="flex items-center gap-4">
+                    <div 
+                      className="w-13 h-13 rounded-2xl flex items-center justify-center transition-all duration-500 border" 
+                      style={{ 
+                        backgroundColor: `${selectedAgent.color}08`, 
+                        borderColor: `${selectedAgent.color}25`,
+                        color: selectedAgent.color,
+                        boxShadow: `0 4px 20px ${selectedAgent.color}0a`
+                      }}
+                    >
+                      {React.createElement(selectedAgent.icon, { className: "w-6 h-6 stroke-[2]" })}
                     </div>
                     <div className="text-left">
-                      <h4 className="text-[16px] font-bold text-white tracking-tight">
+                      <h4 className="text-[17px] font-bold text-slate-900 tracking-tight leading-snug">
                         {selectedAgent.name}
                       </h4>
-                      <p className="text-[10px] font-mono text-slate-400 tracking-wide mt-0.5">
-                        Identifier: <span className="text-slate-200">specialist_type_{selectedAgent.id}</span>
+                      <p className="text-[9px] font-mono text-slate-400 tracking-wider uppercase mt-1">
+                        Node ID: <span className="text-slate-600 font-bold">{selectedAgent.id}</span>
                       </p>
                     </div>
                   </div>
 
                   {/* Active Agent Description */}
-                  <p className="text-[12px] text-slate-300 leading-relaxed text-left mb-6 font-sans">
+                  <p className="text-[13px] text-slate-600 leading-relaxed text-left font-normal">
                     {selectedAgent.description}
                   </p>
 
                   {/* Telemetry Input Requirements */}
-                  <div className="text-left mb-6">
-                    <span className="text-[10px] font-mono text-indigo-300 tracking-wider uppercase font-bold block mb-3">
-                      Ingest Data Requirements
+                  <div className="text-left">
+                    <span className="text-[10px] font-mono text-slate-400 tracking-wider uppercase font-bold block mb-3">
+                      Data Streams Analyzed
                     </span>
                     <ul className="space-y-2">
                       {selectedAgent.inputs.map((input, index) => (
-                        <li key={index} className="text-[11px] text-slate-400 flex items-start gap-2">
-                          <span className="w-1.5 h-1.5 rounded-full mt-1.5 shrink-0" style={{ backgroundColor: selectedAgent.color }} />
-                          <span className="font-sans leading-tight">{input}</span>
+                        <li key={index} className="text-[12px] text-slate-600 flex items-start gap-2.5">
+                          <span className="w-1.5 h-1.5 rounded-full mt-2 shrink-0 transition-all duration-500" style={{ backgroundColor: selectedAgent.color }} />
+                          <span className="leading-normal font-medium">{input}</span>
                         </li>
                       ))}
                     </ul>
                   </div>
 
                   {/* Available Toolkits */}
-                  <div className="text-left">
-                    <span className="text-[10px] font-mono text-[#06b6d4] tracking-wider uppercase font-bold block mb-2.5">
-                      MCP Tools
+                  <div className="text-left pt-2">
+                    <span className="text-[10px] font-mono text-slate-400 tracking-wider uppercase font-bold block mb-2.5">
+                      Protocol capabilities
                     </span>
                     <div className="flex flex-wrap gap-1.5">
                       {selectedAgent.tools.map((tool, index) => (
-                        <span key={index} className="text-[9px] font-mono font-semibold bg-[#1e293b]/70 border border-slate-800 text-indigo-200 px-2 py-0.5 rounded">
+                        <span key={index} className="text-[10px] font-mono font-medium bg-slate-50 border border-slate-100 text-slate-600 px-2.5 py-0.75 rounded-lg shadow-2xs">
                           {tool}
                         </span>
                       ))}
                     </div>
                   </div>
                 </div>
-
-
-
               </div>
             </motion.div>
 

@@ -17,7 +17,8 @@ import {
   Users,
   Newspaper,
   Coins,
-  Zap
+  Zap,
+  Activity
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Decision, SystemStatus } from "../types";
@@ -26,11 +27,11 @@ const analystsList = [
   {
     id: "macro",
     name: "Macro Analyst",
-    role: "Global Macro & Stablecoin Flows",
+    role: "Global Macro & Equity Capital Flows",
     icon: Globe,
     badge: "Liquidity Index",
-    description: "Monitors sovereign central bank reserves, stablecoin mint velocities, and aggregate global fiat/crypto flow metrics.",
-    telemetry: ["Stablecoin Mint Velocity", "USD Liquidity Index", "DXY Momentum Tracker"],
+    description: "Monitors sovereign central bank reserves, corporate treasury cash flows, and aggregate legacy and tokenized equity flow metrics.",
+    telemetry: ["Corporate Cash Squeeze", "USD Liquidity Index", "DXY Momentum Tracker"],
     status: "SYNCHRONIZED",
     colorBg: "bg-blue-500/10 border-blue-500/20 text-blue-600",
     gradient: "from-blue-500/5 to-indigo-500/10 hover:border-blue-200 hover:shadow-blue-500/5"
@@ -43,19 +44,19 @@ const analystsList = [
     badge: "Sentiment Index",
     description: "Crawls institutional order books, liquidation heatmaps, and scans social micro-trends for retail and institutional bias ratios.",
     telemetry: ["Liquidation Heatmaps", "Social Volume Multipliers", "Ask/Bid Depth Imbalance"],
-    status: "MINING MEMPOOLS",
+    status: "MONITORING ORDERBOOKS",
     colorBg: "bg-purple-500/10 border-purple-500/20 text-purple-600",
     gradient: "from-purple-500/5 via-pink-500/5 to-rose-500/5 hover:border-purple-200 hover:shadow-purple-500/5"
   },
   {
     id: "market_intel",
     name: "Market Intel Analyst",
-    role: "Whale Wallet Inflows & Cold Storage Intake",
+    role: "Institutional Fund Flows & Equity Ledger Audits",
     icon: Coins,
     badge: "Whale Tracker",
-    description: "Monitors multi-signature whale cold storage addresses, OTC broker desk inventory drawdown rates, and venture capital allocations.",
-    telemetry: ["Whale Inflow Ratio", "OTC Vault Drawdowns", "Exchange Balance Net Flows"],
-    status: "MONITORING WALLETS",
+    description: "Monitors dark pool block-trades, specialized market maker inventory drawdown rates, and corporate treasure buyback frequencies.",
+    telemetry: ["Institutional Block Inflows", "Dark Pool Vault Drawdowns", "Ledger Net Inventory Flows"],
+    status: "MONITORING LEDGERS",
     colorBg: "bg-amber-500/10 border-amber-500/20 text-amber-600",
     gradient: "from-yellow-500/5 to-amber-500/5 hover:border-amber-200 hover:shadow-amber-500/5"
   },
@@ -77,21 +78,21 @@ const registeredTools = [
   { name: "rates_yields", desc: "Monitors central bank policies, sovereign bond yields, interest rate changes, and yield curve spreads." },
   { name: "macro_indicators", desc: "Pulls inflation data (CPI/PCE), unemployment rates, and global industrial manufacturing/GDP growth metrics." },
   { name: "global_assets", desc: "Correlates traditional equity indices (S&P 500, Nasdaq), Gold, and US Dollar Index (DXY) aggregate performance." },
-  { name: "cross_asset", desc: "Calculates regressions and correlations of crypto assets against legacy assets and global liquidity index variations." },
+  { name: "cross_asset", desc: "Calculates regressions and correlations of tokenized equity assets against other legacy assets and global indexes." },
   { name: "tradfi_news", desc: "Pulls institutional macro commentary, Wall Street market notes, and economic policy releases." },
   { name: "cn_market", desc: "Monitors Chinese macroeconomic vectors, equity indices, renminbi liquidity, and policy directives." },
   { name: "global_data", desc: "Broad macro database index query tool linking liquidity, commodities, and credit market conditions." },
   { name: "technical_analysis", desc: "Computes multi-timeband Simple/Exponential Moving Averages, RSI, MACD, and Bollinger Bands." },
-  { name: "crypto_derivatives", desc: "Fetches futures trading volume, open interest changes, futures-to-spot ratio, and options distributions." },
+  { name: "crypto_derivatives", desc: "Fetches equity options volume, open interest changes, put-to-call ratio, and implied volatility distributions." },
   { name: "backtest", desc: "Synthesizes multi-period quantitative rule backtests based on customized trend-following parameters." },
-  { name: "sentiment_index", desc: "Analyzes social sentiment intensity, active Reddit discussion volume, and keyword fear/greed velocity." },
-  { name: "derivatives_sentiment", desc: "Monitors real-time contract funding rates, leverage ratios, and aggregate long/short account skews." },
-  { name: "crypto_market", desc: "Checks global cryptocurrency market capitalization, dominance indexes, and daily transaction volume counts." },
-  { name: "defi_analytics", desc: "Tracks aggregate Total Value Locked (TVL) metrics, gas fee levels, and protocol-specific pool variations." },
-  { name: "dex_market", desc: "Audits decentralized exchange liquidity pools, slippage curves, arbitrage margins, and smart-contract volume." },
-  { name: "network_status", desc: "Pulls blockchain network health status, average hash rates, active validators, and block propagation velocities." },
-  { name: "crypto_price", desc: "Queries precise, sub-second spot exchange prices and cumulative historical candlestick datasets." },
-  { name: "news_feed", desc: "Aggregates real-time crypto news publications, premium wire summaries, and ETF flow reports." },
+  { name: "sentiment_index", desc: "Analyzes social sentiment intensity, active market discussion volume, and keyword fear/greed velocity." },
+  { name: "derivatives_sentiment", desc: "Monitors real-time options open interest ratios, leverage structures, and aggregate long/short option positions." },
+  { name: "crypto_market", desc: "Checks global tokenized stock market capitalization, market weight / equity share, and daily transaction volumes." },
+  { name: "defi_analytics", desc: "Tracks aggregate Equity Capital Flows (Earnings Valuation), equities orderbook depth & settlement fees, and share class variations." },
+  { name: "dex_market", desc: "Audits alternative trading systems, order depth curves, arbitrage margins, and tokenized stock liquidity pools." },
+  { name: "network_status", desc: "Pulls transfer agent network health status, settlement confirmations, and security deposit velocity." },
+  { name: "crypto_price", desc: "Queries precise, sub-second equity spot exchange prices and cumulative historical candlestick datasets." },
+  { name: "news_feed", desc: "Aggregates real-time financial news publications, premium market wires, and SEC filing updates." },
   { name: "social_trending", desc: "Monitors viral social terms, ticker velocity on major platforms, and high-impact developer activity." }
 ];
 
@@ -172,18 +173,25 @@ export default function HomepageCockpit({
       className="w-full"
     >
       {/* Platform Header Metadata Panel */}
-      <header className="max-w-[1400px] w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 mb-4 px-4 text-left">
-        <div className="flex items-center gap-2.5">
+      <header className="max-w-[1400px] w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 px-4 text-left pt-4">
+        <div className="flex items-center gap-3.5">
           <button 
             onClick={onBack}
-            className="w-8 h-8 rounded-full bg-[#0a152d]/5 hover:bg-[#0a152d]/10 border border-slate-200/60 flex items-center justify-center text-[#0a152d] font-bold select-none text-sm cursor-pointer transition-all shrink-0 shadow-2xs"
+            className="w-10 h-10 rounded-xl bg-[#0a152d]/5 hover:bg-[#0a152d]/15 border border-slate-200/70 flex items-center justify-center text-[#0a152d] font-bold select-none text-base cursor-pointer transition-all shrink-0 shadow-sm"
           >
             ←
           </button>
+          <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#0a152d] to-[#1e293b] flex items-center justify-center text-white select-none shadow-md shadow-[#0a152d]/10 border border-slate-700/50 relative overflow-hidden group">
+            <div className="absolute inset-0 bg-gradient-to-tr from-[#6366f1]/25 to-transparent opacity-30" />
+            <Activity className="w-5.5 h-5.5 text-emerald-400 stroke-[2.5] relative z-10 animate-pulse" />
+          </div>
           <div className="text-left">
-            <h2 className="text-[13px] font-bold text-[#0a1b33] tracking-tight uppercase flex items-center gap-2 flex-wrap">
-              Omnisignal Equity Intelligence
+            <h2 className="text-[17px] font-display font-extrabold text-[#0a1b33] tracking-tight uppercase block leading-none">
+              OMNISIGNAL
             </h2>
+            <p className="text-[9px] font-mono text-slate-500 font-bold uppercase tracking-wider mt-1.5">
+              Autonomous Equity Intelligence
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-3 text-right">
@@ -280,42 +288,56 @@ export default function HomepageCockpit({
                 >
                   <div className="space-y-4 flex-1 overflow-y-auto pr-1 pb-1 text-left">
                     
-                    {/* Token selectors */}
+                    {/* Tokenised Equity selectors */}
                     <div className="bg-slate-50/60 p-3 rounded-2xl border border-slate-100/50">
-                      <span className="text-[10px] font-extrabold text-slate-400 uppercase font-mono block mb-1.5">
-                        Target Cryptocurrency Symbol
+                      <span className="text-[10px] font-extrabold text-slate-400 uppercase font-mono block mb-2 text-left">
+                        Target US Tokenized Equity
                       </span>
-                      <div className="flex flex-wrap gap-2 items-center">
-                        {["BTC", "ETH", "SOL", "XRP"].map((coin) => (
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
+                        {[
+                          { symbol: "AAPL", name: "Apple Inc.", logo: "https://img.icons8.com/ios-filled/100/000000/mac-os.png" },
+                          { symbol: "NVDA", name: "NVIDIA Corp.", logo: "https://img.icons8.com/color/100/nvidia.png" },
+                          { symbol: "TSLA", name: "Tesla Inc.", logo: "https://img.icons8.com/ios-filled/100/tesla-logo.png" },
+                          { symbol: "MSFT", name: "Microsoft Corp.", logo: "https://img.icons8.com/color/100/microsoft.png" }
+                        ].map((stock) => (
                           <button
-                            key={coin}
-                            onClick={() => { setSelectedCoin(coin); setCustomCoinInput(""); }}
-                            className={`px-3 py-1.5 rounded-xl text-[11px] font-bold border transition-all cursor-pointer ${
-                              selectedCoin === coin && !customCoinInput
-                                ? "bg-[#0a152d] text-white border-[#0a152d]"
-                                : "bg-white text-slate-600 border-slate-200/70 hover:border-slate-300"
+                            key={stock.symbol}
+                            onClick={() => { setSelectedCoin(stock.symbol); setCustomCoinInput(""); }}
+                            className={`flex flex-col items-center justify-center p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                              selectedCoin === stock.symbol && !customCoinInput
+                                ? "bg-white text-[#0a152d] border-2 border-[#0a152d] font-black shadow-sm scale-[1.02]"
+                                : "bg-white/60 text-slate-500 border-slate-200/70 hover:border-slate-300 hover:text-slate-700 opacity-80 hover:opacity-100"
                             }`}
                           >
-                            {coin}
+                            <img 
+                              src={stock.logo} 
+                              alt={stock.symbol} 
+                              className="w-5 h-5 object-contain mb-1" 
+                              referrerPolicy="no-referrer"
+                            />
+                            <span className="text-[11px] font-bold tracking-tight">{stock.symbol}</span>
+                            <span className="text-[8.5px] text-slate-400 font-sans truncate max-w-[85px] leading-tight block">
+                              {stock.name}
+                            </span>
                           </button>
                         ))}
-                        
-                        {/* Custom Coin Input */}
-                        <div className="relative flex-1 min-w-[90px]">
-                          <input 
-                            type="text"
-                            placeholder="OTHER..."
-                            value={customCoinInput}
-                            onChange={(e) => {
-                              const v = e.target.value.toUpperCase();
-                              setCustomCoinInput(v);
-                              setSelectedCoin(v || "BTC");
-                            }}
-                            className={`w-full px-2.5 py-1.5 rounded-xl text-[11px] font-bold border text-slate-700 uppercase focus:outline-none focus:ring-1 focus:ring-[#0a152d] transition-all bg-white ${
-                              customCoinInput ? "border-[#0a152d]" : "border-slate-200/70"
-                            }`}
-                          />
-                        </div>
+                      </div>
+                      
+                      {/* Custom Stock Input */}
+                      <div className="relative w-full">
+                        <input 
+                          type="text"
+                          placeholder="ADD OTHER EQUITY SYMBOL (e.g. AMZN, GOOG)..."
+                          value={customCoinInput}
+                          onChange={(e) => {
+                            const v = e.target.value.toUpperCase();
+                            setCustomCoinInput(v);
+                            setSelectedCoin(v || "AAPL");
+                          }}
+                          className={`w-full px-3 py-1.5 rounded-xl text-[11px] font-bold border text-slate-700 uppercase focus:outline-none focus:ring-1 focus:ring-[#0a152d] transition-all bg-white ${
+                            customCoinInput ? "border-[#0a152d]" : "border-slate-200/70"
+                          }`}
+                        />
                       </div>
                     </div>
 

@@ -31,7 +31,7 @@ def save_decision(decision: dict):
     DECISIONS_FILE.write_text(json.dumps(decisions, indent=2))
 
 
-async def run_agent_cycle(coin: str = "BTC") -> dict | None:
+async def run_agent_cycle(coin: str = "AAPL") -> dict | None:
     """Run one full analysis cycle for a given coin"""
     print(f"\n🚀 ===== OMNISIGNAL AGENT CYCLE STARTED =====")
     print(f"📍 Coin: {coin} | Time: {datetime.now(timezone.utc).isoformat()}")

@@ -14,7 +14,7 @@ from agent.agent import run_agent_cycle
 load_dotenv()
 
 async def main():
-    coin = os.getenv("DEFAULT_COIN", "BTC")
+    coin = os.getenv("DEFAULT_COIN", "AAPL")
     await run_agent_cycle(coin)
 
 if __name__ == "__main__":

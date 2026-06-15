@@ -71,7 +71,7 @@ async def get_status():
 
 
 class AnalyzeRequest(BaseModel):
-    coin: str = "BTC"
+    coin: str = "AAPL"
     mode: str = "fast"
 
 

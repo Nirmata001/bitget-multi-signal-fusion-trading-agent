@@ -6,7 +6,7 @@ import HomepageCockpit from "./components/HomepageCockpit";
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<"console" | "ledger" | "status">("console");
-  const [selectedCoin, setSelectedCoin] = useState<string>("BTC");
+  const [selectedCoin, setSelectedCoin] = useState<string>("AAPL");
   const [customCoinInput, setCustomCoinInput] = useState<string>("");
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [logs, setLogs] = useState<string[]>([]);
@@ -129,7 +129,7 @@ export default function App() {
     setIsAnalyzing(true);
     setLogs([]);
 
-    const targetSymbol = coinSymbol.toUpperCase().trim() || "BTC";
+    const targetSymbol = coinSymbol.toUpperCase().trim() || "AAPL";
 
     // Clear server logs first to start fresh for this analysis run
     try {
