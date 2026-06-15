@@ -293,17 +293,21 @@ export default function HomepageCockpit({
                       <span className="text-[10px] font-extrabold text-slate-400 uppercase font-mono block mb-2 text-left">
                         Target US Tokenized Equity
                       </span>
-                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
+                      <div className="grid grid-cols-4 lg:grid-cols-8 gap-1.5 mb-2">
                         {[
-                          { symbol: "AAPL", name: "Apple Inc.", logo: "https://img.icons8.com/ios-filled/100/000000/mac-os.png" },
-                          { symbol: "NVDA", name: "NVIDIA Corp.", logo: "https://img.icons8.com/color/100/nvidia.png" },
-                          { symbol: "TSLA", name: "Tesla Inc.", logo: "https://img.icons8.com/ios-filled/100/tesla-logo.png" },
-                          { symbol: "MSFT", name: "Microsoft Corp.", logo: "https://img.icons8.com/color/100/microsoft.png" }
+                          { symbol: "AAPL", name: "Apple", logo: "https://img.icons8.com/ios-filled/100/000000/mac-os.png" },
+                          { symbol: "NVDA", name: "NVIDIA", logo: "https://img.icons8.com/color/100/nvidia.png" },
+                          { symbol: "TSLA", name: "Tesla", logo: "https://img.icons8.com/ios-filled/100/tesla-logo.png" },
+                          { symbol: "MSFT", name: "Microsoft", logo: "https://img.icons8.com/color/100/microsoft.png" },
+                          { symbol: "AMZN", name: "Amazon", logo: "https://img.icons8.com/ios-filled/100/amazon.png" },
+                          { symbol: "GOOG", name: "Google", logo: "https://img.icons8.com/color/100/google-logo.png" },
+                          { symbol: "META", name: "Meta", logo: "https://img.icons8.com/ios-filled/100/meta.png" },
+                          { symbol: "AMD", name: "AMD", logo: "https://img.icons8.com/color/100/amd.png" }
                         ].map((stock) => (
                           <button
                             key={stock.symbol}
                             onClick={() => { setSelectedCoin(stock.symbol); setCustomCoinInput(""); }}
-                            className={`flex flex-col items-center justify-center p-2 rounded-xl border text-center transition-all cursor-pointer ${
+                            className={`flex flex-col items-center justify-center p-1.5 rounded-lg border text-center transition-all cursor-pointer ${
                               selectedCoin === stock.symbol && !customCoinInput
                                 ? "bg-white text-[#0a152d] border-2 border-[#0a152d] font-black shadow-sm scale-[1.02]"
                                 : "bg-white/60 text-slate-500 border-slate-200/70 hover:border-slate-300 hover:text-slate-700 opacity-80 hover:opacity-100"
@@ -312,11 +316,11 @@ export default function HomepageCockpit({
                             <img 
                               src={stock.logo} 
                               alt={stock.symbol} 
-                              className="w-5 h-5 object-contain mb-1" 
+                              className="w-4 h-4 object-contain mb-1" 
                               referrerPolicy="no-referrer"
                             />
-                            <span className="text-[11px] font-bold tracking-tight">{stock.symbol}</span>
-                            <span className="text-[8.5px] text-slate-400 font-sans truncate max-w-[85px] leading-tight block">
+                            <span className="text-[10px] font-bold tracking-tight">{stock.symbol}</span>
+                            <span className="text-[7.5px] text-slate-400 font-sans truncate max-w-[65px] leading-none mt-0.5">
                               {stock.name}
                             </span>
                           </button>
