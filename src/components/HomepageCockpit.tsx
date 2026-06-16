@@ -18,7 +18,9 @@ import {
   Newspaper,
   Coins,
   Zap,
-  Activity
+  Activity,
+  Volume2,
+  VolumeX
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Decision, SystemStatus } from "../types";
@@ -199,6 +201,63 @@ export default function HomepageCockpit({
   const terminalContainerRef = React.useRef<HTMLDivElement | null>(null);
   const [analysisMode, setAnalysisMode] = React.useState<"fast" | "full">("fast");
   const [sidebarTab, setSidebarTab] = React.useState<"stocks" | "crypto">("stocks");
+  const [speakingText, setSpeakingText] = React.useState<string | null>(null);
+  const [isSpeaking, setIsSpeaking] = React.useState<boolean>(false);
+
+  React.useEffect(() => {
+    return () => {
+      if (typeof window !== "undefined" && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
+      }
+    };
+  }, []);
+
+  const stopSpeech = () => {
+    if (typeof window !== "undefined" && window.speechSynthesis) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      setSpeakingText(null);
+    }
+  };
+
+  const speakSpeech = (text: string) => {
+    if (typeof window === "undefined" || !window.speechSynthesis) return;
+
+    if (isSpeaking && speakingText === text) {
+      stopSpeech();
+      return;
+    }
+
+    // Stop active speech first
+    window.speechSynthesis.cancel();
+
+    // Clean text of visual markers
+    const cleanText = text.replace(/[✦🟢⚪🔴]/g, "").trim();
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    
+    // Bind available high-quality English voice if accessible
+    if (window.speechSynthesis.getVoices) {
+      const voices = window.speechSynthesis.getVoices();
+      const preferredVoice = voices.find(v => v.lang.startsWith("en") && v.name.includes("Google")) || 
+                              voices.find(v => v.lang.startsWith("en"));
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+      }
+    }
+
+    utterance.onend = () => {
+      setIsSpeaking(false);
+      setSpeakingText(null);
+    };
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+      setSpeakingText(null);
+    };
+
+    setSpeakingText(text);
+    setIsSpeaking(true);
+    window.speechSynthesis.speak(utterance);
+  };
 
   const matchedDecision = ledgerData.find(
     (d) => d.coin?.trim().toUpperCase() === selectedCoin.trim().toUpperCase()
@@ -233,7 +292,7 @@ export default function HomepageCockpit({
           </button>
           <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#0a152d] to-[#1e293b] flex items-center justify-center text-white select-none shadow-md shadow-[#0a152d]/10 border border-slate-700/50 relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-tr from-[#6366f1]/25 to-transparent opacity-30" />
-            <Activity className="w-5.5 h-5.5 text-emerald-400 stroke-[2.5] relative z-10 animate-pulse" />
+            <Activity className="w-5.5 h-5.5 text-emerald-400 stroke-[2.5] relative z-10" />
           </div>
           <div className="text-left">
             <h2 className="text-[17px] font-display font-extrabold text-[#0a1b33] tracking-tight uppercase block leading-none">
@@ -458,9 +517,35 @@ export default function HomepageCockpit({
                                     </span>
                                   )}
                                 </div>
-                                <span className="text-[10px] text-slate-400 font-mono">
-                                  {matchedDecision.timestamp ? new Date(matchedDecision.timestamp).toLocaleTimeString() : ""}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => {
+                                      const fullReportText = `Council consensus recommendation for ${matchedDecision.coin} is ${matchedDecision.action} with ${matchedDecision.confidence} percent confidence. Here is the rationale: ${matchedDecision.rationale}`;
+                                      speakSpeech(fullReportText);
+                                    }}
+                                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-bold font-mono transition-all cursor-pointer ${
+                                      isSpeaking && speakingText?.includes(matchedDecision.rationale)
+                                        ? "bg-rose-600 text-white shadow-xs"
+                                        : "bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200/60"
+                                    }`}
+                                    title={isSpeaking && speakingText?.includes(matchedDecision.rationale) ? "Stop speaking" : "Listen to report summary"}
+                                  >
+                                    {isSpeaking && speakingText?.includes(matchedDecision.rationale) ? (
+                                      <>
+                                        <VolumeX className="w-3 h-3 text-white" />
+                                        <span>STOP VOICE</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Volume2 className="w-3 h-3 text-indigo-500" />
+                                        <span>LISTEN REPORT</span>
+                                      </>
+                                    )}
+                                  </button>
+                                  <span className="text-[10px] text-slate-400 font-mono">
+                                    {matchedDecision.timestamp ? new Date(matchedDecision.timestamp).toLocaleTimeString() : ""}
+                                  </span>
+                                </div>
                               </div>
 
                               <div className="flex items-center gap-3.5">
@@ -701,11 +786,37 @@ export default function HomepageCockpit({
                         
                         return (
                           <div className="space-y-3 text-left">
-                            <div className="flex items-center justify-between border-b border-slate-200/50 pb-2">
+                            <div className="flex items-center justify-between border-b border-slate-200/50 pb-2 flex-wrap gap-2">
                               <h5 className="text-[12px] font-bold text-[#0a1b33] text-left">Swarm Payload: {activeItem.coin}</h5>
-                              <span className="text-[9px] text-slate-400 font-mono">
-                                {new Date(activeItem.timestamp).toLocaleString()}
-                              </span>
+                              <div className="flex items-center gap-2">
+                                <button
+                                  onClick={() => {
+                                    const fullText = `Swarm payload consensus for ${activeItem.coin} is ${activeItem.action} with ${activeItem.confidence} percent confidence. Rationale: ${activeItem.rationale}`;
+                                    speakSpeech(fullText);
+                                  }}
+                                  className={`flex items-center gap-1 px-2 py-0.5 rounded-lg text-[9px] font-bold font-mono transition-all cursor-pointer ${
+                                    isSpeaking && speakingText?.includes(activeItem.rationale)
+                                      ? "bg-rose-600 text-white shadow-xs animate-pulse"
+                                      : "bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200/60"
+                                  }`}
+                                  title={isSpeaking && speakingText?.includes(activeItem.rationale) ? "Stop speaking" : "Listen to run summary"}
+                                >
+                                  {isSpeaking && speakingText?.includes(activeItem.rationale) ? (
+                                    <>
+                                      <VolumeX className="w-2.5 h-2.5 text-white" />
+                                      <span>STOP</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Volume2 className="w-2.5 h-2.5 text-indigo-500" />
+                                      <span>LISTEN</span>
+                                    </>
+                                  )}
+                                </button>
+                                <span className="text-[9px] text-slate-400 font-mono">
+                                  {new Date(activeItem.timestamp).toLocaleString()}
+                                </span>
+                              </div>
                             </div>
 
                             <p className="text-[11px] text-slate-500 italic text-left">
