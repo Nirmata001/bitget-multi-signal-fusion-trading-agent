@@ -314,7 +314,7 @@ export default function LandingPage({
               <h1 
                 id="hero-headline"
                 className="font-display text-[42px] md:text-[52px] font-medium leading-[1.05] tracking-tight text-[#0a1b33] mb-4 text-left"
-                dangerouslySetInnerHTML={{ __html: "AI Investment Committee<br />for U.S. Stocks" }}
+                dangerouslySetInnerHTML={{ __html: "AI Investment Committee<br />for Crypto & U.S. Stocks" }}
               />
 
               {/* Subheadline & Active Metrics */}
@@ -322,7 +322,7 @@ export default function LandingPage({
                 id="hero-subheadline"
                 className="font-sans text-[13px] md:text-[14px] text-[#64748b] max-w-md mb-6 leading-relaxed text-left"
               >
-                A synchronized council of specialized equity analysts evaluating macroeconomic conditions, earnings fundamentals, market sentiment, and technical structure to generate institutional-grade investment decisions
+                A synchronized council of specialized analysts evaluating macroeconomic conditions, earnings fundamentals, market sentiment, and technical structure to generate institutional-grade investment decisions
               </p>
 
               <div className="flex flex-wrap gap-2.5 mb-6">
