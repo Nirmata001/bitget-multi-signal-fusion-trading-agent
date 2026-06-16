@@ -122,6 +122,55 @@ interface HomepageCockpitProps {
   onBack: () => void;
 }
 
+function AssetLogo({ symbol, logoUrl }: { symbol: string, logoUrl: string }) {
+  const [hasError, setHasError] = React.useState(false);
+
+  // Fallback for known unstable/missing paths or when an error triggers
+  const isKnownUnstableLogo = !logoUrl || ["solana.png", "binance-coin.png", "dogecoin.png", "cardano.png", "polkadot.png"].some(name => logoUrl.toLowerCase().includes(name));
+
+  if (hasError || isKnownUnstableLogo) {
+    const getThemeColors = (sym: string) => {
+      const s = sym.trim().toUpperCase();
+      switch (s) {
+        case "AAPL": return { bg: "bg-slate-100 text-slate-800 border-slate-300", text: "A" };
+        case "NVDA": return { bg: "bg-emerald-50 text-emerald-600 border-emerald-200", text: "N" };
+        case "TSLA": return { bg: "bg-red-50 text-red-600 border-red-200", text: "T" };
+        case "MSFT": return { bg: "bg-blue-50 text-blue-600 border-blue-200", text: "M" };
+        case "AMZN": return { bg: "bg-amber-50 text-amber-650 border-amber-200", text: "A" };
+        case "GOOG": return { bg: "bg-blue-50 text-blue-500 border-blue-200", text: "G" };
+        case "META": return { bg: "bg-indigo-50 text-indigo-600 border-indigo-200", text: "M" };
+        case "AMD": return { bg: "bg-red-50 text-red-500 border-red-200", text: "A" };
+        case "BTC": return { bg: "bg-amber-500 text-white border-amber-600 font-extrabold", text: "₿" };
+        case "ETH": return { bg: "bg-indigo-500 text-white border-indigo-600 font-extrabold", text: "Ξ" };
+        case "SOL": return { bg: "bg-purple-600 text-white border-purple-700 font-extrabold", text: "S" };
+        case "BNB": return { bg: "bg-yellow-500 text-amber-950 border-yellow-600 font-extrabold", text: "B" };
+        case "XRP": return { bg: "bg-sky-500 text-white border-sky-600 font-bold", text: "X" };
+        case "DOGE": return { bg: "bg-amber-400 text-amber-950 border-amber-500 font-extrabold", text: "Ð" };
+        case "ADA": return { bg: "bg-blue-600 text-white border-blue-700 font-bold", text: "₳" };
+        case "DOT": return { bg: "bg-pink-600 text-white border-pink-700 font-bold", text: "●" };
+        default: return { bg: "bg-slate-100 text-slate-600 border-slate-300", text: s.charAt(0) || "?" };
+      }
+    };
+
+    const config = getThemeColors(symbol);
+    return (
+      <div className={`w-3.5 h-3.5 rounded-full flex items-center justify-center text-[8.5px] border ${config.bg} shrink-0 overflow-hidden shadow-2xs font-sans font-black leading-none`}>
+        {config.text}
+      </div>
+    );
+  }
+
+  return (
+    <img 
+      src={logoUrl} 
+      alt={symbol} 
+      className="w-3.5 h-3.5 object-contain shrink-0" 
+      referrerPolicy="no-referrer"
+      onError={() => setHasError(true)}
+    />
+  );
+}
+
 export default function HomepageCockpit({
   currentTime,
   selectedCoin,
@@ -149,6 +198,7 @@ export default function HomepageCockpit({
 }: HomepageCockpitProps) {
   const terminalContainerRef = React.useRef<HTMLDivElement | null>(null);
   const [analysisMode, setAnalysisMode] = React.useState<"fast" | "full">("fast");
+  const [sidebarTab, setSidebarTab] = React.useState<"stocks" | "crypto">("stocks");
 
   const matchedDecision = ledgerData.find(
     (d) => d.coin?.trim().toUpperCase() === selectedCoin.trim().toUpperCase()
@@ -287,13 +337,48 @@ export default function HomepageCockpit({
                   className="flex-1 flex flex-col justify-between overflow-hidden text-left h-full"
                 >
                   <div className="flex-1 flex gap-4 overflow-hidden min-h-0 text-left w-full h-full pb-1">
-                    {/* Left Sidebar for Stocks & Custom Inputs */}
+                    {/* Left Sidebar for Stocks, Crypto & Custom Inputs */}
                     <div className="w-[140px] shrink-0 border-r border-slate-100 pr-3 flex flex-col justify-between h-full py-0.5">
                       <div className="space-y-1.5 overflow-y-auto pr-1 flex-1">
-                        <span className="text-[10px] font-extrabold text-slate-400 uppercase font-mono block mb-2 text-left">
-                          Target Asset
+                        <span className="text-[10px] font-extrabold text-slate-400 uppercase font-mono block mb-1 text-left">
+                          Asset Target
                         </span>
-                        {[
+
+                        {/* Sub-selector tabs to toggle between Stocks and Crypto */}
+                        <div className="flex gap-0.5 bg-slate-100/80 p-0.5 rounded-lg border border-slate-200/50 mb-2.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSidebarTab("stocks");
+                              setSelectedCoin("AAPL");
+                              setCustomCoinInput("");
+                            }}
+                            className={`flex-1 py-1 text-[9px] font-bold rounded-md cursor-pointer transition-all text-center leading-none ${
+                              sidebarTab === "stocks"
+                                ? "bg-white text-[#0a152d] shadow-2xs font-extrabold"
+                                : "text-slate-500 hover:text-slate-700 bg-transparent"
+                            }`}
+                          >
+                            Stocks
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSidebarTab("crypto");
+                              setSelectedCoin("BTC");
+                              setCustomCoinInput("");
+                            }}
+                            className={`flex-1 py-1 text-[9px] font-bold rounded-md cursor-pointer transition-all text-center leading-none ${
+                              sidebarTab === "crypto"
+                                ? "bg-white text-[#0a152d] shadow-2xs font-extrabold"
+                                : "text-slate-500 hover:text-slate-700 bg-transparent"
+                            }`}
+                          >
+                            Crypto
+                          </button>
+                        </div>
+
+                        {(sidebarTab === "stocks" ? [
                           { symbol: "AAPL", name: "Apple", logo: "https://img.icons8.com/ios-filled/100/000000/mac-os.png" },
                           { symbol: "NVDA", name: "NVIDIA", logo: "https://img.icons8.com/color/100/nvidia.png" },
                           { symbol: "TSLA", name: "Tesla", logo: "https://img.icons8.com/ios-filled/100/tesla-logo.png" },
@@ -302,42 +387,46 @@ export default function HomepageCockpit({
                           { symbol: "GOOG", name: "Google", logo: "https://img.icons8.com/color/100/google-logo.png" },
                           { symbol: "META", name: "Meta", logo: "https://img.icons8.com/ios-filled/100/meta.png" },
                           { symbol: "AMD", name: "AMD", logo: "https://img.icons8.com/color/100/amd.png" }
-                        ].map((stock) => (
+                        ] : [
+                          { symbol: "BTC", name: "Bitcoin", logo: "https://img.icons8.com/color/100/bitcoin.png" },
+                          { symbol: "ETH", name: "Ethereum", logo: "https://img.icons8.com/color/100/ethereum.png" },
+                          { symbol: "SOL", name: "Solana", logo: "https://img.icons8.com/color/100/solana.png" },
+                          { symbol: "BNB", name: "BNB", logo: "https://img.icons8.com/color/100/binance-coin.png" },
+                          { symbol: "XRP", name: "XRP", logo: "https://img.icons8.com/color/100/xrp.png" },
+                          { symbol: "DOGE", name: "Dogecoin", logo: "https://img.icons8.com/color/100/dogecoin.png" },
+                          { symbol: "ADA", name: "Cardano", logo: "https://img.icons8.com/color/100/cardano.png" },
+                          { symbol: "DOT", name: "Polkadot", logo: "https://img.icons8.com/color/100/polkadot.png" }
+                        ]).map((asset) => (
                           <button
-                            key={stock.symbol}
-                            onClick={() => { setSelectedCoin(stock.symbol); setCustomCoinInput(""); }}
+                            key={asset.symbol}
+                            onClick={() => { setSelectedCoin(asset.symbol); setCustomCoinInput(""); }}
                             className={`flex items-center gap-2 p-1.5 w-full rounded-lg border text-left transition-all cursor-pointer ${
-                              selectedCoin === stock.symbol && !customCoinInput
+                              selectedCoin === asset.symbol && !customCoinInput
                                 ? "bg-white text-[#0a152d] border-2 border-[#0a152d] font-bold shadow-xs scale-[1.01]"
                                 : "bg-white/60 text-slate-500 border-slate-200/70 hover:border-slate-300 hover:text-slate-700 opacity-80 hover:opacity-100"
                             }`}
                           >
-                            <img 
-                              src={stock.logo} 
-                              alt={stock.symbol} 
-                              className="w-3.5 h-3.5 object-contain shrink-0" 
-                              referrerPolicy="no-referrer"
-                            />
+                            <AssetLogo symbol={asset.symbol} logoUrl={asset.logo} />
                             <div className="min-w-0">
-                              <span className="text-[10px] font-bold tracking-tight block leading-none">{stock.symbol}</span>
+                              <span className="text-[10px] font-bold tracking-tight block leading-none">{asset.symbol}</span>
                             </div>
                           </button>
                         ))}
                       </div>
 
-                      {/* Custom Stock Input at the bottom of the left sidebar */}
+                      {/* Custom Asset Input at the bottom of the left sidebar */}
                       <div className="pt-2 border-t border-slate-200/50 shrink-0">
                         <span className="text-[8px] font-extrabold text-[#0a152d] uppercase font-mono block mb-1">
                           CUSTOM
                         </span>
                         <input 
                           type="text"
-                          placeholder="e.g. NFLX"
+                          placeholder={sidebarTab === "stocks" ? "e.g. NFLX" : "e.g. LINK"}
                           value={customCoinInput}
                           onChange={(e) => {
                             const v = e.target.value.toUpperCase();
                             setCustomCoinInput(v);
-                            setSelectedCoin(v || "AAPL");
+                            setSelectedCoin(v || (sidebarTab === "stocks" ? "AAPL" : "BTC"));
                           }}
                           className={`w-full px-2 py-1 rounded-lg text-[9.5px] font-bold border text-slate-700 uppercase focus:outline-none focus:ring-1 focus:ring-[#0a152d] transition-all bg-white ${
                             customCoinInput ? "border-[#0a152d]" : "border-slate-200/70"
@@ -472,7 +561,7 @@ export default function HomepageCockpit({
                             <Terminal className="w-6 h-6 text-indigo-400/80 mb-2" />
                             <h4 className="text-[12px] font-bold text-[#0a1b33]">System Standby</h4>
                             <p className="text-[11px] text-slate-400 max-w-xs mt-1 leading-relaxed">
-                              Select a target asset from the left panel and click 'Trigger Swarm' to initiate a multi-agent consensus run.
+                              Select a target asset from the left panel and click 'Trigger Analysis' to initiate a multi-agent consensus run.
                             </p>
                           </div>
                         ) : null}
@@ -515,10 +604,6 @@ export default function HomepageCockpit({
                             </button>
                           </div>
                         </div>
-
-                        <div className="text-[9.5px] text-slate-400 font-medium italic select-none">
-                          {analysisMode === "fast" ? "⚡ Core (~30s)" : "🔬 Deep (~2m)"}
-                        </div>
                       </div>
 
                       {/* Execution Action buttons at bottom of right container */}
@@ -544,7 +629,7 @@ export default function HomepageCockpit({
                               onClick={() => executeAdvisoryAnalysis(selectedCoin, analysisMode)}
                               className="flex-1 bg-[#0a152d] hover:bg-[#122345] text-white rounded-xl py-2.5 text-[11.5px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-all"
                             >
-                              Trigger Swarm for {selectedCoin.toUpperCase()}
+                              Trigger Analysis for {selectedCoin.toUpperCase()}
                             </button>
                             {(logs.length > 0 || matchedDecision) && (
                               <button

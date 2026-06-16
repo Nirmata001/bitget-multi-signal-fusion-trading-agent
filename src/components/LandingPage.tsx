@@ -146,6 +146,47 @@ const AGENT_SPECS: AgentSpec[] = [
   }
 ];
 
+// Robust image component with secondary backup fallback resource
+function ImageWithFallback({ src, alt, className }: { src: string; alt: string; className: string }) {
+  const [currentSrc, setCurrentSrc] = useState(src);
+  const [retryCount, setRetryCount] = useState(0);
+
+  useEffect(() => {
+    setCurrentSrc(src);
+    setRetryCount(0);
+  }, [src]);
+
+  const handleError = () => {
+    if (retryCount === 0) {
+      setRetryCount(1);
+      // Fallback URLs that are ultra-stable and guaranteed to render
+      if (src.includes("1507537") || src.includes("150767")) {
+        setCurrentSrc("https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80&w=600&auto=format&fit=crop");
+      } else if (src.includes("1542744") || src.includes("159028")) {
+        setCurrentSrc("https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=600&auto=format&fit=crop");
+      } else if (src.includes("1573496")) {
+        setCurrentSrc("https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=600&auto=format&fit=crop");
+      } else {
+        setCurrentSrc("https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=600&auto=format&fit=crop");
+      }
+    } else if (retryCount === 1) {
+      setRetryCount(2);
+      // Deep fallback to generic solid background with symbol if all network requests fail
+      setCurrentSrc("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='500' height='380' viewBox='0 0 500 380'><rect width='100%' height='100%' fill='%23f1f5f9'/><circle cx='250' cy='190' r='40' fill='%23cbd5e1'/></svg>");
+    }
+  };
+
+  return (
+    <img 
+      src={currentSrc} 
+      alt={alt} 
+      className={className} 
+      referrerPolicy="no-referrer"
+      onError={handleError}
+    />
+  );
+}
+
 export default function LandingPage({
   currentTime,
   selectedCoin,
@@ -235,7 +276,7 @@ export default function LandingPage({
         <div className="flex items-center gap-3.5">
           <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-[#0a152d] to-[#1e293b] flex items-center justify-center text-white select-none shadow-md shadow-[#0a152d]/10 border border-slate-700/50 relative overflow-hidden group">
             <div className="absolute inset-0 bg-gradient-to-tr from-[#6366f1]/25 to-transparent opacity-30" />
-            <Activity className="w-5.5 h-5.5 text-emerald-400 stroke-[2.5] relative z-10 animate-pulse" />
+            <Activity className="w-5.5 h-5.5 text-emerald-400 stroke-[2.5] relative z-10" />
           </div>
           <div className="text-left">
             <h2 className="text-[17px] font-display font-extrabold text-[#0a1b33] tracking-tight uppercase block leading-none">
@@ -247,10 +288,7 @@ export default function LandingPage({
           </div>
         </div>
         <div className="flex items-center gap-4 text-right">
-          <div className="font-mono text-[11px] text-slate-500 bg-white border border-slate-200/60 px-3 py-1 rounded-full shadow-xs flex items-center gap-2">
-            <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-            {currentTime || "Connecting to atomic clock..."}
-          </div>
+          {/* Clock is kept only in the homepage cockpit layout */}
         </div>
       </header>
 
@@ -259,7 +297,7 @@ export default function LandingPage({
         {/* Main Hero Container */}
         <div 
           id="hero-container"
-          className="relative w-full max-w-[1400px] mx-auto rounded-[48px] bg-white border border-slate-200/50 shadow-[0_40px_100px_-20px_rgba(0,0,0,0.03)] overflow-hidden h-[600px] flex flex-col md:flex-row"
+          className="relative w-full max-w-[1400px] mx-auto h-[600px] flex flex-col md:flex-row"
         >
           {/* Background Video Layer */}
           <div 
@@ -270,13 +308,13 @@ export default function LandingPage({
           </div>
 
           {/* Hero Text Content Wrapper (Left 65%) */}
-          <div className="relative z-20 w-full md:w-[65%] px-8 md:px-14 pt-10 md:pt-12 pb-10 flex flex-col justify-between items-start bg-gradient-to-r from-white via-white/95 md:via-white/80 to-transparent h-full">
+          <div className="relative z-20 w-full md:w-[65%] px-8 md:px-14 pt-10 md:pt-12 pb-10 flex flex-col justify-between items-start bg-gradient-to-r from-[#f9fafb] via-[#f9fafb]/95 md:via-[#f9fafb]/80 to-transparent h-full">
             <div className="flex-1 flex flex-col justify-center text-left">
               {/* Headline */}
               <h1 
                 id="hero-headline"
                 className="font-display text-[42px] md:text-[52px] font-medium leading-[1.05] tracking-tight text-[#0a1b33] mb-4 text-left"
-                dangerouslySetInnerHTML={{ __html: "Autonomous equity intelligence<br />driven by AI swarm consensus" }}
+                dangerouslySetInnerHTML={{ __html: "AI Investment Committee<br />for U.S. Stocks" }}
               />
 
               {/* Subheadline & Active Metrics */}
@@ -353,9 +391,27 @@ export default function LandingPage({
                   The Problem
                 </span>
               </motion.div>
-              <motion.p variants={childVariants} className="font-sans text-[24px] md:text-[30px] font-light text-slate-400 leading-snug tracking-tight">
+              <motion.p variants={childVariants} className="font-sans text-[24px] md:text-[30px] font-light text-slate-400 leading-snug tracking-tight mb-8">
                 Retail investors must interpret <span className="font-normal text-slate-900 duration-500 hover:text-indigo-600 transition-colors">earnings</span>, <span className="font-normal text-slate-900 duration-500 hover:text-indigo-600 transition-colors">Fed policy</span>, <span className="font-normal text-slate-900 duration-500 hover:text-indigo-600 transition-colors">news</span>, and <span className="font-normal text-slate-900 duration-500 hover:text-indigo-600 transition-colors">technical signals</span> separately.
               </motion.p>
+
+              {/* Problem Real-World Context Photos */}
+              <motion.div variants={childVariants} className="grid grid-cols-2 gap-4">
+                <div className="relative group overflow-hidden rounded-2xl border border-slate-200 shadow-xs transition-all duration-300 hover:shadow-md hover:scale-[1.02]">
+                  <ImageWithFallback 
+                    src="https://images.unsplash.com/photo-1540959733332-eab4deceeaf7?q=80&w=500&h=380&auto=format&fit=crop" 
+                    alt="Dense city crowd of people representing market noise and chaotic inputs" 
+                    className="w-full h-[150px] object-cover grayscale opacity-75 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
+                  />
+                </div>
+                <div className="relative group overflow-hidden rounded-2xl border border-slate-200 shadow-xs transition-all duration-300 hover:shadow-md hover:scale-[1.02]">
+                  <ImageWithFallback 
+                    src="https://images.unsplash.com/photo-1590283603385-17ffb3a7f29f?q=80&w=500&h=380&auto=format&fit=crop" 
+                    alt="Investor overwhelmed by noise" 
+                    className="w-full h-[150px] object-cover grayscale opacity-75 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
+                  />
+                </div>
+              </motion.div>
             </motion.div>
             
             {/* Solution Section - Right Column & Offset Downwards */}
@@ -372,9 +428,27 @@ export default function LandingPage({
                   The Solution
                 </span>
               </motion.div>
-              <motion.p variants={childVariants} className="font-sans text-[26px] md:text-[32px] font-light text-slate-800 leading-snug tracking-tight">
+              <motion.p variants={childVariants} className="font-sans text-[26px] md:text-[32px] font-light text-slate-800 leading-snug tracking-tight mb-8">
                 Our <span className="font-bold text-[#0a152d]">AI Investment Committee</span> synthesizes all market signals into a single, explainable investment thesis.
               </motion.p>
+
+              {/* Solution Real-World Context Photos */}
+              <motion.div variants={childVariants} className="grid grid-cols-2 gap-4">
+                <div className="relative group overflow-hidden rounded-2xl border border-indigo-100 shadow-xs transition-all duration-300 hover:shadow-lg hover:scale-[1.02]">
+                  <ImageWithFallback 
+                    src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?q=80&w=500&h=380&auto=format&fit=crop" 
+                    alt="Satisfied user reviewing insights" 
+                    className="w-full h-[150px] object-cover grayscale opacity-75 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
+                  />
+                </div>
+                <div className="relative group overflow-hidden rounded-2xl border border-indigo-100 shadow-xs transition-all duration-300 hover:shadow-lg hover:scale-[1.02]">
+                  <ImageWithFallback 
+                    src="https://images.unsplash.com/photo-1531538606174-0f90ff5dce83?q=80&w=500&h=380&auto=format&fit=crop" 
+                    alt="Collaborative investment decision clarity" 
+                    className="w-full h-[150px] object-cover grayscale opacity-75 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-500"
+                  />
+                </div>
+              </motion.div>
             </motion.div>
           </div>
         </div>
