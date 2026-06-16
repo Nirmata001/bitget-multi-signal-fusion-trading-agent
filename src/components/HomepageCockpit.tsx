@@ -263,16 +263,79 @@ export default function HomepageCockpit({
   const exportLedgerToCSV = () => {
     if (ledgerData.length === 0) return;
     
-    // Header
-    const headers = ["Coin", "Action", "Confidence", "Timestamp", "Rationale"];
+    // Find all unique analyst titles in the complete ledger
+    const uniqueAnalysts: string[] = [];
+    ledgerData.forEach(item => {
+      if (item.analystReports) {
+        item.analystReports.forEach(rep => {
+          if (rep.analyst && !uniqueAnalysts.includes(rep.analyst)) {
+            uniqueAnalysts.push(rep.analyst);
+          }
+        });
+      }
+    });
+
+    // Create the headers
+    const headers = [
+      "Coin", 
+      "Action", 
+      "Confidence (%)", 
+      "Timestamp", 
+      "Committee Votes (Bullish)", 
+      "Committee Votes (Bearish)", 
+      "Committee Votes (Neutral)",
+      "Rationale"
+    ];
+
+    // For each unique analyst, add corresponding output columns
+    uniqueAnalysts.forEach(analyst => {
+      headers.push(
+        `Analyst ${analyst} Signal`,
+        `Analyst ${analyst} Confidence (%)`,
+        `Analyst ${analyst} Summary`,
+        `Analyst ${analyst} Key Points`
+      );
+    });
     
     const rows = ledgerData.map(item => {
       const coin = `"${(item.coin || "").replace(/"/g, '""')}"`;
       const action = `"${(item.action || "").replace(/"/g, '""')}"`;
       const confidence = `${item.confidence}`;
       const timestamp = `"${new Date(item.timestamp).toLocaleString().replace(/"/g, '""')}"`;
+      
+      const bullish = `${item.committeeVotes?.bullish ?? 0}`;
+      const bearish = `${item.committeeVotes?.bearish ?? 0}`;
+      const neutral = `${item.committeeVotes?.neutral ?? 0}`;
+      
       const rationale = `"${(item.rationale || "").replace(/"/g, '""')}"`;
-      return [coin, action, confidence, timestamp, rationale];
+      
+      const rowData = [
+        coin, 
+        action, 
+        confidence, 
+        timestamp, 
+        bullish, 
+        bearish, 
+        neutral, 
+        rationale
+      ];
+
+      // Match corresponding reports for each unique analyst
+      uniqueAnalysts.forEach(analyst => {
+        const rep = item.analystReports?.find(r => r.analyst === analyst);
+        if (rep) {
+          const sig = `"${(rep.signal || "").replace(/"/g, '""')}"`;
+          const conf = `${rep.confidence ?? ""}`;
+          const summ = `"${(rep.summary || "").replace(/"/g, '""')}"`;
+          const kp = `"${(rep.keyPoints ? rep.keyPoints.join("; ") : "").replace(/"/g, '""')}"`;
+          rowData.push(sig, conf, summ, kp);
+        } else {
+          // If this analyst did not review this coin, put empty cells
+          rowData.push("", "", "", "");
+        }
+      });
+
+      return rowData;
     });
 
     const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
