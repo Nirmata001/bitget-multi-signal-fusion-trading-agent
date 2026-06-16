@@ -20,7 +20,8 @@ import {
   Zap,
   Activity,
   Volume2,
-  VolumeX
+  VolumeX,
+  Download
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Decision, SystemStatus } from "../types";
@@ -259,6 +260,33 @@ export default function HomepageCockpit({
     window.speechSynthesis.speak(utterance);
   };
 
+  const exportLedgerToCSV = () => {
+    if (ledgerData.length === 0) return;
+    
+    // Header
+    const headers = ["Coin", "Action", "Confidence", "Timestamp", "Rationale"];
+    
+    const rows = ledgerData.map(item => {
+      const coin = `"${(item.coin || "").replace(/"/g, '""')}"`;
+      const action = `"${(item.action || "").replace(/"/g, '""')}"`;
+      const confidence = `${item.confidence}`;
+      const timestamp = `"${new Date(item.timestamp).toLocaleString().replace(/"/g, '""')}"`;
+      const rationale = `"${(item.rationale || "").replace(/"/g, '""')}"`;
+      return [coin, action, confidence, timestamp, rationale];
+    });
+
+    const csvContent = [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `committee_ledger_export_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const matchedDecision = ledgerData.find(
     (d) => d.coin?.trim().toUpperCase() === selectedCoin.trim().toUpperCase()
   );
@@ -378,9 +406,21 @@ export default function HomepageCockpit({
                 {activeTab === "status" && "Workspace Engine Hub"}
               </span>
               
-              <div className="flex items-center gap-1.5 font-mono">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-bold text-slate-400">127.0.0.1:3000</span>
+              <div className="flex items-center gap-3 font-mono">
+                {activeTab === "ledger" && ledgerData.length > 0 && (
+                  <button
+                    onClick={exportLedgerToCSV}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-indigo-50 hover:bg-indigo-100 text-[#4f46e5] border border-indigo-100 font-bold text-[9.5px] cursor-pointer transition-all shrink-0"
+                    title="Export Ledger History to CSV"
+                  >
+                    <Download className="w-3 h-3 text-[#4f46e5]" />
+                    <span>EXPORT CSV</span>
+                  </button>
+                )}
+                <div className="flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  <span className="text-[10px] font-bold text-slate-400">127.0.0.1:3000</span>
+                </div>
               </div>
             </div>
 
@@ -745,9 +785,21 @@ export default function HomepageCockpit({
                   <div className="flex-1 overflow-hidden flex flex-col md:flex-row gap-3 text-left">
                     {/* Left Run List */}
                     <div className="w-full md:w-[35%] overflow-y-auto border-r border-slate-200/40 pr-2 space-y-1.5 max-h-[140px] md:max-h-full text-left">
-                      <span className="text-[9px] font-extrabold text-slate-400 uppercase font-mono block mb-1">
-                        Select Run File
-                      </span>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span className="text-[9px] font-extrabold text-slate-400 uppercase font-mono">
+                          Select Run File
+                        </span>
+                        {ledgerData.length > 0 && (
+                          <button
+                            onClick={exportLedgerToCSV}
+                            className="text-[9.5px] font-bold text-[#4f46e5] hover:text-[#3730a3] flex items-center gap-1 font-mono transition-colors cursor-pointer"
+                            title="Export all ledger database logs as a high-quality CSV spreadsheet"
+                          >
+                            <Download className="w-2.5 h-2.5" />
+                            <span>Export CSV</span>
+                          </button>
+                        )}
+                      </div>
                       {ledgerData.length === 0 ? (
                         <div className="text-center p-4 text-slate-400 text-[11px]">
                           No records in file logs.
