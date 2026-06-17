@@ -21,6 +21,8 @@ interface ExecutiveMemorandumProps {
 export const ExecutiveMemorandum: React.FC<ExecutiveMemorandumProps> = ({ decision, onClose }) => {
   const documentRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
+  const [exportedImageUrl, setExportedImageUrl] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Safely extract core properties with default fallback structures
   const safeCoin = (decision?.coin || "N-A").toUpperCase();
@@ -41,6 +43,7 @@ export const ExecutiveMemorandum: React.FC<ExecutiveMemorandumProps> = ({ decisi
   const handleDownloadImage = async () => {
     if (!documentRef.current || isExporting) return;
     setIsExporting(true);
+    setErrorMessage(null);
     try {
       const element = documentRef.current;
       
@@ -50,22 +53,33 @@ export const ExecutiveMemorandum: React.FC<ExecutiveMemorandumProps> = ({ decisi
         : (html2canvas as any).default;
 
       if (typeof html2canvasFn !== "function") {
-        throw new Error("html2canvas could not be loaded as a function");
+        throw new Error("Could not find html2canvas. Please ensure dependencies are loaded.");
       }
 
+      // Capture with robust compatibility settings
       const canvas = await html2canvasFn(element, {
         scale: 2, // 2x scale for high resolution print quality
         useCORS: true,
-        logging: false,
+        allowTaint: true,
+        logging: true,
         backgroundColor: "#ffffff",
       });
       
-      const link = document.createElement("a");
-      link.download = `${safeCoin}_Executive_Report_${new Date().toISOString().split("T")[0]}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    } catch (error) {
+      const imgData = canvas.toDataURL("image/png");
+      setExportedImageUrl(imgData);
+
+      // Try file download
+      try {
+        const link = document.createElement("a");
+        link.download = `${safeCoin}_Executive_Report_${new Date().toISOString().split("T")[0]}.png`;
+        link.href = imgData;
+        link.click();
+      } catch (clickErr) {
+        console.warn("Direct link download blocked by sandboxing or third-party policies. Utilizing overlay view.", clickErr);
+      }
+    } catch (error: any) {
       console.error("Failed to generate report image:", error);
+      setErrorMessage(error?.toString() || "Unknown rendering exception during PDF canvas translation.");
     } finally {
       setIsExporting(false);
     }
@@ -140,6 +154,13 @@ export const ExecutiveMemorandum: React.FC<ExecutiveMemorandumProps> = ({ decisi
             </button>
           </div>
         </div>
+
+        {errorMessage && (
+          <div className="bg-rose-500/15 border-b border-rose-500/30 text-rose-300 px-5 py-2.5 text-[10px] font-mono flex items-center justify-between print:hidden shrink-0">
+            <span>⚠️ ERROR: {errorMessage}</span>
+            <button onClick={() => setErrorMessage(null)} className="text-rose-400 hover:text-white font-bold ml-2 underline cursor-pointer">Dismiss</button>
+          </div>
+        )}
 
         {/* Paper Container */}
         <div className="flex-1 bg-[#1e293b]/20 p-4 overflow-y-auto scrollbar-thin rounded-b-2xl print:p-0 print:bg-white shrink-min">
@@ -362,6 +383,63 @@ export const ExecutiveMemorandum: React.FC<ExecutiveMemorandumProps> = ({ decisi
         </div>
 
       </div>
+
+      {/* Fallback Image Download Assistant Modal Overlay */}
+      {exportedImageUrl && (
+        <div className="fixed inset-0 z-[100] bg-slate-950/95 flex items-center justify-center p-4 backdrop-blur-md">
+          <div className="max-w-2xl w-full bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh]">
+            <div className="bg-slate-950 px-5 py-3 border-b border-slate-800 flex items-center justify-between">
+              <span className="text-[11px] font-bold tracking-wider text-indigo-400 uppercase font-mono">
+                📥 Report Document Rendered Successfully
+              </span>
+              <button 
+                onClick={() => setExportedImageUrl(null)}
+                className="text-slate-400 hover:text-white text-xs font-bold font-mono border border-slate-800 bg-slate-900 px-3 py-1 rounded-lg cursor-pointer"
+              >
+                Close View
+              </button>
+            </div>
+            
+            <div className="p-5 overflow-y-auto space-y-4">
+              <p className="text-[12px] text-slate-300 leading-relaxed font-sans text-left">
+                Your high-resolution report has been generated! Because direct file downloads can be restricted by browser security sandboxing inside workspace previews, we have prepared a physical image stream below.
+              </p>
+              
+              <div className="bg-indigo-950/30 border border-indigo-500/20 rounded-xl p-3 text-left">
+                <p className="text-[11.5px] text-indigo-200 font-medium">
+                  <span className="font-bold block mb-1">👉 How to Save Your Document:</span> 
+                  <span>Right-click (or press and hold on mobile) on the preview image below, then choose <b className="text-white">"Save Image As..."</b> to save your document.</span>
+                </p>
+              </div>
+
+              <div className="border border-slate-800 rounded-xl bg-white p-2 flex justify-center shadow-inner overflow-hidden cursor-pointer" onClick={() => {
+                // Trigger download on click
+                const link = document.createElement("a");
+                link.download = `${safeCoin}_Executive_Report_${new Date().toISOString().split("T")[0]}.png`;
+                link.href = exportedImageUrl;
+                link.click();
+              }}>
+                <img 
+                  src={exportedImageUrl} 
+                  alt={`${safeCoin} Executive Memorandum Report`} 
+                  className="max-h-[50vh] object-contain rounded-lg border border-slate-200 shadow-sm transition-transform hover:scale-[1.01]"
+                  referrerPolicy="no-referrer"
+                />
+              </div>
+            </div>
+
+            <div className="bg-slate-950 px-5 py-3 border-t border-slate-800 flex items-center justify-between text-[11px] text-slate-500 font-mono">
+              <span>Dimension: 2x High Resolution</span>
+              <button 
+                onClick={() => setExportedImageUrl(null)}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-1.5 text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
