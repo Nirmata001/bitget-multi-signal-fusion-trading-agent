@@ -180,8 +180,9 @@ Supports dynamic analysis workflows for rapidly changing markets.
 
 ### AI Layer
 
-* Qwen Models (via DashScope / OpenAI-compatible endpoint)
+* Qwen Models 
 * Multi-Agent Consensus Orchestration
+* **Bitget market data MCP** (Connecting agents to real-time market data)
 
 ### Storage
 
