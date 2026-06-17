@@ -71,26 +71,25 @@ This mirrors how professional investment firms often operate through committees 
        │    MACRO    │     │MARKET INTEL │ │   NEWS AI   │     │  SENTIMENT  │
        │   ANALYST   │     │  ANALYST    │ │   ANALYST   │     │   ANALYST   │
        └──────┬──────┘     └──────┬──────┘ └──────┬──────┘     └──────┬──────┘
-              │                   │       │                   │
-              └───────────┐       │       │       ┌───────────┘
-                          ▼       ▼       ▼       ▼
+              │                   │               │                   │
+              │  (Parallel Model Context Protocol (MCP) Server Sessions)  │
+              ▼                   ▼               ▼                   ▼
+       ┌─────────────────────────────────────────────────────────────────────┐
+       │             Bitget Market Data MCP Server Pipeline                  │
+       │     (Rates, Yields, Crypto, Defi, Dex, News, Sentiment Indexes)     │
+       └──────────────────────────────────┬──────────────────────────────────┘
+                                          │ [Aggregated Real-time Context]
+                                          ▼
                    ┌─────────────────────────────────────┐
                    │      VOTING & RESOLUTION TABLE      │
-                   │      (Bullish / Bearish / Neutral)  │
+                   │  (Bullish / Bearish / Neutral Vote) │
                    └──────────────────┬──────────────────┘
                                      │
                                      ▼
                   ┌─────────────────────────────────────┐
-                  │    FINAL COMMITTEE LEDGER RECORD    │
-                  │  (Aggregate Decision & Rationale)   │
-                  └──────────────────┬──────────────────┘
-                                     │
-            ┌────────────────────────┴────────────────────────┐
-            ▼                                                 ▼
-┌───────────────────────┐                         ┌───────────────────────┐
-│ 🔊 LIVE VOICE SYNTH   │                         │ 📥 CSV EXPORTER       │
-│ (Universal Narrator)  │                         │ (All Analyst Papers)  │
-└───────────────────────┘                         └───────────────────────┘
+                  │      HEAD OF ADVISORY SYNTHESIS     │
+                  │  (Final Decision & Ledger Record)   │
+                  └─────────────────────────────────────┘
 ```
 
 ---
