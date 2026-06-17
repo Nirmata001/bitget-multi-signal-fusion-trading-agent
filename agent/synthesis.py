@@ -3,7 +3,7 @@ import json
 import re
 import time
 from datetime import datetime, timezone
-from agent.prompts import SYNTHESIS_PROMPT
+from agent.prompts import get_synthesis_prompt_template
 from agent.qwen_client import call_qwen_with_retry
 
 
@@ -11,11 +11,12 @@ async def synthesize_reports(
     reports: list,
     coin: str,
     ai_client = None,
-    model: str = "qwen3.6-plus"
+    model: str = "qwen3.6-plus",
+    category: str = None,
 ) -> dict:
     """Synthesize all analyst reports into a final trading decision"""
 
-    print(f"\n🧠 Head of Advisory Board synthesizing {len(reports)} reports for {coin}...")
+    print(f"\n🧠 Head of Advisory Board synthesizing {len(reports)} reports for {coin} with category={category}...")
 
     # Format reports as readable text for the synthesis prompt
     reports_text = ""
@@ -30,7 +31,8 @@ Full Report: {report.get('fullReport', '')[:500]}
 ---"""
 
     timestamp = datetime.now(timezone.utc).isoformat()
-    prompt = SYNTHESIS_PROMPT.format(
+    synthesis_template = get_synthesis_prompt_template(coin, category=category)
+    prompt = synthesis_template.format(
         coin=coin,
         reports=reports_text,
         timestamp=timestamp

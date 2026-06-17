@@ -73,13 +73,14 @@ async def get_status():
 class AnalyzeRequest(BaseModel):
     coin: str = "AAPL"
     mode: str = "fast"
+    category: str = None
 
 
-async def _run_analysis_job(coin: str, mode: str):
+async def _run_analysis_job(coin: str, mode: str, category: str = None):
     try:
         # Dynamically switch mode variables
         os.environ["AGENT_FAST_MODE"] = "true" if mode == "fast" else "false"
-        decision = await run_agent_cycle(coin)
+        decision = await run_agent_cycle(coin, category=category)
         if decision is None:
             analysis_job["error"] = "Agent cycle failed"
         else:
@@ -97,6 +98,7 @@ async def analyze(request: AnalyzeRequest):
     global analysis_task
     coin = request.coin.upper()
     mode = request.mode.lower() if request.mode else "fast"
+    category = request.category.lower() if request.category else None
 
     if analysis_job["running"]:
         return {
@@ -104,6 +106,7 @@ async def analyze(request: AnalyzeRequest):
             "status": "running",
             "coin": analysis_job["coin"],
             "mode": analysis_job.get("mode", "fast"),
+            "category": analysis_job.get("category"),
         }
 
     analysis_job.update({
@@ -113,10 +116,11 @@ async def analyze(request: AnalyzeRequest):
         "error": None,
         "decision": None,
         "mode": mode,
+        "category": category,
     })
-    analysis_task = asyncio.create_task(_run_analysis_job(coin, mode))
+    analysis_task = asyncio.create_task(_run_analysis_job(coin, mode, category=category))
 
-    return {"success": True, "status": "started", "coin": coin, "mode": mode}
+    return {"success": True, "status": "started", "coin": coin, "mode": mode, "category": category}
 
 
 @app.post("/api/analyze/stop")

@@ -10,7 +10,7 @@ from agent.mcp_client import (
     tools_to_openai_format,
     call_mcp_tool,
 )
-from agent.prompts import ANALYST_PROMPTS
+from agent.prompts import get_analyst_prompt_template
 from agent.qwen_client import call_qwen_with_retry
 from agent.config import (
     get_max_iterations,
@@ -29,6 +29,7 @@ async def run_specialist(
     coin: str,
     ai_client=None,
     model: str = "qwen3.6-plus",
+    category: str = None,
 ) -> dict:
     """Run a single specialist analyst agent and return its structured report"""
 
@@ -37,7 +38,8 @@ async def run_specialist(
     analyst_tools = filter_tools_for_analyst(all_tools, analyst_key)
     openai_tools = tools_to_openai_format(analyst_tools)
 
-    system_prompt = ANALYST_PROMPTS[analyst_key].format(coin=coin) + SPEED_INSTRUCTION
+    analyst_prompt_template = get_analyst_prompt_template(analyst_key, coin, category=category)
+    system_prompt = analyst_prompt_template.format(coin=coin) + SPEED_INSTRUCTION
     user_message = (
         f"Analyze {coin} now. Use at most 2 tools, then output ONLY the JSON report."
     )
@@ -125,7 +127,7 @@ def parse_analyst_report(text: str, analyst_key: str, coin: str) -> dict:
 
 
 async def _run_specialist_with_session(
-    analyst_key: str, coin: str, stagger_index: int = 0
+    analyst_key: str, coin: str, stagger_index: int = 0, category: str = None
 ) -> dict:
     """Each analyst gets its own MCP connection for true parallel tool calls."""
     if stagger_index > 0 and ANALYST_STAGGER_SECONDS > 0:
@@ -135,7 +137,7 @@ async def _run_specialist_with_session(
         async with ClientSession(read, write) as session:
             await session.initialize()
             all_tools = await get_all_tools(session)
-            return await run_specialist(session, all_tools, analyst_key, coin)
+            return await run_specialist(session, all_tools, analyst_key, coin, category=category)
 
 
 async def run_all_specialists(
@@ -144,15 +146,16 @@ async def run_all_specialists(
     coin: str,
     ai_client=None,
     model: str = "qwen3.6-plus",
+    category: str = None,
 ) -> list:
     """Run all specialist analysts in parallel, each with its own MCP session."""
     del session, all_tools  # kept for backward-compatible signature
 
-    print(f"\n📊 Running {len(ANALYSTS)} specialist analysts for {coin} in parallel...")
+    print(f"\n📊 Running {len(ANALYSTS)} specialist analysts for {coin} in parallel with category={category}...")
 
     reports = await asyncio.gather(
         *[
-            _run_specialist_with_session(analyst, coin, i)
+            _run_specialist_with_session(analyst, coin, i, category=category)
             for i, analyst in enumerate(ANALYSTS)
         ],
         return_exceptions=True,

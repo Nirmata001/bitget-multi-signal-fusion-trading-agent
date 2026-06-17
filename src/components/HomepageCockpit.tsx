@@ -117,7 +117,7 @@ interface HomepageCockpitProps {
   setActiveTab: (tab: "console" | "ledger" | "status") => void;
   activeAnalystTab: string;
   setActiveAnalystTab: (tab: string) => void;
-  executeAdvisoryAnalysis: (coin: string, mode?: string) => void;
+  executeAdvisoryAnalysis: (coin: string, mode?: string, category?: string) => void;
   cancelAnalysis: () => void;
   fetchDecisions: () => void;
   normalizeAnalystName: (name: string) => string;
@@ -480,10 +480,7 @@ export default function HomepageCockpit({
                     <span>EXPORT CSV</span>
                   </button>
                 )}
-                <div className="flex items-center gap-1.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[10px] font-bold text-slate-400">127.0.0.1:3000</span>
-                </div>
+
               </div>
             </div>
 
@@ -814,7 +811,7 @@ export default function HomepageCockpit({
                         ) : (
                           <>
                             <button
-                              onClick={() => executeAdvisoryAnalysis(selectedCoin, analysisMode)}
+                              onClick={() => executeAdvisoryAnalysis(selectedCoin, analysisMode, sidebarTab)}
                               className="flex-1 bg-[#0a152d] hover:bg-[#122345] text-white rounded-xl py-2.5 text-[11.5px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-all"
                             >
                               Trigger Analysis for {selectedCoin.toUpperCase()}

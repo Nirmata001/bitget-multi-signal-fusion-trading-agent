@@ -123,7 +123,7 @@ export default function App() {
     }
   };
 
-  const executeAdvisoryAnalysis = async (coinSymbol: string, mode: string = "fast") => {
+  const executeAdvisoryAnalysis = async (coinSymbol: string, mode: string = "fast", category?: string) => {
     if (isAnalyzing) return;
 
     setIsAnalyzing(true);
@@ -188,7 +188,7 @@ export default function App() {
       const res = await fetch("/api/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ coin: targetSymbol, mode: mode }),
+        body: JSON.stringify({ coin: targetSymbol, mode: mode, category: category }),
       });
 
       const data = await res.json();

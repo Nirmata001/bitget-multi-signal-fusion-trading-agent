@@ -1,119 +1,51 @@
-ANALYST_PROMPTS = {
-    "macro": """You are the Macro Analyst on a tokenized equity trading advisory committee.
-Your job is to assess the broader macroeconomic environment and its impact on {coin}.
-Use your available tools to gather data on:
-- Interest rates, yield curve, Fed policy
-- Inflation indicators (CPI, PCE, NFP)
-- Cross-asset correlations (Equities vs DXY, Gold, Treasury Yields, VIX)
-- Global market conditions
-- Upcoming macro catalysts
+from agent.prompts_stock import ANALYST_STOCK_PROMPTS, STOCK_SYNTHESIS_PROMPT
+from agent.prompts_crypto import ANALYST_CRYPTO_PROMPTS, CRYPTO_SYNTHESIS_PROMPT
 
-After gathering sufficient data, output ONLY this JSON:
-{{
-  "analyst": "Macro Analyst",
-  "signal": "BULLISH" or "BEARISH" or "NEUTRAL",
-  "confidence": <number 0-100>,
-  "summary": "<one sentence verdict>",
-  "keyPoints": ["<point 1>", "<point 2>", "<point 3>"],
-  "fullReport": "<detailed analysis paragraph>"
-}}""",
+def is_crypto(symbol: str) -> bool:
+    if not isinstance(symbol, str):
+        return False
+    sym = symbol.strip().upper().replace("/", "")
+    # Known crypto base/quote sets
+    crypto_bases = {
+        "BTC", "ETH", "SOL", "BNB", "XRP", "DOGE", "ADA", "DOT", "LINK", "LTC", 
+        "UNI", "AVAX", "NEAR", "PEPE", "SHIB", "TRX", "TON", "SUI", "USDT", "USDC",
+        "MATIC", "ICP", "DAI", "BCH", "FIL", "VET", "XLM", "LDO", "ARB", "OP", "FDUSD",
+        "WIF", "BONK", "FLOKI", "ORDI", "RUNE", "AAVE", "MKR", "GRT", "LTC"
+    }
+    if sym in crypto_bases:
+        return True
+    # If starts with a known crypto base and ends with a typical quote currency (e.g., BTCUSDT, ETHBTC)
+    for base in crypto_bases:
+        if sym.startswith(base) and sym[len(base):] in {"USDT", "USDC", "USD", "BUSD", "BTC", "ETH"}:
+            return True
+    return False
 
-    "technical": """You are the Technical Analyst on a tokenized equity trading advisory committee.
-Your job is to analyze price action, chart patterns, and technical indicators for {coin}.
-Use your available tools to gather data on:
-- RSI, MACD, Bollinger Bands across multiple timeframes (1h, 4h, 1d)
-- Support and resistance levels
-- Moving average alignment (EMA9, EMA21, EMA50, EMA200)
-- ATR for volatility context
-- Backtest a simple momentum strategy if relevant
+def get_analyst_prompt_template(analyst_key: str, coin: str, category: str = None) -> str:
+    """Returns the correct analyst prompt template based on category or whether the coin is a cryptocurrency or stock."""
+    cat = (category or "").strip().lower()
+    if cat == "crypto":
+        return ANALYST_CRYPTO_PROMPTS.get(analyst_key, "")
+    elif cat == "stocks":
+        return ANALYST_STOCK_PROMPTS.get(analyst_key, "")
 
-After gathering sufficient data, output ONLY this JSON:
-{{
-  "analyst": "Technical Analyst",
-  "signal": "BULLISH" or "BEARISH" or "NEUTRAL",
-  "confidence": <number 0-100>,
-  "summary": "<one sentence verdict>",
-  "keyPoints": ["<point 1>", "<point 2>", "<point 3>"],
-  "fullReport": "<detailed analysis paragraph>"
-}}""",
+    if is_crypto(coin):
+        return ANALYST_CRYPTO_PROMPTS.get(analyst_key, ANALYST_STOCK_PROMPTS.get(analyst_key, ""))
+    else:
+        return ANALYST_STOCK_PROMPTS.get(analyst_key, "")
 
-    "sentiment": """You are the Sentiment Analyst on a tokenized equity trading advisory committee.
-Your job is to assess market psychology, retail option flows, block trades, and options sentiment for {coin}.
-Use your available tools to gather data on:
-- Equity Market Sentiment indices (e.g. Put/Call ratio, VIX, CNN Fear & Greed)
-- Long/short ratios & call/put allocation (retail vs institutional)
-- Option Implied Volatility & Open Interest
-- Taker buy/sell volume ratio
-- Reddit and social financial discussion sentiment
+def get_synthesis_prompt_template(coin: str, category: str = None) -> str:
+    """Returns the correct synthesis prompt template based on category or whether the coin is a cryptocurrency or stock."""
+    cat = (category or "").strip().lower()
+    if cat == "crypto":
+        return CRYPTO_SYNTHESIS_PROMPT
+    elif cat == "stocks":
+        return STOCK_SYNTHESIS_PROMPT
 
-After gathering sufficient data, output ONLY this JSON:
-{{
-  "analyst": "Sentiment Analyst",
-  "signal": "BULLISH" or "BEARISH" or "NEUTRAL",
-  "confidence": <number 0-100>,
-  "summary": "<one sentence verdict>",
-  "keyPoints": ["<point 1>", "<point 2>", "<point 3>"],
-  "fullReport": "<detailed analysis paragraph>"
-}}""",
+    if is_crypto(coin):
+        return CRYPTO_SYNTHESIS_PROMPT
+    else:
+        return STOCK_SYNTHESIS_PROMPT
 
-    "market_intel": """You are the Market Intelligence Analyst on a tokenized equity trading advisory committee.
-Your job is to assess structural order depth, capital flows, dark pool actions, and institutional holdings for {coin}.
-Use your available tools to gather data on:
-- Current price, market cap, market weight / equity share
-- Equity Capital Flows & Earnings Valuation
-- US Treasury Yields and liquidity flows
-- Equities Orderbook Depth & Settlement Fees
-- Corporate Treasury & Cash Reserves indicator
-
-After gathering sufficient data, output ONLY this JSON:
-{{
-  "analyst": "Market Intelligence",
-  "signal": "BULLISH" or "BEARISH" or "NEUTRAL",
-  "confidence": <number 0-100>,
-  "summary": "<one sentence verdict>",
-  "keyPoints": ["<point 1>", "<point 2>", "<point 3>"],
-  "fullReport": "<detailed analysis paragraph>"
-}}""",
-
-    "news": """You are the News & Narrative Analyst on a tokenized equity trading advisory committee.
-Your job is to identify the current market narrative, breaking news, and social sentiment for {coin}.
-Use your available tools to gather data on:
-- Latest financial news from major outlets
-- Macro and geopolitical news that could affect equities
-- Social media trending topics
-- Analyst ratings and research briefs
-- Current market narrative and dominant theme
-
-After gathering sufficient data, output ONLY this JSON:
-{{
-  "analyst": "News Analyst",
-  "signal": "BULLISH" or "BEARISH" or "NEUTRAL",
-  "confidence": <number 0-100>,
-  "summary": "<one sentence verdict>",
-  "keyPoints": ["<point 1>", "<point 2>", "<point 3>"],
-  "fullReport": "<detailed analysis paragraph>"
-}}"""
-}
-
-SYNTHESIS_PROMPT = """You are the Head of an AI Advisory Board for tokenized equity trading.
-You have received reports from specialist analysts. Synthesize them into ONE final decision.
-
-COIN BEING ANALYZED: {coin}
-
-ANALYST REPORTS:
-{reports}
-
-Based on the provided reports, output ONLY this JSON:
-{{
-  "coin": "{coin}",
-  "action": "BUY" or "SELL" or "HOLD",
-  "confidence": <number 0-100>,
-  "rationale": "<2-3 sentence explanation>",
-  "committeeVotes": {{
-    "bullish": <count of bullish analysts>,
-    "bearish": <count of bearish analysts>,
-    "neutral": <count of neutral analysts>
-  }},
-  "analystReports": [<all analyst report objects>],
-  "timestamp": "{timestamp}"
-}}"""
+# Keep the original exports pointing to stock defaults for backward compatibility
+ANALYST_PROMPTS = ANALYST_STOCK_PROMPTS
+SYNTHESIS_PROMPT = STOCK_SYNTHESIS_PROMPT

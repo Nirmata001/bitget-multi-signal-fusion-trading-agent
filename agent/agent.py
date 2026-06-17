@@ -31,10 +31,10 @@ def save_decision(decision: dict):
     DECISIONS_FILE.write_text(json.dumps(decisions, indent=2))
 
 
-async def run_agent_cycle(coin: str = "AAPL") -> dict | None:
+async def run_agent_cycle(coin: str = "AAPL", category: str = None) -> dict | None:
     """Run one full analysis cycle for a given coin"""
     print(f"\n🚀 ===== OMNISIGNAL AGENT CYCLE STARTED =====")
-    print(f"📍 Coin: {coin} | Time: {datetime.now(timezone.utc).isoformat()}")
+    print(f"📍 Coin: {coin} | Category: {category} | Time: {datetime.now(timezone.utc).isoformat()}")
 
     # Initialize Qwen config parameters
     ai_client = None
@@ -45,8 +45,8 @@ async def run_agent_cycle(coin: str = "AAPL") -> dict | None:
         iterations_limit = get_max_iterations()
         print(f"🔌 Running analysts in {mode_str} mode (max {iterations_limit} Qwen rounds each)...")
 
-        reports = await run_all_specialists(None, {}, coin, ai_client, model)
-        decision = await synthesize_reports(reports, coin, ai_client, model)
+        reports = await run_all_specialists(None, {}, coin, ai_client, model, category=category)
+        decision = await synthesize_reports(reports, coin, ai_client, model, category=category)
 
         # Log results
         print(f"\n🎯 DECISION: {decision.get('action')} | Confidence: {decision.get('confidence')}%")
