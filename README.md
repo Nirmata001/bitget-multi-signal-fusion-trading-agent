@@ -95,6 +95,47 @@ This mirrors how professional investment firms often operate through committees 
 
 ---
 
+## 📡 Dynamic Data Sourcing & MCP Server Integration
+
+To provide institutional-grade precision, OmniSignal implements a secure, sandboxed Model Context Protocol (MCP) data-gathering pipeline. Rather than relying on static pre-training knowledge, each specialist analyst is assigned a dedicated toolkit connected to Bitget market data MCP server(https://datahub.noxiaohao.com/mcp).
+
+When an analysis is triggered, the **Head of Advisory (Consensus Engine)** spins up parallel sandboxed sessions. Each specialized AI analyst then queries the MCP server in real-time, executing only the specific set of financial or digital asset instruments permitted in their security sandbox definition:
+
+### 🌍 Macro Analyst (Liquidity & Legacies)
+The Macro Analyst manages currency flows, legacy assets, index data, and sovereign interest positions to formulate high-level equity risk models.
+* **Assigned MCP Tools**:
+  * `rates_yields`: Fetches sovereign bond distributions and global base interest rates.
+  * `macro_indicators`: Evaluates central bank inflation, unemployment metrics, and GDP targets.
+  * `global_assets`: Tracks legacy index averages (S&P 500, Nasdaq, DXY, gold).
+  * `cross_asset`: Maps commodity-to-token velocity ratios.
+  * `tradfi_news`: Pulls legacy corporate financial media disclosures.
+  * `cn_market`: Integrates liquidity indicators from specialized international capital markets.
+  * `global_data`: Retrieves raw secondary economic index statistics.
+
+### 📊 Market Intel Analyst (On-Chain & Exchange Intelligence)
+The Market Intel Analyst represents our primary crypto-native intelligence core. It evaluates raw blockchain metrics, specialized token balances, decentralized reserves, and automated market maker pools.
+* **Assigned MCP Tools**:
+  * `crypto_market`: Monitors general asset pairs, volume, and depth across major digital asset venues.
+  * `defi_analytics`: Measures decentralized lending rates, total value locked (TVL), and farm yields.
+  * `dex_market`: Tracks automated market maker (AMM) pools, trades, slippage statistics, and decentralized liquidity.
+  * `network_status`: Examines on-chain metrics, gas prices, blockchain hash rates, and block frequencies.
+  * `crypto_price`: Fetches real-time localized crypto pricing and ticker details.
+
+### 📰 News AI Analyst (Narrative Velocity & Social Feed Streamer)
+The News Analyst computes psychological sentiment trends, trending keyword vectors, corporate developments, and social dominance metrics from live streams.
+* **Assigned MCP Tools**:
+  * `news_feed`: Gathers chronological headlines and breaking corporate press releases.
+  * `social_trending`: Identifies coin triggers, social velocity indexes, and viral keyword clusters.
+  * `tradfi_news`: Ingests traditional media coverage vectors to match retail expectations against institution briefings.
+
+### 📉 Sentiment Analyst (Trading Psychology & Orderbook Metrics)
+The Sentiment Analyst maps market heatmaps, liquidation metrics, leverage ratios, and retail fear/greed fluctuations.
+* **Assigned MCP Tools**:
+  * `sentiment_index`: Synthesizes unified social volume ratios and fear-greed indexes.
+  * `derivatives_sentiment`: Resolves futures open interest, perpetual funding rates, and options volume spreads.
+
+---
+
 ## ✨ Key Features
 
 ### 🤖 Multi-Agent Intelligence
