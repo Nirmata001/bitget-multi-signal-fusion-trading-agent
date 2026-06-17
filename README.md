@@ -1,6 +1,6 @@
 # 📈 OmniSignal AI Investment Committee
 
-> Institutional-grade stock analysis powered by a council of specialized AI analysts.
+> Institutional-grade stock and crypto analysis powered by a council of specialized AI analysts.
 
 ## 🚀 Overview
 
@@ -99,7 +99,7 @@ This mirrors how professional investment firms often operate through committees 
 
 ### 🤖 Multi-Agent Intelligence
 
-Multiple specialized AI analysts work together to evaluate an asset.
+Multiple specialized AI analysts work together to evaluate an asset (4 specialized analysts & 1 Head of Advisory).
 
 ### 🏛️ Consensus-Based Decision Making
 
@@ -109,17 +109,13 @@ Recommendations are determined through a structured voting process rather than a
 
 Every recommendation includes supporting reasoning from each specialist.
 
-### 📈 Equity-Focused Research
+### 📈 Cross-Asset Research (Stocks & Crypto)
 
-Designed for stock market analysis and investment decision support.
+Designed for both traditional stock markets and rapid digital asset crypto markets to provide unified investment decision support.
 
 ### 📝 Persistent Decision Ledger
 
 Analysis outputs can be stored and reviewed for transparency and auditing.
-
-### 🔊 AI Narration
-
-Generated investment reports can be converted into voice-based summaries.
 
 ### ⚡ Real-Time Insights
 
@@ -143,9 +139,8 @@ Supports dynamic analysis workflows for rapidly changing markets.
 
 ### AI Layer
 
-* Google Gemini
-* Qwen
-* Multi-Agent Orchestration
+* Qwen Models (via DashScope / OpenAI-compatible endpoint)
+* Multi-Agent Consensus Orchestration
 
 ### Storage
 
@@ -187,9 +182,9 @@ Supports dynamic analysis workflows for rapidly changing markets.
 ### Clone Repository
 
 ```bash
-git clone https://github.com/yourusername/omnisignal.git
+git clone https://github.com/Nirmata001/bitget-multi-signal-fusion-trading-agent.git
 
-cd omnisignal
+cd bitget-multi-signal-fusion-trading-agent
 ```
 
 ### Install Frontend Dependencies
@@ -218,13 +213,12 @@ npm run dev
 
 ## 🔄 Analysis Flow
 
-1. User selects a stock or asset
+1. User selects a stock or crypto asset
 2. Consensus engine launches specialist analysts
 3. Each analyst performs independent evaluation
 4. Agents submit votes
-5. Final recommendation is synthesized
+5. Final recommendation is synthesized by the lead agent (Head of Advisory)
 6. Report is saved to the decision ledger
-7. Optional voice narration is generated
 
 ---
 
@@ -256,16 +250,6 @@ Add screenshot here
 
 ---
 
-## 🏆 Hackathon Highlights
-
-* Multi-Agent AI Architecture
-* Explainable Investment Research
-* Consensus-Based Decision Framework
-* Real-Time Market Intelligence
-* Institutional Investment Committee Simulation
-
----
-
 ## 🔮 Roadmap
 
 * Portfolio Management
@@ -273,17 +257,7 @@ Add screenshot here
 * Autonomous Trade Execution
 * Risk Scoring Models
 * Earnings Call Analysis
-* News Sentiment Pipeline
-* Multi-Asset Support
-* Crypto & ETF Coverage
-
----
-
-## ⚠️ Disclaimer
-
-OmniSignal is designed for research and educational purposes only.
-
-This platform does not provide financial advice, investment recommendations, or guarantees of future performance. Users should conduct their own due diligence before making investment decisions.
+* ETF Coverage
 
 ---
 
