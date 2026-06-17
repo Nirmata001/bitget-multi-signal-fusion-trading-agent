@@ -182,7 +182,7 @@ Supports dynamic analysis workflows for rapidly changing markets.
 
 * Qwen Models 
 * Multi-Agent Consensus Orchestration
-* **Bitget market data MCP** (Connecting agents to real-time market data)
+* **Bitget market data MCP server** (Connecting agents to real-time market data)
 
 ### Storage
 
