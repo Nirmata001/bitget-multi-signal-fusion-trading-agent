@@ -21,10 +21,12 @@ import {
   Activity,
   Volume2,
   VolumeX,
-  Download
+  Download,
+  FileText
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Decision, SystemStatus } from "../types";
+import { ExecutiveMemorandum } from "./ExecutiveMemorandum";
 
 const analystsList = [
   {
@@ -204,6 +206,7 @@ export default function HomepageCockpit({
   const [sidebarTab, setSidebarTab] = React.useState<"stocks" | "crypto">("stocks");
   const [speakingText, setSpeakingText] = React.useState<string | null>(null);
   const [isSpeaking, setIsSpeaking] = React.useState<boolean>(false);
+  const [isMemoOpen, setIsMemoOpen] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     return () => {
@@ -618,6 +621,14 @@ export default function HomepageCockpit({
                                   )}
                                 </div>
                                 <div className="flex items-center gap-2">
+                                  <button
+                                    onClick={() => setIsMemoOpen(true)}
+                                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-extrabold font-mono transition-all cursor-pointer bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-xs border border-indigo-500/30"
+                                    title="View & Download Pristine Office Document Memorandum"
+                                  >
+                                    <FileText className="w-3 h-3 text-white" />
+                                    <span>EXPORT REPORT</span>
+                                  </button>
                                   <button
                                     onClick={() => {
                                       const fullReportText = `Council consensus recommendation for ${matchedDecision.coin} is ${matchedDecision.action} with ${matchedDecision.confidence} percent confidence. Here is the rationale: ${matchedDecision.rationale}`;
@@ -1116,6 +1127,12 @@ export default function HomepageCockpit({
         </div>
       </div>
 
+      {isMemoOpen && matchedDecision && (
+        <ExecutiveMemorandum 
+          decision={matchedDecision}
+          onClose={() => setIsMemoOpen(false)}
+        />
+      )}
     </motion.div>
   );
 }
