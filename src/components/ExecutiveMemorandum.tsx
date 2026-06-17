@@ -13,6 +13,47 @@ import {
 import html2canvas from "html2canvas";
 import { Decision } from "../types";
 
+const parseOklchToRgb = (oklchStr: string): string => {
+  try {
+    const match = oklchStr.match(/oklch\(([^)]+)\)/i);
+    if (!match) return "rgb(100, 116, 139)";
+    
+    const parts = match[1].trim().split(/[\s/]+/);
+    if (parts.length < 3) return "rgb(100, 116, 139)";
+    
+    let L = parseFloat(parts[0]);
+    if (parts[0].includes("%")) L = parseFloat(parts[0]) / 100;
+    
+    let H = parseFloat(parts[2]);
+    if (parts[2] && parts[2].includes("deg")) H = parseFloat(parts[2]);
+    
+    // Check alpha
+    const alpha = parts[3] ? parseFloat(parts[3]) : 1;
+    
+    let rgb = "100, 116, 139"; // default slate-500
+    
+    if (L >= 0.90) {
+      rgb = "255, 255, 255"; // white
+    } else if (L <= 0.18) {
+      rgb = "15, 23, 42"; // dark slate
+    } else if (H >= 100 && H <= 165) {
+      rgb = "16, 185, 129"; // green
+    } else if (H >= 320 || H <= 30) {
+      rgb = "244, 63, 94"; // rose
+    } else if (H >= 200 && H <= 285) {
+      rgb = "99, 102, 241"; // indigo
+    } else if (L >= 0.70) {
+      rgb = "241, 245, 249"; // light gray
+    } else if (L <= 0.45) {
+      rgb = "30, 41, 59"; // dark slate-800
+    }
+    
+    return alpha < 1 ? `rgba(${rgb}, ${alpha})` : `rgb(${rgb})`;
+  } catch (err) {
+    return "rgb(100, 116, 139)";
+  }
+};
+
 interface ExecutiveMemorandumProps {
   decision: Decision;
   onClose: () => void;
@@ -44,6 +85,10 @@ export const ExecutiveMemorandum: React.FC<ExecutiveMemorandumProps> = ({ decisi
     if (!documentRef.current || isExporting) return;
     setIsExporting(true);
     setErrorMessage(null);
+    
+    // Save original getComputedStyle of parent window
+    const originalParentGetComputedStyle = window.getComputedStyle;
+    
     try {
       const element = documentRef.current;
       
@@ -56,6 +101,20 @@ export const ExecutiveMemorandum: React.FC<ExecutiveMemorandumProps> = ({ decisi
         throw new Error("Could not find html2canvas. Please ensure dependencies are loaded.");
       }
 
+      // Temporarily patch the parent window's getComputedStyle to intercept oklch
+      window.getComputedStyle = function (elt, pseudoElt) {
+        const style = originalParentGetComputedStyle(elt, pseudoElt);
+        return new Proxy(style, {
+          get(target, prop, receiver) {
+            const val = Reflect.get(target, prop, receiver);
+            if (typeof val === "string" && val.includes("oklch")) {
+              return parseOklchToRgb(val);
+            }
+            return val;
+          }
+        });
+      };
+
       // Capture with robust compatibility settings
       const canvas = await html2canvasFn(element, {
         scale: 2, // 2x scale for high resolution print quality
@@ -63,6 +122,79 @@ export const ExecutiveMemorandum: React.FC<ExecutiveMemorandumProps> = ({ decisi
         allowTaint: true,
         logging: true,
         backgroundColor: "#ffffff",
+        onclone: (clonedDoc) => {
+          // Inside the clone, intercept oklch style requests at iframe window computed style levels
+          const iframeWindow = clonedDoc.defaultView;
+          if (iframeWindow) {
+            const originalIframeGetComputedStyle = iframeWindow.getComputedStyle;
+            iframeWindow.getComputedStyle = function (elt, pseudoElt) {
+              const style = originalIframeGetComputedStyle(elt, pseudoElt);
+              return new Proxy(style, {
+                get(target, prop, receiver) {
+                  const val = Reflect.get(target, prop, receiver);
+                  if (typeof val === "string" && val.includes("oklch")) {
+                    return parseOklchToRgb(val);
+                  }
+                  return val;
+                }
+              });
+            };
+          }
+
+          // 1. Walk cloned stylesheets and replace oklch color values with standard rgb to prevent html2canvas crashes
+          try {
+            const sheets = clonedDoc.styleSheets;
+            for (let i = 0; i < sheets.length; i++) {
+              const sheet = sheets[i];
+              try {
+                const rules = sheet.cssRules || sheet.rules;
+                if (!rules) continue;
+                for (let j = rules.length - 1; j >= 0; j--) {
+                  const rule = rules[j];
+                  if (rule.cssText && rule.cssText.includes("oklch")) {
+                    try {
+                      const sanitized = rule.cssText.replace(/oklch\([^)]+\)/gi, (m) => parseOklchToRgb(m));
+                      sheet.deleteRule(j);
+                      sheet.insertRule(sanitized, j);
+                    } catch (ruleReplaceErr) {
+                      sheet.deleteRule(j);
+                    }
+                  }
+                }
+              } catch (sheetRuleErr) {
+                console.warn("[html2canvas oklch bypass] CSS cross-origin parsing restricted, proceeding...", sheetRuleErr);
+              }
+            }
+          } catch (sheetErr) {
+            console.warn("[html2canvas oklch bypass] Stylesheet retrieval error", sheetErr);
+          }
+
+          // 2. Walk raw style blocks and sanitize
+          try {
+            const styleElements = clonedDoc.getElementsByTagName("style");
+            for (let i = 0; i < styleElements.length; i++) {
+              const style = styleElements[i];
+              if (style.innerHTML && style.innerHTML.includes("oklch")) {
+                style.innerHTML = style.innerHTML.replace(/oklch\([^)]+\)/gi, (m) => parseOklchToRgb(m));
+              }
+            }
+          } catch (styleElemErr) {
+            console.warn("[html2canvas oklch bypass] Style tag modification error", styleElemErr);
+          }
+
+          // 3. Walk actual cloned elements and filter inline custom styles
+          try {
+            const allElements = clonedDoc.getElementsByTagName("*");
+            for (let i = 0; i < allElements.length; i++) {
+              const el = allElements[i] as HTMLElement;
+              if (el.style && el.style.cssText && el.style.cssText.includes("oklch")) {
+                el.style.cssText = el.style.cssText.replace(/oklch\([^)]+\)/gi, (m) => parseOklchToRgb(m));
+              }
+            }
+          } catch (elWalkErr) {
+            console.warn("[html2canvas oklch bypass] Element inline-style sweep error", elWalkErr);
+          }
+        }
       });
       
       const imgData = canvas.toDataURL("image/png");
@@ -81,6 +213,8 @@ export const ExecutiveMemorandum: React.FC<ExecutiveMemorandumProps> = ({ decisi
       console.error("Failed to generate report image:", error);
       setErrorMessage(error?.toString() || "Unknown rendering exception during PDF canvas translation.");
     } finally {
+      // Always restore the parent window's original getComputedStyle
+      window.getComputedStyle = originalParentGetComputedStyle;
       setIsExporting(false);
     }
   };
