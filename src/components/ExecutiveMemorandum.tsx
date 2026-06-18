@@ -314,6 +314,12 @@ export const ExecutiveMemorandum: React.FC<ExecutiveMemorandumProps> = ({ decisi
                 page-break-before: avoid !important;
               }
 
+              #analysts-grid {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 1rem !important;
+              }
+
               .print\\:hidden, [class*="print:hidden"] {
                 display: none !important;
               }
@@ -484,6 +490,12 @@ export const ExecutiveMemorandum: React.FC<ExecutiveMemorandumProps> = ({ decisi
           /* Standardize sub-container layout flows during print */
           .grid {
             display: grid !important;
+          }
+
+          #analysts-grid {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 1rem !important;
           }
 
           .space-y-4 {
@@ -663,7 +675,7 @@ export const ExecutiveMemorandum: React.FC<ExecutiveMemorandumProps> = ({ decisi
                   SECTION II: Individual Specialist Dossiers
                 </h3>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div id="analysts-grid" className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {decision?.analystReports?.map((report, idx) => {
                     if (!report) return null;
                     const analyst = (report.analyst || "Specialist").toUpperCase();
