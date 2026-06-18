@@ -253,7 +253,120 @@ export const ExecutiveMemorandum: React.FC<ExecutiveMemorandumProps> = ({ decisi
   const actionStyle = getActionStyles(safeAction);
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#020817]/90 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto font-sans">
+    <div id="executive-memo-modal-overlay" className="fixed inset-0 z-50 bg-[#020817]/90 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto font-sans">
+      <style>{`
+        @media print {
+          /* Pure white foundation for printing */
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            height: auto !important;
+            min-height: 100% !important;
+            background: #ffffff !important;
+            background-color: #ffffff !important;
+            color: #000000 !important;
+            overflow: visible !important;
+          }
+
+          /* Hide all general application components to prevent overlay leaks */
+          #root > div > :not(#executive-memo-modal-overlay),
+          #root > div > div > :not(#executive-memo-modal-overlay) {
+            display: none !important;
+          }
+
+          /* Force modal parents to spread naturally across the print frame */
+          #root, 
+          #root > div,
+          #root > div > div {
+            display: block !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            background: transparent !important;
+            background-color: transparent !important;
+            box-shadow: none !important;
+            overflow: visible !important;
+          }
+
+          /* Reset absolute/fixed limitations of the enclosing modal background during printing */
+          #executive-memo-modal-overlay {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
+            display: block !important;
+            background: transparent !important;
+            background-color: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+            z-index: auto !important;
+          }
+
+          /* Hide preview overlays, controls banner, error messages, and close buttons */
+          .print\\:hidden,
+          [class*="print:hidden"],
+          .bg-slate-900,
+          .bg-rose-500\\/15 {
+            display: none !important;
+          }
+
+          /* Expand bounds on the wrapping flex layout container */
+          .max-w-\\[850px\\],
+          .h-\\[90vh\\] {
+            max-width: 100% !important;
+            width: 100% !important;
+            height: auto !important;
+            display: block !important;
+          }
+
+          /* Reset backing paper background & spacing */
+          .flex-1.bg-\\[\\#1e293b\\]\\/20 {
+            background: transparent !important;
+            background-color: transparent !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            overflow: visible !important;
+            height: auto !important;
+          }
+
+          /* Format executive document page to fit standard 1 physical page height */
+          #executive-memo-document {
+            width: 100% !important;
+            max-width: 100% !important;
+            min-height: 0 !important;
+            height: auto !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            background-color: #ffffff !important;
+            page-break-inside: avoid !important;
+            page-break-after: avoid !important;
+            page-break-before: avoid !important;
+          }
+
+          /* Standardize sub-container layout flows during print */
+          .grid {
+            display: grid !important;
+          }
+
+          .space-y-4 {
+            margin-top: 1rem !important;
+          }
+
+          @page {
+            size: portrait;
+            margin: 1.2cm !important;
+          }
+        }
+      `}</style>
       <div className="max-w-[850px] w-full flex flex-col h-[90vh]">
         
         {/* Modal Controls Banner (Hidden in real printing) */}
