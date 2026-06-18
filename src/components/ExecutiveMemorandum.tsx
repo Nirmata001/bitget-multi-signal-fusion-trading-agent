@@ -220,7 +220,136 @@ export const ExecutiveMemorandum: React.FC<ExecutiveMemorandumProps> = ({ decisi
   };
 
   const handlePrint = () => {
-    window.print();
+    try {
+      const element = document.getElementById("executive-memo-document");
+      if (!element) return;
+
+      // Create a temporary hidden iframe in the same origin
+      const iframe = document.createElement("iframe");
+      iframe.style.position = "fixed";
+      iframe.style.right = "-10000px";
+      iframe.style.bottom = "-10000px";
+      iframe.style.width = "0";
+      iframe.style.height = "0";
+      iframe.style.border = "0";
+      document.body.appendChild(iframe);
+
+      const doc = iframe.contentWindow?.document || iframe.contentDocument;
+      if (!doc) {
+        window.print(); // Fallback on secure sandbox restriction
+        return;
+      }
+
+      // Capture all document style stylesheets
+      let styles = "";
+      try {
+        const styleSheets = document.styleSheets;
+        for (let i = 0; i < styleSheets.length; i++) {
+          const sheet = styleSheets[i];
+          try {
+            const rules = sheet.cssRules || sheet.rules;
+            if (rules) {
+              for (let j = 0; j < rules.length; j++) {
+                if (rules[j].cssText) {
+                  let cssText = rules[j].cssText;
+                  if (cssText.includes("oklch")) {
+                    cssText = cssText.replace(/oklch\([^)]+\)/gi, (m) => parseOklchToRgb(m));
+                  }
+                  styles += cssText + "\n";
+                }
+              }
+            }
+          } catch (e) {
+            if (sheet.href) {
+              styles += `@import url('${sheet.href}');\n`;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("[Iframe Print Engine] Style retrieval warning", e);
+      }
+
+      // Dynamic Google Fonts configuration for PDF output
+      const fontImports = `@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700;800&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');\n`;
+      styles = fontImports + styles;
+
+      let htmlContent = element.outerHTML;
+      // Sanitize OKLCH colors inside inline element styles
+      htmlContent = htmlContent.replace(/oklch\([^)]+\)/gi, (m) => parseOklchToRgb(m));
+
+      const printHtml = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <title>${safeCoin} Executive Decision Memorandum</title>
+            <style>
+              ${styles}
+              
+              /* Overriding core canvas layout properties for clean PDF/print output */
+              html, body {
+                background: #ffffff !important;
+                background-color: #ffffff !important;
+                color: #0f172a !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                height: auto !important;
+                min-height: 100% !important;
+                overflow: visible !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+              
+              #executive-memo-document {
+                box-shadow: none !important;
+                border: none !important;
+                max-width: 100% !important;
+                width: 100% !important;
+                height: auto !important;
+                min-height: 0 !important;
+                padding: 1.5cm 1.5cm !important;
+                margin: 0 auto !important;
+                background-color: #ffffff !important;
+                page-break-inside: avoid !important;
+                page-break-after: avoid !important;
+                page-break-before: avoid !important;
+              }
+
+              .print\\:hidden, [class*="print:hidden"] {
+                display: none !important;
+              }
+
+              /* Page Setup overrides to isolate standard A4 print sheets */
+              @page {
+                size: portrait;
+                margin: 0 !important;
+              }
+            </style>
+          </head>
+          <body>
+            ${htmlContent}
+            <script>
+              window.onload = function() {
+                // Short safety window to allow font loading inside iframe Document Object Model
+                setTimeout(function() {
+                  window.print();
+                  setTimeout(function() {
+                    window.parent.document.body.removeChild(window.frameElement);
+                  }, 1200);
+                }, 400);
+              };
+            </script>
+          </body>
+        </html>
+      `;
+
+      doc.open();
+      doc.write(printHtml);
+      doc.close();
+
+    } catch (printErr) {
+      console.error("Custom print handler failed, falling back to window.print():", printErr);
+      window.print();
+    }
   };
 
   const getActionStyles = (action: string) => {
