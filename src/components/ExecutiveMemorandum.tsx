@@ -520,14 +520,6 @@ export const ExecutiveMemorandum: React.FC<ExecutiveMemorandumProps> = ({ decisi
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={handleDownloadImage}
-              disabled={isExporting}
-              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-3 py-1.5 text-[11px] font-bold flex items-center gap-1.5 transition-all cursor-pointer disabled:opacity-50"
-            >
-              <Download className="w-3.5 h-3.5" />
-              <span>{isExporting ? "EXPORTING..." : "DOWNLOAD IMAGE (PNG)"}</span>
-            </button>
-            <button
               onClick={handlePrint}
               className="bg-slate-800 hover:bg-slate-700 text-white rounded-lg px-3 py-1.5 text-[11px] font-bold flex items-center gap-1.5 border border-slate-700 transition-all cursor-pointer"
             >
