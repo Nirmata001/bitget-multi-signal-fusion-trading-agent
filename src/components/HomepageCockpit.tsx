@@ -22,7 +22,8 @@ import {
   Volume2,
   VolumeX,
   Download,
-  FileText
+  FileText,
+  Copy
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { Decision, SystemStatus } from "../types";
@@ -207,6 +208,26 @@ export default function HomepageCockpit({
   const [speakingText, setSpeakingText] = React.useState<string | null>(null);
   const [isSpeaking, setIsSpeaking] = React.useState<boolean>(false);
   const [isMemoOpen, setIsMemoOpen] = React.useState<boolean>(false);
+  const [copiedLogs, setCopiedLogs] = React.useState<boolean>(false);
+
+  const handleCopyLogs = () => {
+    const logsToCopy = logs.length > 0 ? logs : [
+      `[OMNISIGNAL-OS/BOOT] Gateway port 3000 online and fully responsive.`,
+      `[OMNISIGNAL-OS/DEVICES] Secondary Python container swarm linked via parallel IPC channels.`,
+      `[OMNISIGNAL-OS/STANDBY] Awaiting new consensus simulation for asset: ${selectedCoin.toUpperCase() || 'BTC'}...`,
+      `[OMNISIGNAL-OS/SYSTEM] Status: 100% operational | Core processing matrix: stable.`,
+      `[OMNISIGNAL-OS/TIPS] Click 'Synthesize Swarm Consensus' to activate parallel worker nodes.`
+    ];
+    try {
+      navigator.clipboard.writeText(logsToCopy.join("\n"));
+      setCopiedLogs(true);
+      setTimeout(() => {
+        setCopiedLogs(false);
+      }, 2000);
+    } catch (err) {
+      console.error("Failed to copy logs to clipboard", err);
+    }
+  };
 
   React.useEffect(() => {
     return () => {
@@ -1095,6 +1116,23 @@ export default function HomepageCockpit({
                   <div className="w-2.5 h-2.5 rounded-full bg-[#ffbd2e]" />
                   <div className="w-2.5 h-2.5 rounded-full bg-[#27c93f]" />
                 </div>
+                <button
+                  onClick={handleCopyLogs}
+                  className="flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold font-sans text-slate-500 hover:text-indigo-600 bg-slate-50 hover:bg-indigo-50 border border-slate-200 hover:border-indigo-100 rounded-lg transition-all cursor-pointer select-none active:scale-95"
+                  title="Copy Swarm Logs to clipboard"
+                >
+                  {copiedLogs ? (
+                    <>
+                      <Check className="w-3 h-3 text-emerald-500 animate-pulse" />
+                      <span className="text-emerald-600 font-medium">Logs Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3" />
+                      <span>Copy Logs</span>
+                    </>
+                  )}
+                </button>
               </div>
 
               {/* Terminal Log Output List */}
