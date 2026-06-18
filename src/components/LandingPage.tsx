@@ -71,7 +71,7 @@ const AGENT_SPECS: AgentSpec[] = [
     inputs: [
       "Interest rates, yield curve, Fed policy",
       "Inflation indicators (CPI, PCE, NFP)",
-      "Cross-asset correlations (Equities vs DXY, Gold, Bonds, VIX)",
+      "Cross-asset correlations (Crypto & Stocks vs DXY, Gold, Bonds, VIX)",
       "Global market conditions",
       "Upcoming macro catalysts"
     ],
@@ -89,13 +89,13 @@ const AGENT_SPECS: AgentSpec[] = [
     indigoAccent: "text-indigo-500",
     textColor: "text-indigo-700",
     bulletColor: "bg-indigo-500",
-    description: "Evaluates tokenized equity price patterns, market capitalization, market weight, equity capital flows, equities orderbook depth & settlement fees, and corporate treasury indices.",
+    description: "Evaluates stock and cryptocurrency price patterns, market capitalization, market weight, capital flows, exchange and on-chain orderbook depth, and treasury indices.",
     inputs: [
-      "Current price, market cap, market weight / equity share",
-      "Equity Capital Flows & Earnings Valuation",
-      "Growth Equities and liquidity",
-      "Equities Orderbook Depth & Settlement Fees",
-      "Corporate Treasury & Cash Reserves indicator"
+      "Current price, market cap, market weight / asset share",
+      "Crypto & Equity Capital Flows & Earnings/Valuation",
+      "Growth Stocks, digital tokens, and liquidity pools",
+      "Multi-venue Orderbook Depth & Settlement Fees",
+      "Corporate & DAO Treasury Cash/Token reserve indicators"
     ],
     tools: ["crypto_market", "defi_analytics", "dex_market", "network_status", "crypto_price"],
     promptExample: ""
@@ -130,13 +130,13 @@ const AGENT_SPECS: AgentSpec[] = [
     bgClass: "bg-amber-50/40 hover:bg-amber-50/80 border-amber-100 hover:border-amber-200",
     borderClass: "border-amber-100",
     accentBg: "bg-amber-50/50 border-amber-100",
-    indigoAccent: "text-amber-500",
-    textColor: "text-amber-700",
+    indigoAccent: "text-indigo-500",
+    textColor: "text-indigo-700",
     bulletColor: "bg-amber-500",
-    description: "Monitors daily equity headliners, macroeconomic developments, trending social topics, analyst insights, and prominent narrative cycles.",
+    description: "Monitors daily crypto & stock headliners, macroeconomic developments, trending social topics, analyst insights, and prominent narrative cycles.",
     inputs: [
-      "Latest equity news from major financial outlets",
-      "Macro and geopolitical news that could affect equities",
+      "Latest crypto & stock news from major digital & financial outlets",
+      "Macro and geopolitical news affecting risk-on assets",
       "Social media trending topics",
       "KOL and analyst opinions",
       "Current market narrative and dominant theme"
@@ -283,7 +283,7 @@ export default function LandingPage({
               OMNISIGNAL
             </h2>
             <p className="text-[9px] font-mono text-slate-500 font-bold uppercase tracking-wider mt-1.5">
-              Autonomous Equity Intelligence
+              Crypto & Stocks Intelligence
             </p>
           </div>
         </div>

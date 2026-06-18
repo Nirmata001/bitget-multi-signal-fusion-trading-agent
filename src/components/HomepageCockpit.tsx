@@ -414,7 +414,7 @@ export default function HomepageCockpit({
               OMNISIGNAL
             </h2>
             <p className="text-[9px] font-mono text-slate-500 font-bold uppercase tracking-wider mt-1.5">
-              Autonomous Equity Intelligence
+              Crypto & Stocks Intelligence
             </p>
           </div>
         </div>
@@ -1071,7 +1071,7 @@ export default function HomepageCockpit({
 
                       <div className="bg-white border border-slate-200/60 p-3.5 rounded-2xl space-y-2 text-left">
                         <div className="flex items-center justify-between">
-                          <span className="text-[9px] font-extrabold text-slate-400 uppercase font-mono block text-left">Registered Tools Inventory</span>
+                          <span className="text-[9px] font-extrabold text-slate-400 uppercase font-mono block text-left">Analyst Tools</span>
                           <span className="text-[8px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 rounded px-1 py-0.5 font-mono">
                             {registeredTools.length} Tools Active
                           </span>

@@ -558,18 +558,13 @@ export const ExecutiveMemorandum: React.FC<ExecutiveMemorandumProps> = ({ decisi
               {/* Header Title Office Memorandum Section */}
               <div className="border-b-4 border-slate-900 pb-5">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-9 h-9 rounded-lg bg-slate-900 flex items-center justify-center text-white font-bold text-lg tracking-tighter">
-                      ΩΣ
-                    </div>
-                    <div>
-                      <h1 className="text-[15px] font-black tracking-widest text-slate-900 uppercase font-mono leading-none">
-                        OMNISIGNAL ADVISORY
-                      </h1>
-                      <span className="text-[9px] font-bold text-slate-500 font-mono tracking-wider block mt-0.5 uppercase">
-                        Quantum Swarm Intelligence Systems Division
-                      </span>
-                    </div>
+                  <div className="flex flex-col">
+                    <h1 className="text-[15px] font-black tracking-widest text-slate-900 uppercase font-mono leading-none">
+                      OMNISIGNAL ADVISORY
+                    </h1>
+                    <span className="text-[9px] font-bold text-slate-500 font-mono tracking-wider block mt-1.5 uppercase">
+                      crypto and stocks intelligence
+                    </span>
                   </div>
                   <div className="text-right font-mono">
                     <div className="text-[10px] font-extrabold text-slate-900 uppercase">OFFICIAL BRIEFING</div>
@@ -586,7 +581,7 @@ export const ExecutiveMemorandum: React.FC<ExecutiveMemorandumProps> = ({ decisi
               <div className="grid grid-cols-2 gap-y-3 gap-x-6 text-[10.5px] border-b border-slate-200 pb-5 font-mono">
                 <div>
                   <span className="font-extrabold text-slate-400 uppercase w-20 inline-block">TO:</span>
-                  <span className="font-extrabold text-slate-950">LEAD PORTFOLIO MANAGER / BOARD CORPS</span>
+                  <span className="font-extrabold text-slate-950">PORTFOLIO MANAGER</span>
                 </div>
                 <div>
                   <span className="font-extrabold text-slate-400 uppercase w-20 inline-block">DATE:</span>
@@ -604,7 +599,7 @@ export const ExecutiveMemorandum: React.FC<ExecutiveMemorandumProps> = ({ decisi
                 </div>
                 <div>
                   <span className="font-extrabold text-slate-400 uppercase w-20 inline-block">FROM:</span>
-                  <span className="font-bold text-slate-800">COUNCIL OF AUTONOMOUS SYSTEMS</span>
+                  <span className="font-bold text-slate-800">OMNISIGNAL AI COMMITTEE</span>
                 </div>
                 <div>
                   <span className="font-extrabold text-slate-400 uppercase w-20 inline-block">SUBJECT:</span>
@@ -724,37 +719,11 @@ export const ExecutiveMemorandum: React.FC<ExecutiveMemorandumProps> = ({ decisi
 
             </div>
 
-            {/* Footer with verification check and digital stamps */}
-            <div className="mt-16 pt-6 border-t-2 border-slate-900 flex items-end justify-between text-[9.5px] text-slate-500 font-mono print:mt-12 shrink-0">
-              <div className="space-y-1 text-left">
-                <div className="flex items-center gap-1 text-slate-800 font-extrabold text-[10px] uppercase">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-                  AUTHENTICATED RECORD
-                </div>
-                <div>Hash Verification: Success</div>
-                <div>Server Pool: QWEN-3.6-PLUS-CLUSTER</div>
-                <div>Security Class: Level-4 Executive</div>
-              </div>
-
-              <div className="flex items-center gap-8">
-                <div className="text-center relative">
-                  {/* Mock handwritten-style overlay */}
-                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 font-[Cursive] text-indigo-600/60 font-semibold text-sm -rotate-6 select-none italic whitespace-nowrap">
-                    Qwen 3.6 Autonomous
-                  </div>
-                  <div className="w-24 border-t border-slate-300 mt-4 pt-1 text-[8.5px] font-bold text-slate-600 uppercase">
-                    CHAIRPERSON
-                  </div>
-                </div>
-
-                <div className="text-center relative">
-                  <div className="absolute -top-7 left-1/2 -translate-x-1/2 font-[Cursive] text-emerald-600/60 font-semibold text-sm rotate-3 select-none italic whitespace-nowrap">
-                    OmniSignal Core
-                  </div>
-                  <div className="w-24 border-t border-slate-300 mt-4 pt-1 text-[8.5px] font-bold text-slate-600 uppercase">
-                    ATTESTATION
-                  </div>
-                </div>
+            {/* Footer with verification check */}
+            <div className="mt-16 pt-6 border-t-2 border-slate-900 flex items-center justify-between text-[9.5px] text-slate-500 font-mono print:mt-12 shrink-0">
+              <div className="flex items-center gap-1 text-slate-800 font-extrabold text-[10px] uppercase">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                AUTHENTICATED RECORD
               </div>
             </div>
 
