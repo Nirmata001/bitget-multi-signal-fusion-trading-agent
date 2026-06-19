@@ -207,7 +207,7 @@ export default function HomepageCockpit({
   const [sidebarTab, setSidebarTab] = React.useState<"stocks" | "crypto">("stocks");
   const [speakingText, setSpeakingText] = React.useState<string | null>(null);
   const [isSpeaking, setIsSpeaking] = React.useState<boolean>(false);
-  const [isMemoOpen, setIsMemoOpen] = React.useState<boolean>(false);
+  const [memoDecision, setMemoDecision] = React.useState<Decision | null>(null);
   const [copiedLogs, setCopiedLogs] = React.useState<boolean>(false);
 
   const handleCopyLogs = () => {
@@ -492,12 +492,17 @@ export default function HomepageCockpit({
               <div className="flex items-center gap-3 font-mono">
                 {activeTab === "ledger" && ledgerData.length > 0 && (
                   <button
-                    onClick={exportLedgerToCSV}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-indigo-50 hover:bg-indigo-100 text-[#4f46e5] border border-indigo-100 font-bold text-[9.5px] cursor-pointer transition-all shrink-0"
-                    title="Export Ledger History to CSV"
+                    onClick={() => {
+                      const activeItem = ledgerData[selectedLedgerIndex !== -1 ? selectedLedgerIndex : 0];
+                      if (activeItem) {
+                        setMemoDecision(activeItem);
+                      }
+                    }}
+                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-extrabold font-mono transition-all cursor-pointer bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-xs border border-indigo-500/30"
+                    title="View & Download Pristine Office Document Memorandum as PDF"
                   >
-                    <Download className="w-3 h-3 text-[#4f46e5]" />
-                    <span>EXPORT CSV</span>
+                    <FileText className="w-3 h-3 text-white" />
+                    <span>EXPORT REPORT</span>
                   </button>
                 )}
 
@@ -639,7 +644,7 @@ export default function HomepageCockpit({
                                 </div>
                                 <div className="flex items-center gap-2">
                                   <button
-                                    onClick={() => setIsMemoOpen(true)}
+                                    onClick={() => setMemoDecision(matchedDecision || null)}
                                     className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-extrabold font-mono transition-all cursor-pointer bg-indigo-600/90 hover:bg-indigo-600 text-white shadow-xs border border-indigo-500/30"
                                     title="View & Download Pristine Office Document Memorandum"
                                   >
@@ -879,12 +884,17 @@ export default function HomepageCockpit({
                         </span>
                         {ledgerData.length > 0 && (
                           <button
-                            onClick={exportLedgerToCSV}
+                            onClick={() => {
+                              const activeItem = ledgerData[selectedLedgerIndex !== -1 ? selectedLedgerIndex : 0];
+                              if (activeItem) {
+                                setMemoDecision(activeItem);
+                              }
+                            }}
                             className="text-[9.5px] font-bold text-[#4f46e5] hover:text-[#3730a3] flex items-center gap-1 font-mono transition-colors cursor-pointer"
-                            title="Export all ledger database logs as a high-quality CSV spreadsheet"
+                            title="Export selected ledger item as a pristine PDF report document"
                           >
-                            <Download className="w-2.5 h-2.5" />
-                            <span>Export CSV</span>
+                            <FileText className="w-2.5 h-2.5" />
+                            <span>Export Report</span>
                           </button>
                         )}
                       </div>
@@ -1157,10 +1167,10 @@ export default function HomepageCockpit({
         </div>
       </div>
 
-      {isMemoOpen && matchedDecision && (
+      {memoDecision && (
         <ExecutiveMemorandum 
-          decision={matchedDecision}
-          onClose={() => setIsMemoOpen(false)}
+          decision={memoDecision}
+          onClose={() => setMemoDecision(null)}
         />
       )}
     </motion.div>
