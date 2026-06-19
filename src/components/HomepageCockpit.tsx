@@ -212,11 +212,7 @@ export default function HomepageCockpit({
 
   const handleCopyLogs = () => {
     const logsToCopy = logs.length > 0 ? logs : [
-      `[OMNISIGNAL-OS/BOOT] Gateway port 3000 online and fully responsive.`,
-      `[OMNISIGNAL-OS/DEVICES] Secondary Python container swarm linked via parallel IPC channels.`,
-      `[OMNISIGNAL-OS/STANDBY] Awaiting new consensus simulation for asset: ${selectedCoin.toUpperCase() || 'BTC'}...`,
-      `[OMNISIGNAL-OS/SYSTEM] Status: 100% operational | Core processing matrix: stable.`,
-      `[OMNISIGNAL-OS/TIPS] Click 'Synthesize Swarm Consensus' to activate parallel worker nodes.`
+      `[SYSTEM] Terminal ready. Awaiting live telemetry logs...`
     ];
     try {
       navigator.clipboard.writeText(logsToCopy.join("\n"));
@@ -1141,11 +1137,7 @@ export default function HomepageCockpit({
                 className="flex-1 overflow-y-auto space-y-2 pr-1 pb-2 w-full font-mono text-left scrollbar-thin"
               >
                 {(logs.length > 0 ? logs : [
-                  `[OMNISIGNAL-OS/BOOT] Gateway port 3000 online and fully responsive.`,
-                  `[OMNISIGNAL-OS/DEVICES] Secondary Python container swarm linked via parallel IPC channels.`,
-                  `[OMNISIGNAL-OS/STANDBY] Awaiting new consensus simulation for asset: ${selectedCoin.toUpperCase() || 'BTC'}...`,
-                  `[OMNISIGNAL-OS/SYSTEM] Status: 100% operational | Core processing matrix: stable.`,
-                  `[OMNISIGNAL-OS/TIPS] Click 'Synthesize Swarm Consensus' to activate parallel worker nodes.`
+                  `[SYSTEM] Terminal ready. Awaiting live telemetry logs...`
                 ]).map((log, index) => (
                   <motion.div 
                     initial={{ opacity: 0, x: -5 }}
