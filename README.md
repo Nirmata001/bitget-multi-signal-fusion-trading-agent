@@ -148,6 +148,22 @@ The custom ledger exporter maps the complete chronological history into structur
 
 ---
 
+## 📁 Demo Run Records & Verification
+
+For hackathon evaluation, the analytical outputs and live execution logs generated during active committee cycles have been saved in the [`demo_run_record/`](./demo_run_record/) directory:
+
+* **BTC Cycle (June 19, 2026)**:
+  * [PDF Advisory Memorandum](./demo_run_record/BTC%20june%2019.pdf) — Comprehensive, multi-page consensus report for Bitcoin.
+  * [Advisory Terminal Logs](./demo_run_record/BTC%20june%2019.txt) — Unedited step-by-step console logs showing concurrent analyst field research and API recovery.
+* **ETH Cycle (June 19, 2026)**:
+  * [PDF Advisory Memorandum](./demo_run_record/ETH%20JUNE%2019.pdf) — Structured Advisory Council synthesis output for Ethereum.
+  * [Advisory Terminal Logs](./demo_run_record/ETH%20JUNE%2019.txt) — Real-time telemetry, concurrent tool-calling, and final synthesis votes.
+* **ETH Cycle (June 20, 2026)**:
+  * [PDF Advisory Memorandum](./demo_run_record/ETH%20june%2020th.pdf) — Multi-agent field research analysis.
+  * [Advisory Terminal Logs](./demo_run_record/ETH%20june%2020th.txt) — Full console logging showing the live API gateway and synthesis.
+
+---
+
 ## Technology Stack
 
 | Layer | Technology |
