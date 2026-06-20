@@ -1,0 +1,27 @@
+INFO:     10.25.23.4:0 - "POST /api/analyze HTTP/1.1" 200 OK
+🚀 ===== OMNISIGNAL AGENT CYCLE STARTED =====
+📍 Coin: BTC | Category: crypto | Time: 2026-06-19T09:56:07.188053+00:00
+🔌 Running analysts in FAST mode (max 2 Qwen rounds each)...
+📊 Running 4 specialist analysts for BTC in parallel with category=crypto...
+🔍 MACRO analyst starting for BTC...
+🔍 SENTIMENT analyst starting for BTC...
+INFO:     10.28.202.5:0 - "GET /api/decisions HTTP/1.1" 200 OK
+INFO:     10.30.62.231:0 - "GET /api/status HTTP/1.1" 200 OK
+🔍 MARKET_INTEL analyst starting for BTC...
+🔍 NEWS analyst starting for BTC...
+↳ [macro] iter 1: called ['macro_indicators', 'cross_asset']
+↳ [market_intel] iter 1: called ['crypto_market', 'crypto_market']
+↳ [sentiment] iter 1: called ['sentiment_index', 'derivatives_sentiment']
+↳ [news] iter 1: called ['news_feed', 'social_trending']
+✅ macro: BULLISH (60%)
+✅ sentiment: BULLISH (65%)
+✅ market_intel: BEARISH (65%)
+✅ news: BEARISH (68%)
+🧠 Head of Advisory Board synthesizing 4 reports for BTC with category=crypto...
+❌ Qwen API HTTP error 503: upstream connect error or disconnect/reset before headers. reset reason: connection termination⚠️ Qwen API call failed (attempt 1/4): HTTP 503: upstream connect error or disconnect/reset before headers. reset reason: connection termination
+↳ Retrying in 3s...
+🎯 DECISION: HOLD | Confidence: 55%
+📝 Rationale: The advisory board is evenly split, with macro and sentiment indicators highlighting a contrarian accumulation setup amid extreme fear and anticipated liquidity expansion, while technical and news factors warn of immediate downside pressure from hawkish policy and short-term trend breakdowns. Given the conflicting time horizons and elevated leverage risks, a HOLD position is recommended until price action confirms a structural reversal or macro catalysts materialize.
+🗳️  Votes — Bullish: 2 | Bearish: 2 | Neutral: 0
+✅ ===== CYCLE COMPLETE =====
+INFO:     10.30.62.231:0 - "GET /api/decisions HTTP/1.1" 200 OK

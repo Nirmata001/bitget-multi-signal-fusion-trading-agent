@@ -19,8 +19,6 @@ OmniSignal solves this by combining **multi-agent swarm architecture**, **live m
 
 ## Architecture Overview
 
-### Hub-and-Spoke Swarm Design
-
 ```
                     ┌─────────────────────────┐
                     │   USER SELECTS ASSET    │

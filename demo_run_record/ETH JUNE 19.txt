@@ -1,0 +1,58 @@
+INFO:     10.28.202.5:0 - "POST /api/analyze HTTP/1.1" 200 OK
+🚀 ===== OMNISIGNAL AGENT CYCLE STARTED =====
+📍 Coin: ETH | Category: crypto | Time: 2026-06-19T11:43:12.616458+00:00
+🔌 Running analysts in FAST mode (max 2 Qwen rounds each)...
+📊 Running 4 specialist analysts for ETH in parallel with category=crypto...
+🔍 MACRO analyst starting for ETH...
+🔍 SENTIMENT analyst starting for ETH...
+INFO:     10.25.23.4:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+🔍 MARKET_INTEL analyst starting for ETH...
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+🔍 NEWS analyst starting for ETH...
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+↳ [macro] iter 1: called ['macro_indicators', 'cross_asset']
+INFO:     10.25.23.4:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+↳ [sentiment] iter 1: called ['sentiment_index', 'derivatives_sentiment']
+↳ [market_intel] iter 1: called ['crypto_market', 'crypto_market']
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+↳ [news] iter 1: called ['news_feed', 'social_trending']
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+✅ macro: NEUTRAL (55%)
+✅ sentiment: NEUTRAL (65%)
+✅ market_intel: BEARISH (72%)
+✅ news: BEARISH (68%)
+🧠 Head of Advisory Board synthesizing 4 reports for ETH with category=crypto...
+INFO:     10.31.98.132:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.25.23.4:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.31.98.132:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.25.23.4:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.25.23.4:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.31.98.132:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+🎯 DECISION: SELL | Confidence: 68%
+📝 Rationale: Bearish price momentum and negative governance catalysts outweigh neutral macro and sentiment signals, indicating sustained downside risk. With key support levels broken and institutional funding gaps emerging, the risk/reward profile favors reducing exposure until structural stability returns.
+🗳️  Votes — Bullish: 0 | Bearish: 2 | Neutral: 2
+✅ ===== CYCLE COMPLETE =====
+INFO:     10.28.202.5:0 - "GET /api/analyze/status HTTP/1.1" 200 OK
+INFO:     10.31.98.132:0 - "GET /api/status HTTP/1.1" 200 OK
+INFO:     10.28.202.5:0 - "GET /api/decisions HTTP/1.1" 200 OK
