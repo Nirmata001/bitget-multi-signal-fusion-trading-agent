@@ -79,7 +79,11 @@ class AnalyzeRequest(BaseModel):
 async def _run_analysis_job(coin: str, mode: str, category: str = None):
     try:
         # Dynamically switch mode variables
-        os.environ["AGENT_FAST_MODE"] = "true" if mode == "fast" else "false"
+        is_fast = mode == "fast"
+        os.environ["AGENT_FAST_MODE"] = "true" if is_fast else "false"
+        os.environ["AGENT_MAX_ITERATIONS"] = "2" if is_fast else "4"
+        os.environ["AGENT_MAX_TOOLS_PER_ROUND"] = "2" if is_fast else "4"
+        print(f"⚙️ Configured environment: FAST_MODE={os.environ['AGENT_FAST_MODE']}, MAX_ITERATIONS={os.environ['AGENT_MAX_ITERATIONS']}, MAX_TOOLS_PER_ROUND={os.environ['AGENT_MAX_TOOLS_PER_ROUND']}")
         decision = await run_agent_cycle(coin, category=category)
         if decision is None:
             analysis_job["error"] = "Agent cycle failed"
@@ -100,6 +104,10 @@ async def analyze(request: AnalyzeRequest):
     mode = request.mode.lower() if request.mode else "fast"
     category = request.category.lower() if request.category else None
     print(f"📥 Received analyze request: coin={coin}, mode={mode}, category={category}")
+    print("🌍 Environment variables check:")
+    for k, v in os.environ.items():
+        if k.startswith("AGENT_") or k.startswith("QWEN_"):
+            print(f"   {k}={v}")
 
     if analysis_job["running"]:
         return {

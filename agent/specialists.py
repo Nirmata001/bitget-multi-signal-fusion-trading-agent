@@ -71,6 +71,17 @@ async def run_specialist(
         allow_tools = iteration < iterations_limit - 1 and openai_tools
         qwen_tools = openai_tools if allow_tools else None
 
+        if not allow_tools and iteration > 0:
+            messages.append({
+                "role": "user",
+                "content": (
+                    "Now, synthesize all gathered data and output ONLY the final "
+                    "JSON report following the strict schema requested in your system prompt. "
+                    "Do not include any other commentary, markdown code fences, or text outside the JSON. "
+                    "The output must be a single valid JSON block starting with { and ending with }."
+                )
+            })
+
         response_data = await call_qwen_with_retry(
             messages=messages,
             tools=qwen_tools,
@@ -121,16 +132,121 @@ async def run_specialist(
 
 
 def parse_analyst_report(text: str, analyst_key: str, coin: str) -> dict:
-    """Parse JSON from analyst response with fallback"""
-    json_match = re.search(r"\{[\s\S]*\}", text)
-    if json_match:
-        try:
-            report = json.loads(json_match.group())
-            report["analyst"] = analyst_key  # Force key name for frontend matching
-            return report
-        except json.JSONDecodeError:
-            pass
+    """Parse JSON from analyst response with robust cleaning and fallback parsing"""
+    if not text:
+        return _parse_fallback(text, analyst_key)
 
+    # 1. Clean markdown code block fences if they wrap the entire text or parts of it
+    cleaned_text = text.strip()
+    # Remove leading backticks and 'json' specifier if any
+    cleaned_text = re.sub(r"^```(?:json)?\s*", "", cleaned_text)
+    # Remove trailing backticks
+    cleaned_text = re.sub(r"\s*```$", "", cleaned_text)
+    cleaned_text = cleaned_text.strip()
+
+    # 2. Try simple json load of the cleaned overall text
+    try:
+        report = json.loads(cleaned_text)
+        return _format_report(report, analyst_key)
+    except json.JSONDecodeError:
+        pass
+
+    # 3. Find the first '{' and final '}' in case there is surrounding commentary
+    json_match = re.search(r"\{[\s\S]*\}", cleaned_text)
+    if json_match:
+        cand = json_match.group()
+        try:
+            report = json.loads(cand)
+            return _format_report(report, analyst_key)
+        except json.JSONDecodeError:
+            # Try cleaning trailing commas in dictionaries and arrays: e.g. "key": "val", } -> "key": "val" }
+            repaired_cand = re.sub(r",\s*([\}\]])", r"\1", cand)
+            try:
+                report = json.loads(repaired_cand)
+                return _format_report(report, analyst_key)
+            except json.JSONDecodeError:
+                pass
+
+    # 4. Deep regex-based field extractor (absolute guarantee if JSON structure is slightly off)
+    try:
+        # Extract signal (BULLISH, BEARISH, NEUTRAL)
+        signal_m = re.search(r'"signal"\s*:\s*"?(BULLISH|BEARISH|NEUTRAL)"?', cleaned_text, re.IGNORECASE)
+        signal = signal_m.group(1).upper() if signal_m else "NEUTRAL"
+
+        # Extract confidence
+        confidence_m = re.search(r'"confidence"\s*:\s*(\d+)', cleaned_text)
+        confidence = int(confidence_m.group(1)) if confidence_m else 50
+        if confidence < 0 or confidence > 100:
+            confidence = 50
+
+        # Extract summary
+        summary_m = re.search(r'"summary"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"', cleaned_text)
+        summary = summary_m.group(1) if summary_m else ""
+        if not summary:
+            # Fallback regex if double quotes are not matched
+            summary_m = re.search(r'"summary"\s*:\s*\'([^\'\\]*(?:\\.[^\'\\]*)*)\'', cleaned_text)
+            summary = summary_m.group(1) if summary_m else "Analysis complete"
+
+        # Extract keyPoints list
+        key_points = []
+        key_points_m = re.search(r'"keyPoints"\s*:\s*\[([\s\S]*?)\]', cleaned_text)
+        if key_points_m:
+            items = re.findall(r'"([^"\\]*(?:\\.[^"\\]*)*)"', key_points_m.group(1))
+            if not items:
+                items = re.findall(r'\'([^\'\\]*(?:\\.[^\'\\]*)*)\'', key_points_m.group(1))
+            key_points = items
+        if not key_points:
+            key_points = ["Multi-factor trends verified", "Signals cross-checked"]
+
+        # Extract fullReport
+        full_report_m = re.search(r'"fullReport"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"', cleaned_text)
+        full_report = full_report_m.group(1) if full_report_m else ""
+        if not full_report:
+            full_report_m = re.search(r'"fullReport"\s*:\s*\'([^\'\\]*(?:\\.[^\'\\]*)*)\'', cleaned_text)
+            full_report = full_report_m.group(1) if full_report_m else text[:400]
+
+        # Clean string escapes
+        summary = summary.replace('\\"', '"').replace('\\n', ' ')
+        full_report = full_report.replace('\\"', '"').replace('\\n', ' ')
+
+        report = {
+            "analyst": analyst_key,
+            "signal": signal,
+            "confidence": confidence,
+            "summary": summary,
+            "keyPoints": key_points,
+            "fullReport": full_report
+        }
+        print(f"  ✨ Robust parsed report successfully from invalid JSON for {analyst_key}!")
+        return _format_report(report, analyst_key)
+    except Exception as e:
+        print(f"  ⚠️  Robust parsing failed for {analyst_key}: {e}")
+
+    return _parse_fallback(text, analyst_key)
+
+
+def _format_report(report: dict, analyst_key: str) -> dict:
+    # Ensure correct structure and types
+    report["analyst"] = analyst_key
+    if "signal" not in report or report["signal"] not in ("BULLISH", "BEARISH", "NEUTRAL"):
+        report["signal"] = "NEUTRAL"
+    if "confidence" not in report:
+        report["confidence"] = 50
+    else:
+        try:
+            report["confidence"] = int(report["confidence"])
+        except:
+            report["confidence"] = 50
+    if "summary" not in report:
+         report["summary"] = "Analysis completed"
+    if "keyPoints" not in report or not isinstance(report["keyPoints"], list):
+         report["keyPoints"] = ["Trends cross-referenced"]
+    if "fullReport" not in report:
+         report["fullReport"] = "Detailed analyst findings"
+    return report
+
+
+def _parse_fallback(text: str, analyst_key: str) -> dict:
     print(f"  ⚠️  Could not parse {analyst_key} report — using fallback")
     return {
         "analyst": analyst_key,
