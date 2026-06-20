@@ -204,7 +204,7 @@ export default function HomepageCockpit({
 }: HomepageCockpitProps) {
   const terminalContainerRef = React.useRef<HTMLDivElement | null>(null);
   const [analysisMode, setAnalysisMode] = React.useState<"fast" | "full">("fast");
-  const [sidebarTab, setSidebarTab] = React.useState<"stocks" | "crypto">("stocks");
+  const [sidebarTab, setSidebarTab] = React.useState<"stocks" | "crypto">("crypto");
   const [speakingText, setSpeakingText] = React.useState<string | null>(null);
   const [isSpeaking, setIsSpeaking] = React.useState<boolean>(false);
   const [memoDecision, setMemoDecision] = React.useState<Decision | null>(null);

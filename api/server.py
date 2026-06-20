@@ -104,10 +104,6 @@ async def analyze(request: AnalyzeRequest):
     mode = request.mode.lower() if request.mode else "fast"
     category = request.category.lower() if request.category else None
     print(f"📥 Received analyze request: coin={coin}, mode={mode}, category={category}")
-    print("🌍 Environment variables check:")
-    for k, v in os.environ.items():
-        if k.startswith("AGENT_") or k.startswith("QWEN_"):
-            print(f"   {k}={v}")
 
     if analysis_job["running"]:
         return {
