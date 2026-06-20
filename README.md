@@ -1,313 +1,304 @@
-# 📈 OmniSignal AI Investment Committee
+# OmniSignal — Multi-Agent Financial Intelligence Platform
 
-> Institutional-grade stock and crypto analysis powered by a council of specialized AI analysts.
+> **Bitget AI Base Camp Hackathon S1 · Track 3: Open Innovaton**
 
-## 🚀 Overview
-
-OmniSignal is a multi-agent AI trading intelligence platform that simulates an investment committee rather than relying on a single AI model.
-
-Instead of generating trading decisions from one general-purpose assistant, OmniSignal assembles a council of specialist analysts focused on different market dimensions:
-
-* 🌍 Macroeconomic Analysis
-* 📊 Earnings & Fundamentals
-* 📉 Technical Analysis
-* 📰 Market Sentiment Analysis
-
-Each specialist independently evaluates an asset, submits its recommendation, and participates in a consensus process that produces a final investment outlook.
-
-The result is a more structured, explainable, and transparent approach to AI-powered market analysis.
+OmniSignal replaces single-model AI speculation with a structured, consensus-driven advisory council. Instead of asking one AI "should I buy Bitcoin?" and getting one opinion, OmniSignal simulates a real institutional investment committee — four autonomous specialist agents independently research an asset, cast their votes, and a Head of Advisory synthesizes their findings into a unified, high-conviction recommendation.
 
 ---
 
-## 🎯 Problem
+## The Problem
 
-Modern investors are overwhelmed by fragmented information:
+Most AI trading tools today are either:
+- **Single-model black boxes** — one model, one perspective, no transparency
+- **Rule-based bots** — rigid signal triggers with no contextual reasoning
+- **Hallucination-prone** — AI models speculating without grounding in live market data
 
-* Earnings reports
-* Economic releases
-* Technical indicators
-* Market sentiment
-* News events
-* Social media discussions
-
-Most AI trading tools provide a single opinion without exposing the reasoning process behind the decision.
-
-OmniSignal addresses this by creating a collaborative AI committee where multiple specialist agents contribute to a final recommendation.
+OmniSignal solves this by combining **multi-agent swarm architecture**, **live market data via Bitget MCP**, and **democratic consensus voting** into a single research platform built for serious traders and investors.
 
 ---
 
-## 💡 Solution
+## Architecture Overview
 
-OmniSignal introduces a Swarm Intelligence Investment Committee.
+### Hub-and-Spoke Swarm Design
 
-Every analysis request is routed through multiple expert agents that:
-
-1. Research the asset from their domain perspective
-2. Produce independent findings
-3. Vote bullish, bearish, or neutral
-4. Participate in a consensus engine
-5. Generate a final investment recommendation with supporting rationale
-
-This mirrors how professional investment firms often operate through committees rather than individual analysts.
-
----
-
-## 🏗️ Architecture
-
-```text
-                  ┌─────────────────────────────────────┐
-                  │          USER TRIGGER               │
-                  │   (Asset Select & Analysis Mode)    │
-                  └──────────────────┬──────────────────┘
-                                     │
-                                     ▼
-                  ┌─────────────────────────────────────┐
-                  │    COUNCIL CONSENSUS ENGINE HUB     │
-                  └──────┬───────┬───────┬───────┬──────┘
-                         │       │       │       │
-             ┌───────────┘       │       │       └───────────┐
-             ▼                   ▼       ▼                   ▼
-       ┌─────────────┐     ┌─────────────┐ ┌─────────────┐     ┌─────────────┐
-       │    MACRO    │     │MARKET INTEL │ │   NEWS AI   │     │  SENTIMENT  │
-       │   ANALYST   │     │  ANALYST    │ │   ANALYST   │     │   ANALYST   │
-       └──────┬──────┘     └──────┬──────┘ └──────┬──────┘     └──────┬──────┘
-              │                   │               │                   │
-              │  (Parallel Model Context Protocol (MCP) Server Sessions)  │
-              ▼                   ▼               ▼                   ▼
-       ┌─────────────────────────────────────────────────────────────────────┐
-       │             Bitget Market Data MCP Server Pipeline                  │
-       │     (Rates, Yields, Crypto, Defi, Dex, News, Sentiment Indexes)     │
-       └──────────────────────────────────┬──────────────────────────────────┘
-                                          │ [Aggregated Real-time Context]
-                                          ▼
-                   ┌─────────────────────────────────────┐
-                   │      VOTING & RESOLUTION TABLE      │
-                   │  (Bullish / Bearish / Neutral Vote) │
-                   └──────────────────┬──────────────────┘
-                                     │
-                                     ▼
-                  ┌─────────────────────────────────────┐
-                  │      HEAD OF ADVISORY SYNTHESIS     │
-                  │  (Final Decision & Ledger Record)   │
-                  └─────────────────────────────────────┘
+```
+                    ┌─────────────────────────┐
+                    │   USER SELECTS ASSET    │
+                    │   (BTC, AAPL, ETH...)   │
+                    └────────────┬────────────┘
+                                 │
+                    ┌────────────▼────────────┐
+                    │   CONSENSUS ENGINE      │
+                    │   Head of Advisory      │
+                    │   (Orchestrator)        │
+                    └──┬──────┬──────┬──────┬─┘
+                       │      │      │      │
+              ┌────────▼─┐ ┌──▼───┐ ┌▼────┐ ┌▼──────────┐
+              │  MACRO   │ │MARKET│ │NEWS │ │ SENTIMENT │
+              │ ANALYST  │ │INTEL │ │AGENT│ │   AGENT   │
+              └────────┬─┘ └──┬───┘ └┬────┘ └┬──────────┘
+                       │      │      │        │
+                    ┌──▼──────▼──────▼────────▼──┐
+                    │    BITGET MCP DATA HUB      │
+                    │  19 Live Market Data Tools  │
+                    │  datahub.noxiaohao.com/mcp  │
+                    └─────────────────────────────┘
+                                 │
+                    ┌────────────▼────────────┐
+                    │   CONSENSUS SYNTHESIS   │
+                    │  BUY / HOLD / SELL      │
+                    │  Confidence Score       │
+                    │  Committee Breakdown    │
+                    └─────────────────────────┘
 ```
 
 ---
 
-## 📡 Dynamic Data Sourcing & MCP Server Integration
+## The Four Specialist Agents
 
-To provide institutional-grade precision, OmniSignal implements a secure, sandboxed Model Context Protocol (MCP) data-gathering pipeline. Rather than relying on static pre-training knowledge, each specialist analyst is assigned a dedicated toolkit connected to Bitget market data MCP server(https://datahub.noxiaohao.com/mcp).
+Each agent operates autonomously with access to a curated subset of live market data tools from the Bitget MCP server:
 
-When an analysis is triggered, the **Head of Advisory (Consensus Engine)** spins up parallel sandboxed sessions. Each specialized AI analyst then queries the MCP server in real-time, executing only the specific set of financial or digital asset instruments permitted in their security sandbox definition:
+### 🌐 Macro Analyst
+**Domain:** Global macroeconomics, monetary policy, cross-asset correlations
 
-### 🌍 Macro Analyst (Liquidity & Legacies)
-The Macro Analyst manages currency flows, legacy assets, index data, and sovereign interest positions to formulate high-level equity risk models.
-* **Assigned MCP Tools**:
-  * `rates_yields`: Fetches sovereign bond distributions and global base interest rates.
-  * `macro_indicators`: Evaluates central bank inflation, unemployment metrics, and GDP targets.
-  * `global_assets`: Tracks legacy index averages (S&P 500, Nasdaq, DXY, gold).
-  * `cross_asset`: Maps commodity-to-token velocity ratios.
-  * `tradfi_news`: Pulls legacy corporate financial media disclosures.
-  * `cn_market`: Integrates liquidity indicators from specialized international capital markets.
-  * `global_data`: Retrieves raw secondary economic index statistics.
+Evaluates the broader economic backdrop — interest rate cycles, inflation metrics, sovereign currency structures, Fed policy direction, and how traditional finance forces affect the target asset.
 
-### 📊 Market Intel Analyst (On-Chain & Exchange Intelligence)
-The Market Intel Analyst represents our primary crypto-native intelligence core. It evaluates raw blockchain metrics, specialized token balances, decentralized reserves, and automated market maker pools.
-* **Assigned MCP Tools**:
-  * `crypto_market`: Monitors general asset pairs, volume, and depth across major digital asset venues.
-  * `defi_analytics`: Measures decentralized lending rates, total value locked (TVL), and farm yields.
-  * `dex_market`: Tracks automated market maker (AMM) pools, trades, slippage statistics, and decentralized liquidity.
-  * `network_status`: Examines on-chain metrics, gas prices, blockchain hash rates, and block frequencies.
-  * `crypto_price`: Fetches real-time localized crypto pricing and ticker details.
+**Live data tools:** `rates_yields`, `macro_indicators`, `global_assets`, `cross_asset`, `tradfi_news`, `cn_market`, `global_data`
 
-### 📰 News AI Analyst (Narrative Velocity & Social Feed Streamer)
-The News Analyst computes psychological sentiment trends, trending keyword vectors, corporate developments, and social dominance metrics from live streams.
-* **Assigned MCP Tools**:
-  * `news_feed`: Gathers chronological headlines and breaking corporate press releases.
-  * `social_trending`: Identifies coin triggers, social velocity indexes, and viral keyword clusters.
-  * `tradfi_news`: Ingests traditional media coverage vectors to match retail expectations against institution briefings.
-
-### 📉 Sentiment Analyst (Trading Psychology & Orderbook Metrics)
-The Sentiment Analyst maps market heatmaps, liquidation metrics, leverage ratios, and retail fear/greed fluctuations.
-* **Assigned MCP Tools**:
-  * `sentiment_index`: Synthesizes unified social volume ratios and fear-greed indexes.
-  * `derivatives_sentiment`: Resolves futures open interest, perpetual funding rates, and options volume spreads.
+**Key signals:** Yield curve shape · Fed funds trajectory · DXY momentum · BTC/Gold/Nasdaq correlations · CPI and NFP releases
 
 ---
 
-## ✨ Key Features
+### 💰 Market Intelligence Analyst
+**Domain:** On-chain flows, orderbook structure, institutional activity
 
-### 🤖 Multi-Agent Intelligence
+Focuses on the structural layer beneath price — where capital is actually flowing, what large holders are doing, derivatives market positioning, and liquidity conditions.
 
-Multiple specialized AI analysts work together to evaluate an asset (4 specialized analysts & 1 Head of Advisory).
+**Live data tools:** `crypto_market`, `defi_analytics`, `dex_market`, `network_status`, `crypto_price`
 
-### 🏛️ Consensus-Based Decision Making
-
-Recommendations are determined through a structured voting process rather than a single AI response.
-
-### 📊 Explainable Analysis
-
-Every recommendation includes supporting reasoning from each specialist.
-
-### 📈 Cross-Asset Research (Stocks & Crypto)
-
-Designed for both traditional stock markets and rapid digital asset crypto markets to provide unified investment decision support.
-
-### 📝 Persistent Decision Ledger
-
-Analysis outputs can be stored and reviewed for transparency and auditing.
-
-### ⚡ Real-Time Insights
-
-Supports dynamic analysis workflows for rapidly changing markets.
+**Key signals:** Exchange reserve levels · Open interest · OTC desk activity · DEX trending · Network congestion
 
 ---
 
-## 🛠️ Tech Stack
+### 📰 News Analyst
+**Domain:** Breaking news, regulatory filings, institutional narratives
 
-### Frontend
+Ingests global news wires, regulatory developments, corporate disclosures, and media velocity to identify market-moving narratives before they are priced in.
 
-* React
-* TypeScript
-* Vite
-* Tailwind CSS
+**Live data tools:** `news_feed`, `social_trending`, `tradfi_news`
 
-### Backend
-
-* Node.js
-* Express
-
-### AI Layer
-
-* Qwen Models 
-* Multi-Agent Consensus Orchestration
-* **Bitget market data MCP server** (Connecting agents to real-time market data)
-
-### Storage
-
-* JSON-based analysis ledger
+**Key signals:** Regulatory announcements · ETF flow narratives · Institutional adoption headlines · Breaking geopolitical events
 
 ---
 
-## 📂 Project Structure
+### 📊 Sentiment Analyst
+**Domain:** Crowd psychology, derivatives positioning, social signals
 
-```text
-.
-├── agent/
-│   ├── agent.py
-│   ├── specialists.py
-│   ├── synthesis.py
-│   ├── prompts.py
-│   └── qwen_client.py
-│
-├── api/
-│   └── server.py
-│
-├── src/
-│   ├── components/
-│   ├── lib/
-│   └── App.tsx
-│
-├── data/
-│   └── decisions.json
-│
-├── server.ts
-├── package.json
-└── requirements.txt
+Measures the emotional temperature of the market — fear vs. greed, leverage concentration, long/short imbalances, and social media momentum.
+
+**Live data tools:** `sentiment_index`, `derivatives_sentiment`
+
+**Key signals:** Fear & Greed Index · Long/short ratios · Funding rates · Taker buy/sell ratio · Reddit trending
+
+---
+
+## The 4-Step Consensus Workflow
+
+```
+STEP 1 — CONCURRENT FIELD RESEARCH
+All 4 analysts launch simultaneously, each independently
+researching the asset from their domain perspective using
+live data from the Bitget MCP server.
+
+STEP 2 — DEMOCRATIC BALLOTING
+Each analyst casts an individual vote:
+  · Signal:     BULLISH / BEARISH / NEUTRAL
+  · Confidence: 0–100%
+  · Evidence:   Key findings and supporting data points
+  · Full Report: Detailed analytical narrative
+
+STEP 3 — SYNTHESIS & RECONCILIATION
+The Head of Advisory receives all 4 ballots, weighs
+the evidence, resolves conflicts, and outputs:
+  · Final action:    BUY / HOLD / SELL
+  · Confidence:      Aggregate conviction score
+  · Rationale:       Synthesized reasoning
+  · Committee votes: Full breakdown
+
+STEP 4 — LEDGER LOGGING
+The complete committee paper — including all individual
+analyst reports, vote breakdowns, and timestamps — is
+written to a persistent chronological ledger.
 ```
 
 ---
 
-## ⚙️ Installation
+## Key Features
 
-### Clone Repository
+### 🔊 Live Voice Narration
+Integrated with the Web Speech Synthesis API, users can trigger a high-quality verbal brief of the committee's consolidated report with a single click. The narration covers the final recommendation, confidence score, rationale, and committee vote breakdown — making the analysis accessible without reading.
 
+### 📊 Dynamic Terminal Cockpit
+Built with React 18 and Framer Motion, the dashboard presents a high-contrast dark interface combining Space Grotesk and JetBrains Mono typography — designed to feel like a premium institutional trading terminal. Real-time animations reflect agent activity, vote tallying, and synthesis in progress.
+
+### 📥 Comprehensive CSV Exporter
+The custom ledger exporter maps the complete chronological history into structured spreadsheet columns — including committee votes, individual analyst signals, confidence levels, key takeaways, and full report text — enabling downstream analysis, backtesting dataset creation, and audit trails.
+
+### ⚡ Analysis Modes
+- **Tactical Fast Check** — Rapid 4-analyst sweep prioritizing speed
+- **Deep Comprehensive Diagnostic** — Full multi-tool research cycle per analyst with broader data coverage
+
+---
+
+## Technology Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Agent Framework | Python 3.12 · asyncio |
+| AI Model | Qwen (OpenAI-compatible API) |
+| Market Data | Bitget MCP Server · 19 live data tools |
+| MCP Transport | `mcp.client.streamable_http` |
+| Backend API | FastAPI · Uvicorn |
+| Frontend | React 18 · TypeScript · Vite |
+| UI Animations | Framer Motion |
+| Styling | Tailwind CSS |
+| Data Persistence | JSON ledger (local) |
+
+---
+
+## MCP Integration
+
+OmniSignal connects to the Bitget Agent Hub MCP server at `https://datahub.noxiaohao.com/mcp` using the MCP `streamable_http` transport protocol. On startup, the platform:
+
+1. Establishes a persistent MCP session
+2. Fetches all 19 available tool definitions
+3. Dynamically converts them to the AI model's function calling schema
+4. Assigns tool subsets to each specialist analyst
+5. Executes tool calls on behalf of analysts during their research phase
+
+This architecture means OmniSignal automatically picks up new tools added to the Bitget MCP server without any code changes — the tool mapping is fully dynamic.
+
+---
+
+## Installation & Setup
+
+### Prerequisites
+- Python 3.12+
+- Node.js 18+
+- Qwen API key
+- Bitget API key (for `bgc` CLI tools)
+
+### Backend Setup
 ```bash
-git clone https://github.com/Nirmata001/bitget-multi-signal-fusion-trading-agent.git
+# Clone the repository
+git clone https://github.com/your-username/omnisignal
 
-cd bitget-multi-signal-fusion-trading-agent
+# Install Python dependencies
+pip install -r requirements.txt
+
+# Configure environment variables
+cp .env.example .env
+# Edit .env with your API keys:
+# QWEN_API_KEY=your_key
+# QWEN_BASE_URL=
+# QWEN_MODEL=
+# BITGET_API_KEY=your_key
+# BITGET_SECRET_KEY=your_secret
+# BITGET_PASSPHRASE=your_passphrase
+
+# Start the FastAPI server
+python api/server.py
 ```
 
-### Install Frontend Dependencies
-
+### Frontend Setup
 ```bash
+# Install Node dependencies
 npm install
-```
 
-### Configure Environment Variables
-
-Create a `.env` file:
-
-```env
-QWEN_MODEL=
-QWEN_API_KEY=
-QWEN_BASE_URL=
-```
-
-### Start Development Server
-
-```bash
+# Start the React dashboard
 npm run dev
 ```
 
----
-
-## 🔄 Analysis Flow
-
-1. User selects a stock or crypto asset
-2. Consensus engine launches specialist analysts
-3. Each analyst performs independent evaluation
-4. Agents submit votes
-5. Final recommendation is synthesized by the lead agent (Head of Advisory)
-6. Report is saved to the decision ledger
+### Run a Single Analysis Cycle
+```bash
+python main.py
+```
 
 ---
 
-## 📸 Screenshots
+## API Endpoints
 
-### Landing Page
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/status` | Agent status and last run info |
+| `GET` | `/api/decisions` | Last 20 committee decisions |
+| `POST` | `/api/analyze` | Trigger analysis for a coin/stock |
 
-Add screenshot here
+### Example Request
+```bash
+curl -X POST http://localhost:3001/api/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"coin": "BTC"}'
+```
 
-### Committee Analysis
-
-Add screenshot here
-
-### Final Recommendation
-
-Add screenshot here
-
----
-
-## 🎥 Demo
-
-### Live Application
-
-[Demo Link]
-
-### Video Walkthrough
-
-[Video Link]
-
----
-
-## 🔮 Roadmap
-
-* Portfolio Management
-* Backtesting Engine
-* Autonomous Trade Execution
-* Risk Scoring Models
-* Earnings Call Analysis
-* ETF Coverage
+### Example Response
+```json
+{
+  "success": true,
+  "decision": {
+    "coin": "BTC",
+    "action": "BUY",
+    "confidence": 78,
+    "rationale": "Three of four analysts present bullish signals...",
+    "committeeVotes": {
+      "bullish": 3,
+      "bearish": 0,
+      "neutral": 1
+    },
+    "analystReports": [...],
+    "timestamp": "2026-06-17T10:30:00Z"
+  }
+}
+```
 
 ---
 
-## 👥 Team
+## Why OmniSignal Wins
 
-Built for the Stocks AI Trading Hackathon Track.
+| Traditional AI Trading Tools | OmniSignal |
+|------------------------------|------------|
+| Single model, single opinion | 4 specialists + 1 synthesizer |
+| No data grounding | 19 live MCP data tools |
+| Black box reasoning | Full committee transparency |
+| Static rule triggers | Dynamic AI-driven tool selection |
+| One asset class | Crypto + Equities |
+| No audit trail | Persistent ledger with full reports |
 
 ---
 
-## 📄 License
+## Roadmap
 
-MIT License
+- [ ] Simulated trade execution via Bitget API
+- [ ] Backtesting integration using the `backtest` MCP tool
+- [ ] Portfolio-level multi-asset analysis
+- [ ] Scheduled autonomous monitoring with alerts
+- [ ] WebSocket real-time streaming to dashboard
+- [ ] Additional specialist agents (Technical Analysis, Options Flow)
+
+---
+
+## License
+
+MIT License — see [LICENSE](LICENSE) for details.
+
+---
+
+## Acknowledgements
+
+- **Bitget Agent Hub** — MCP server and skill hub infrastructure
+- **Alibaba Cloud** — Qwen model API
+- **Model Context Protocol** — Open standard for AI tool integration
+
+---
+
+*Built for the Bitget AI Base Camp Hackathon S1 · Track 3: Open Innovation*
