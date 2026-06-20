@@ -24,6 +24,9 @@ def get_max_content_per_message() -> int:
 def get_max_total_input_chars() -> int:
     return 400_000 if is_fast_mode() else 900_000
 
+def get_max_tools_per_round() -> int:
+    return int(os.getenv("AGENT_MAX_TOOLS_PER_ROUND", "2" if is_fast_mode() else "4"))
+
 FAST_MODE = FAST_MODE_DEFAULT
 MAX_ITERATIONS = int(os.getenv("AGENT_MAX_ITERATIONS", "2" if FAST_MODE else "4"))
 MAX_TOOLS_PER_ROUND = int(os.getenv("AGENT_MAX_TOOLS_PER_ROUND", "2"))

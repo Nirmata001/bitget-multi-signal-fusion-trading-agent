@@ -14,9 +14,10 @@ from agent.prompts import get_analyst_prompt_template
 from agent.qwen_client import call_qwen_with_retry
 from agent.config import (
     get_max_iterations,
-    MAX_TOOLS_PER_ROUND,
+    get_max_tools_per_round,
     SPEED_INSTRUCTION,
     ANALYST_STAGGER_SECONDS,
+    is_fast_mode,
 )
 
 ANALYSTS = ["macro", "sentiment", "market_intel", "news"]
@@ -39,10 +40,25 @@ async def run_specialist(
     openai_tools = tools_to_openai_format(analyst_tools)
 
     analyst_prompt_template = get_analyst_prompt_template(analyst_key, coin, category=category)
-    system_prompt = analyst_prompt_template.format(coin=coin) + SPEED_INSTRUCTION
-    user_message = (
-        f"Analyze {coin} now. Use at most 2 tools, then output ONLY the JSON report."
-    )
+    
+    if is_fast_mode():
+        system_prompt = analyst_prompt_template.format(coin=coin) + SPEED_INSTRUCTION
+        user_message = (
+            f"Analyze {coin} now. Use at most 2 tools, then output ONLY the JSON report."
+        )
+    else:
+        full_instruction = (
+            "\n\nCOMPREHENSIVE RULES: Perform a deep and thorough analysis. "
+            "Use all your available tools to cross-reference multiple data dimensions "
+            "(macro trends, technical factors, market news, sentiment). Analyze "
+            "contradictory signals, investigate unexpected values, and use multiple steps "
+            "if necessary before generating the final comprehensive JSON report."
+        )
+        system_prompt = analyst_prompt_template.format(coin=coin) + full_instruction
+        user_message = (
+            f"Analyze {coin} now. Gather thorough data from your specialist tools, "
+            "perform robust multi-factor reasoning, and provide a comprehensive JSON report."
+        )
 
     messages = [
         {"role": "system", "content": system_prompt},
@@ -74,7 +90,7 @@ async def run_specialist(
             return parse_analyst_report(final_text, analyst_key, coin)
 
         # Cap parallel tool calls per round
-        tool_calls = tool_calls[:MAX_TOOLS_PER_ROUND]
+        tool_calls = tool_calls[:get_max_tools_per_round()]
 
         calls = []
         for tc in tool_calls:

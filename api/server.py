@@ -99,6 +99,7 @@ async def analyze(request: AnalyzeRequest):
     coin = request.coin.upper()
     mode = request.mode.lower() if request.mode else "fast"
     category = request.category.lower() if request.category else None
+    print(f"📥 Received analyze request: coin={coin}, mode={mode}, category={category}")
 
     if analysis_job["running"]:
         return {

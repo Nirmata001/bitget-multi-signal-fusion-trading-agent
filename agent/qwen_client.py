@@ -12,6 +12,7 @@ from agent.config import (
     is_fast_mode,
     get_max_content_per_message,
     get_max_total_input_chars,
+    get_qwen_timeout,
 )
 
 load_dotenv()
@@ -127,9 +128,11 @@ async def call_qwen_with_retry(
     temperature: float = 0.1,
     retries: int = QWEN_RETRIES,
     delay: float = QWEN_RETRY_DELAY,
-    timeout: float = QWEN_TIMEOUT,
+    timeout: float = None,
 ) -> dict:
     """Retry wrapper with concurrency limit and exponential backoff for 503/502."""
+    if timeout is None:
+        timeout = get_qwen_timeout()
     last_error = None
 
     for attempt in range(retries):
