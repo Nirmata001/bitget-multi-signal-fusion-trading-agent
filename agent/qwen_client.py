@@ -23,7 +23,7 @@ _qwen_semaphore = asyncio.Semaphore(QWEN_MAX_CONCURRENT)
 
 
 def sanitize_messages(messages: list) -> list:
-    """Ensure Qwen receives valid non-empty, bounded message content."""
+    """Ensure Qwen receives valid non-empty, bounded message content and valid tool calls."""
     sanitized = []
 
     for msg in messages:
@@ -34,6 +34,47 @@ def sanitize_messages(messages: list) -> list:
             content = ""
         elif not isinstance(content, str):
             content = json.dumps(content, ensure_ascii=False)
+
+        # Sanitize tool calls if they exist in this message
+        if "tool_calls" in clean:
+            tcs = clean["tool_calls"]
+            if isinstance(tcs, list):
+                valid_tcs = []
+                for idx, tc in enumerate(tcs):
+                    if not isinstance(tc, dict):
+                        continue
+                    fn = tc.get("function")
+                    if not isinstance(fn, dict):
+                        continue
+                    name = fn.get("name")
+                    if not name or not isinstance(name, str) or not name.strip():
+                        continue
+
+                    # Ensure arguments is a valid JSON string
+                    args_val = fn.get("arguments", "{}")
+                    if not isinstance(args_val, str):
+                        try:
+                            args_val = json.dumps(args_val)
+                        except Exception:
+                            args_val = "{}"
+                    else:
+                        try:
+                            json.loads(args_val)
+                        except Exception:
+                            args_val = "{}"
+
+                    fn["arguments"] = args_val
+                    tc["function"] = fn
+
+                    if not tc.get("id"):
+                        tc["id"] = f"call_gen_{idx}"
+                    tc["type"] = "function"
+                    valid_tcs.append(tc)
+
+                if valid_tcs:
+                    clean["tool_calls"] = valid_tcs
+                else:
+                    clean.pop("tool_calls", None)
 
         if not content.strip():
             if clean.get("tool_calls"):

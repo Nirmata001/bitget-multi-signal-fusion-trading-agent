@@ -93,6 +93,50 @@ async def run_specialist(
         if not message.get("content") and message.get("tool_calls"):
             message["content"] = "Calling tools."
 
+        # Filter out invalid or unauthorized tool calls
+        raw_tool_calls = message.get("tool_calls")
+        filtered_tool_calls = []
+        allowed_tool_names = set(tool.name for tool in analyst_tools)
+
+        if raw_tool_calls and isinstance(raw_tool_calls, list):
+            for idx, tc in enumerate(raw_tool_calls):
+                if not isinstance(tc, dict):
+                    continue
+                fn = tc.get("function")
+                if not isinstance(fn, dict):
+                    continue
+                fn_name = fn.get("name")
+                if not fn_name or not isinstance(fn_name, str) or fn_name.strip() not in allowed_tool_names:
+                    # Skip empty tool names, or names not permitted/supported for this analyst
+                    continue
+
+                # Ensure arguments is a valid JSON string
+                fn_args_str = fn.get("arguments", "{}")
+                if not isinstance(fn_args_str, str):
+                    try:
+                        fn_args_str = json.dumps(fn_args_str)
+                    except Exception:
+                        fn_args_str = "{}"
+                else:
+                    try:
+                        json.loads(fn_args_str)
+                    except Exception:
+                        fn_args_str = "{}"
+
+                fn["arguments"] = fn_args_str
+                tc["function"] = fn
+
+                if "id" not in tc or not tc["id"]:
+                    tc["id"] = f"call_{iteration}_{idx}"
+                tc["type"] = "function"
+
+                filtered_tool_calls.append(tc)
+
+        if filtered_tool_calls:
+            message["tool_calls"] = filtered_tool_calls
+        else:
+            message.pop("tool_calls", None)
+
         messages.append(message)
         tool_calls = message.get("tool_calls")
 
