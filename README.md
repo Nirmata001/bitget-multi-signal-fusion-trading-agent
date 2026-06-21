@@ -18,7 +18,7 @@ OmniSignal replaces single-model AI speculation with a structured, consensus-dri
 ### 🖥️ Client Web Interface (Landing Page & Homepage Cockpit)
 Here is the client-side user experience, showcasing our polished marketing landing page and the high-contrast analytical cockpit dashboard, featuring active multi-agent status visualization, real-time voice narration, and historical ledger consensus results.
 
-| Aesthetic Landing Page | Interactive Homepage Cockpit |
+| Aesthetic Landing Page |
 |:---:|:---:|
 | ![OmniSignal Landing Page](./demo_run_record/Screenshot%20(328).png) | ![OmniSignal Homepage Cockpit](./demo_run_record/Screenshot%20(330).png) |
 
