@@ -6,6 +6,29 @@ OmniSignal replaces single-model AI speculation with a structured, consensus-dri
 
 ---
 
+## 🔗 Project Links
+
+* **🚀 LIVE INTERACTIVE DEMO**: [https://omnisgnal.onrender.com/](https://omnisgnal.onrender.com/)
+* **🎥 DEMONSTRATION VIDEO**: [Watch on X (Twitter)](https://x.com/Michelangelo_0_/status/2068593661986640209?s=20)
+
+---
+
+## 📸 Platform Interface Gallery
+
+### 🖥️ Client Web Interface (Landing Page & Homepage Cockpit)
+Here is the client-side user experience, showcasing our polished marketing landing page and the high-contrast analytical cockpit dashboard, featuring active multi-agent status visualization, real-time voice narration, and historical ledger consensus results.
+
+| Aesthetic Landing Page | Interactive Homepage Cockpit |
+|:---:|:---:|
+| ![OmniSignal Landing Page](./demo_run_record/Screenshot%20(328).png) | ![OmniSignal Homepage Cockpit](./demo_run_record/Screenshot%20(330).png) |
+
+### ⚙️ Multi-Agent Swarm Orchestration (Terminal Execution)
+A look at the background multi-analyst execution pipeline retrieving real-time metrics via Bitget MCP server tools.
+
+![OmniSignal Terminal Execution Log](./demo_run_record/Screenshot%20(333).png)
+
+---
+
 ## The Problem
 
 Most AI trading tools today are either:
@@ -205,7 +228,7 @@ This architecture means OmniSignal automatically picks up new tools added to the
 ### Backend Setup
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/omnisignal
+git clone https://github.com/Nirmata001/bitget-multi-signal-fusion-trading-agent
 
 # Install Python dependencies
 pip install -r requirements.txt
