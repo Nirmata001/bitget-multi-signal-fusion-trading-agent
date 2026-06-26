@@ -479,61 +479,7 @@ export default function HomepageCockpit({
         </div>
       </header>
 
-      {/* Welcome Walkthrough Invite Banner */}
-      {tourActive && !tourStarted && (
-        <motion.div 
-          initial={{ opacity: 0, y: -15 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="max-w-[1400px] w-full mx-auto px-4 mb-5"
-        >
-          <div className="bg-gradient-to-r from-slate-950 via-[#0c142c] to-indigo-950 text-white p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-indigo-500/25 flex flex-col md:flex-row items-center justify-between gap-4 relative overflow-hidden group">
-            {/* Ambient background glows */}
-            <div className="absolute top-0 right-1/4 w-40 h-40 bg-indigo-500/10 rounded-full blur-[60px] pointer-events-none group-hover:scale-125 transition-transform duration-700" />
-            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-purple-500/5 rounded-full blur-[50px] pointer-events-none" />
-            
-            <div className="flex items-center gap-4 relative z-10 text-left">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300 shadow-[0_0_15px_rgba(99,102,241,0.15)] shrink-0">
-                <Sparkles className="w-5 h-5 animate-pulse text-indigo-400" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h4 className="text-[14px] font-bold tracking-tight font-sans text-white">
-                    New to OmniSignal?
-                  </h4>
-                  <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[9px] font-bold text-indigo-300 uppercase tracking-widest font-mono">
-                    1-Min Walkthrough
-                  </span>
-                </div>
-                <p className="text-[11px] text-slate-300 mt-1 max-w-2xl leading-relaxed">
-                  Learn how to select target assets, configure multi-agent reasoning, trigger swarm consensus runs, and monitor live log telemetry.
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2.5 shrink-0 relative z-10">
-              <button
-                onClick={() => {
-                  setTourStarted(true);
-                  setCurrentStep(0);
-                }}
-                className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl text-[11px] font-bold cursor-pointer transition-all shadow-[0_4px_12px_rgba(99,102,241,0.25)] hover:shadow-[0_4px_20px_rgba(99,102,241,0.4)] active:scale-95 flex items-center gap-1.5"
-              >
-                <span>Start Tour</span>
-                <ChevronRight className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => {
-                  setTourActive(false);
-                  localStorage.setItem("omnisignal_tour_completed", "true");
-                }}
-                className="px-3.5 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white rounded-xl text-[11px] font-semibold cursor-pointer transition-all"
-              >
-                Dismiss
-              </button>
-            </div>
-          </div>
-        </motion.div>
-      )}
+
 
       {/* Floating Bottom Navbar inside Cockpit */}
       <div 

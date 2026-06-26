@@ -164,6 +164,12 @@ Here is the client-side user experience, showcasing our polished marketing landi
 * **🚀 LIVE INTERACTIVE DEMO**: [https://omnisgnal.onrender.com/](https://omnisgnal.onrender.com/)
 * **🎥 DEMONSTRATION VIDEO**: [Watch on X (Twitter)](https://x.com/Michelangelo_0_/status/2068593661986640209?s=20)
 
+> [!NOTE]
+> **⚠️ Handling Upstream Qwen API 503 Connection Resets:**
+> During high-traffic periods, you may occasionally encounter a `Qwen API HTTP error 503` (e.g., *"upstream connect error or disconnect/reset before headers"*).
+> This is a known upstream gateway / server load limit. OmniSignal is equipped with **automatic retry capabilities** (up to 4 attempts with exponential backoff). If a cycle fails due to a persistent 503, please wait a few moments and trigger the analysis run again.
+
+
 ---
 
 ## 📁 Demo Run Records & Verification
