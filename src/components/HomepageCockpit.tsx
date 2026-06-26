@@ -10,6 +10,7 @@ import {
   Clock, 
   RefreshCw, 
   ShieldAlert, 
+  AlertCircle,
   History,
   Workflow,
   Sparkles,
@@ -740,6 +741,15 @@ export default function HomepageCockpit({
                                 </div>
                               </div>
 
+                              {!isSessionReport && (
+                                <div className="mt-1 mb-3.5 p-3 bg-amber-50 border border-amber-200/80 rounded-xl flex items-start gap-2.5 text-left text-amber-800">
+                                  <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+                                  <div className="text-[10px] leading-relaxed font-sans font-medium">
+                                    <span className="font-bold">Historical Report Notice:</span> This consensus was generated in a previous session or cycle. Market conditions may have shifted. Please trigger a new analysis below for the latest intelligence.
+                                  </div>
+                                </div>
+                              )}
+
                               <div className="flex items-center gap-3.5">
                                 <div className={`px-3 py-2 rounded-xl border text-center min-w-[85px] shrink-0 ${getActionTheme(matchedDecision.action).bg}`}>
                                   <span className="text-[9px] font-extrabold font-mono uppercase text-slate-400 block tracking-wider leading-none mb-1">Recommendation</span>
@@ -978,7 +988,11 @@ export default function HomepageCockpit({
                             <div className="flex items-center justify-between text-left">
                               <span className="font-bold text-[#0a1b33]">{item.coin}</span>
                               <span className={`text-[9px] px-1.5 py-0.5 rounded-sm font-bold font-mono ${
-                                item.action === "BUY" ? "text-emerald-600 bg-emerald-50" : "text-amber-500 bg-amber-50"
+                                item.action?.toUpperCase() === "BUY"
+                                  ? "text-emerald-600 bg-emerald-50"
+                                  : item.action?.toUpperCase() === "SELL"
+                                    ? "text-rose-600 bg-rose-50"
+                                    : "text-amber-500 bg-amber-50"
                               }`}>{item.action}</span>
                             </div>
                             <div className="flex items-center justify-between text-[9px] text-slate-400 font-mono mt-1">
