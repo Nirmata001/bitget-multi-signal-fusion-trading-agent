@@ -15,6 +15,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from agent.agent import run_agent_cycle
+from agent.supabase_db import get_decisions_from_supabase
 
 app = FastAPI(title="Omnisignal Agent API")
 
@@ -51,12 +52,19 @@ def read_json(path: Path):
 
 @app.get("/api/decisions")
 async def get_decisions():
+    supabase_decisions = get_decisions_from_supabase()
+    if supabase_decisions is not None:
+        return supabase_decisions[:20]
     return read_json(DECISIONS_FILE)[:20]
 
 
 @app.get("/api/status")
 async def get_status():
-    decisions = read_json(DECISIONS_FILE)
+    supabase_decisions = get_decisions_from_supabase()
+    if supabase_decisions is not None:
+        decisions = supabase_decisions
+    else:
+        decisions = read_json(DECISIONS_FILE)
     latest = decisions[0] if decisions else None
     return {
         "status": "running" if analysis_job["running"] else "idle",

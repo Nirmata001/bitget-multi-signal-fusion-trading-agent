@@ -12,6 +12,8 @@ load_dotenv()
 
 DATA_DIR = Path("data")
 DATA_DIR.mkdir(exist_ok=True)
+from agent.supabase_db import save_decision_to_supabase
+
 DECISIONS_FILE = DATA_DIR / "decisions.json"
 
 
@@ -25,6 +27,13 @@ def load_decisions() -> list:
 
 
 def save_decision(decision: dict):
+    # Save to Supabase (if configured)
+    saved = save_decision_to_supabase(decision)
+    if saved:
+        print("💾 Successfully persisted decision to Supabase!")
+    else:
+        print("ℹ️ Supabase not configured or failed to save. Falling back to local storage only.")
+
     decisions = load_decisions()
     decisions.insert(0, decision)
     decisions = decisions[:100]  # Keep last 100

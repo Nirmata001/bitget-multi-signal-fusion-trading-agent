@@ -102,6 +102,25 @@ const registeredTools = [
   { name: "social_trending", desc: "Monitors viral social terms, ticker velocity on major platforms, and high-impact developer activity." }
 ];
 
+const TOUR_STEPS = [
+  {
+    title: "1. Select Your Target Asset",
+    description: "Choose a pre-configured Stock (like Apple or Nvidia) or Cryptocurrency (like Bitcoin or Ethereum) from the left sidebar of the Advisory panel. You can also type any custom asset symbol at the bottom text field (e.g., LINK, AAPL)!",
+  },
+  {
+    title: "2. Choose Analysis Intensity Mode",
+    description: "Toggle between 'Fast' mode (swift, streamlined 2-round multi-agent synthesis) and 'Full' mode (intensive, 4-round deep reasoning incorporating historical files and media sentiment trends).",
+  },
+  {
+    title: "3. Trigger Advisory Committee Swarm",
+    description: "Click 'Trigger Analysis' to launch the specialist research analysts (Macro, Sentiment, Market Intel, News) in parallel to retrieve real-time data and begin their collaborative consensus deliberations.",
+  },
+  {
+    title: "4. Monitor Live Telemetry Logs",
+    description: "Watch unedited terminal logs and raw API records stream in real-time. Once the audit run is complete, you can download the PDF memo report or listen to the spoken consensus!",
+  }
+];
+
 interface HomepageCockpitProps {
   currentTime: string;
   selectedCoin: string;
@@ -209,6 +228,24 @@ export default function HomepageCockpit({
   const [isSpeaking, setIsSpeaking] = React.useState<boolean>(false);
   const [memoDecision, setMemoDecision] = React.useState<Decision | null>(null);
   const [copiedLogs, setCopiedLogs] = React.useState<boolean>(false);
+
+  // Onboarding Guided Tour state
+  const [tourActive, setTourActive] = React.useState<boolean>(() => {
+    if (typeof window !== "undefined") {
+      const completed = localStorage.getItem("omnisignal_tour_completed");
+      return completed !== "true";
+    }
+    return false;
+  });
+  const [tourStarted, setTourStarted] = React.useState<boolean>(false);
+  const [currentStep, setCurrentStep] = React.useState<number>(0);
+
+  // Auto-switch back to "console" tab during the tour so elements are visible
+  React.useEffect(() => {
+    if (tourActive && tourStarted) {
+      setActiveTab("console");
+    }
+  }, [tourActive, tourStarted, setActiveTab]);
 
   const handleCopyLogs = () => {
     const logsToCopy = logs.length > 0 ? logs : [
@@ -415,12 +452,88 @@ export default function HomepageCockpit({
           </div>
         </div>
         <div className="flex items-center gap-3 text-right">
+          <button
+            onClick={() => {
+              setTourActive(true);
+              setTourStarted(true);
+              setCurrentStep(0);
+            }}
+            className="font-sans text-[11px] font-semibold text-slate-700 hover:text-indigo-600 bg-white hover:bg-indigo-50 border border-slate-200 hover:border-indigo-100 px-4 py-1.5 rounded-full shadow-xs flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95 duration-200"
+            title="Launch interactive app guide"
+          >
+            <span>Walkthrough</span>
+          </button>
+
+          <a
+            href="https://x.com/Michelangelo_0_/status/2068593661986640209?s=20"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-sans text-[11px] font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-4 py-1.5 rounded-full shadow-[0_0_12px_rgba(79,70,229,0.5)] border border-indigo-500 flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95 duration-200 animate-pulse"
+          >
+            <span>Watch Demo Video</span>
+          </a>
           <div className="font-mono text-[11px] text-slate-500 bg-white border border-slate-200/60 px-3 py-1 rounded-full shadow-xs flex items-center gap-2 shrink-0">
             <Clock className="w-3.5 h-3.5 text-slate-400 shrink-0" />
             {currentTime || "Connecting to atomic clock..."}
           </div>
         </div>
       </header>
+
+      {/* Welcome Walkthrough Invite Banner */}
+      {tourActive && !tourStarted && (
+        <motion.div 
+          initial={{ opacity: 0, y: -15 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-[1400px] w-full mx-auto px-4 mb-5"
+        >
+          <div className="bg-gradient-to-r from-slate-950 via-[#0c142c] to-indigo-950 text-white p-5 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)] border border-indigo-500/25 flex flex-col md:flex-row items-center justify-between gap-4 relative overflow-hidden group">
+            {/* Ambient background glows */}
+            <div className="absolute top-0 right-1/4 w-40 h-40 bg-indigo-500/10 rounded-full blur-[60px] pointer-events-none group-hover:scale-125 transition-transform duration-700" />
+            <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-purple-500/5 rounded-full blur-[50px] pointer-events-none" />
+            
+            <div className="flex items-center gap-4 relative z-10 text-left">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-indigo-500/20 to-purple-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300 shadow-[0_0_15px_rgba(99,102,241,0.15)] shrink-0">
+                <Sparkles className="w-5 h-5 animate-pulse text-indigo-400" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h4 className="text-[14px] font-bold tracking-tight font-sans text-white">
+                    New to OmniSignal?
+                  </h4>
+                  <span className="px-2 py-0.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-[9px] font-bold text-indigo-300 uppercase tracking-widest font-mono">
+                    1-Min Walkthrough
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-300 mt-1 max-w-2xl leading-relaxed">
+                  Learn how to select target assets, configure multi-agent reasoning, trigger swarm consensus runs, and monitor live log telemetry.
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-2.5 shrink-0 relative z-10">
+              <button
+                onClick={() => {
+                  setTourStarted(true);
+                  setCurrentStep(0);
+                }}
+                className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl text-[11px] font-bold cursor-pointer transition-all shadow-[0_4px_12px_rgba(99,102,241,0.25)] hover:shadow-[0_4px_20px_rgba(99,102,241,0.4)] active:scale-95 flex items-center gap-1.5"
+              >
+                <span>Start Tour</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => {
+                  setTourActive(false);
+                  localStorage.setItem("omnisignal_tour_completed", "true");
+                }}
+                className="px-3.5 py-2 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white rounded-xl text-[11px] font-semibold cursor-pointer transition-all"
+              >
+                Dismiss
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Floating Bottom Navbar inside Cockpit */}
       <div 
@@ -479,7 +592,7 @@ export default function HomepageCockpit({
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full bg-white border border-slate-200/60 rounded-[32px] p-5 shadow-[0_12px_40px_rgba(0,0,0,0.04)] h-[510px] flex flex-col justify-between text-left"
+            className="w-full bg-gradient-to-b from-white to-slate-50/50 border border-slate-200/50 rounded-[24px] p-6 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.03),0_0_24px_rgba(99,102,241,0.01)] h-[510px] flex flex-col justify-between text-left transition-all duration-300 hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.06),0_0_30px_rgba(99,102,241,0.02)]"
           >
             <div className="flex items-center justify-between border-b border-slate-200/50 pb-3 mb-2 shrink-0">
               <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono flex items-center gap-1.5">
@@ -523,7 +636,7 @@ export default function HomepageCockpit({
                   <div className="flex-1 flex gap-4 overflow-hidden min-h-0 text-left w-full h-full pb-1">
                     {/* Left Sidebar for Stocks, Crypto & Custom Inputs */}
                     <div className="w-[140px] shrink-0 border-r border-slate-100 pr-3 flex flex-col justify-between h-full py-0.5">
-                      <div className="space-y-1.5 overflow-y-auto pr-1 flex-1">
+                      <div className="space-y-1.5 overflow-y-auto pr-1 flex-1 p-1 rounded-xl border border-transparent">
                         <span className="text-[10px] font-extrabold text-slate-400 uppercase font-mono block mb-1 text-left">
                           Asset Target
                         </span>
@@ -845,7 +958,7 @@ export default function HomepageCockpit({
                           <>
                             <button
                               onClick={() => executeAdvisoryAnalysis(selectedCoin, analysisMode, sidebarTab)}
-                              className="flex-1 bg-[#0a152d] hover:bg-[#122345] text-white rounded-xl py-2.5 text-[11.5px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-all"
+                              className="flex-1 bg-[#0a152d] hover:bg-[#122345] text-white rounded-xl py-2.5 text-[11.5px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-all duration-300"
                             >
                               Trigger Analysis for {selectedCoin.toUpperCase()}
                             </button>
@@ -900,7 +1013,7 @@ export default function HomepageCockpit({
                       </div>
                       {ledgerData.length === 0 ? (
                         <div className="text-center p-4 text-slate-400 text-[11px]">
-                          No records in file logs.
+                          No records in file logs for this session.
                         </div>
                       ) : (
                         ledgerData.map((item, index) => (
@@ -1094,12 +1207,7 @@ export default function HomepageCockpit({
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t border-slate-200/40 shrink-0 w-full flex justify-between gap-2 text-left">
-                    <div className="text-[9.5px] text-slate-400 font-mono flex items-center gap-1.5">
-                      <ShieldAlert className="w-3.5 h-3.5 text-slate-400" />
-                      Advisory container nodes in compliance.
-                    </div>
-                  </div>
+
                 </motion.div>
               )}
             </AnimatePresence>
@@ -1107,13 +1215,16 @@ export default function HomepageCockpit({
         </div>
 
         {/* Right Column: Permanently Visible Swarm Log Console */}
-        <div id="right-workspace-column" className="w-full">
+        <div 
+          id="right-workspace-column" 
+          className="w-full"
+        >
           <motion.div 
             id="right-console-terminal-card"
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
-            className="w-full bg-white border border-slate-200/60 rounded-[32px] p-6 shadow-[0_12px_40px_rgba(0,0,0,0.04)] h-[510px] flex flex-col justify-between items-start text-left"
+            className="w-full bg-gradient-to-b from-white to-slate-50/50 border border-slate-200/50 rounded-[24px] p-6 shadow-[0_20px_50px_-12px_rgba(0,0,0,0.03),0_0_24px_rgba(99,102,241,0.01)] h-[510px] flex flex-col justify-between items-start text-left transition-all duration-300 hover:shadow-[0_20px_50px_-12px_rgba(0,0,0,0.06),0_0_30px_rgba(99,102,241,0.02)]"
           >
             <div className="w-full flex-1 flex flex-col overflow-hidden text-left">
               <div className="flex items-center justify-between pb-3 border-b border-slate-200/60 mb-4 font-mono w-full">
@@ -1166,6 +1277,125 @@ export default function HomepageCockpit({
           </motion.div>
         </div>
       </div>
+
+      {/* Floating Tour Guide Step Card */}
+      <AnimatePresence>
+        {tourActive && tourStarted && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: 30 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ type: "spring", damping: 26, stiffness: 340 }}
+            className="fixed bottom-6 right-6 max-w-sm w-[360px] bg-slate-950/90 backdrop-blur-xl text-white rounded-2xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8),_0_0_50px_rgba(99,102,241,0.15)] p-5 border border-white/10 z-50 overflow-hidden text-left flex flex-col gap-4"
+          >
+            {/* Ambient aesthetic glow behind content */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-500/10 rounded-full blur-[40px] pointer-events-none" />
+            <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-indigo-500/5 rounded-full blur-[30px] pointer-events-none" />
+
+            <div className="flex items-center justify-between pb-1 relative z-10">
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] font-bold font-mono text-indigo-400 uppercase tracking-widest bg-indigo-500/10 border border-indigo-500/20 px-2.5 py-0.5 rounded-full">
+                  Walkthrough • Step {currentStep + 1} of 4
+                </span>
+              </div>
+              <button
+                onClick={() => {
+                  setTourActive(false);
+                  setTourStarted(false);
+                  localStorage.setItem("omnisignal_tour_completed", "true");
+                }}
+                className="text-slate-400 hover:text-white transition-all cursor-pointer p-1 rounded-lg hover:bg-white/5 active:scale-90"
+                title="Exit Walkthrough"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="space-y-2 relative z-10">
+              <h4 className="text-[13.5px] font-bold tracking-tight font-sans text-white">
+                {TOUR_STEPS[currentStep].title}
+              </h4>
+              <p className="text-[11.5px] text-slate-300 leading-relaxed font-sans">
+                {TOUR_STEPS[currentStep].description}
+              </p>
+            </div>
+
+            {/* Premium Visual Dynamic Step Progress Indicator */}
+            <div className="flex items-center justify-between relative z-10 pt-1">
+              <div className="flex items-center gap-2">
+                {[0, 1, 2, 3].map((idx) => {
+                  const isActive = idx === currentStep;
+                  const isCompleted = idx < currentStep;
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentStep(idx)}
+                      className="group flex items-center justify-center relative cursor-pointer"
+                      title={`Go to Step ${idx + 1}`}
+                    >
+                      <div className={`h-1.5 rounded-full transition-all duration-300 ${
+                        isActive 
+                          ? "w-6 bg-gradient-to-r from-indigo-500 to-violet-500" 
+                          : isCompleted 
+                            ? "w-2.5 bg-indigo-400" 
+                            : "w-1.5 bg-slate-800 hover:bg-slate-700"
+                      }`} />
+                    </button>
+                  );
+                })}
+              </div>
+              <span className="text-[9px] font-mono text-slate-500">
+                {Math.round(((currentStep + 1) / 4) * 100)}% Complete
+              </span>
+            </div>
+
+            <div className="flex items-center justify-between pt-3.5 border-t border-slate-800/80 relative z-10">
+              <button
+                onClick={() => {
+                  setTourActive(false);
+                  setTourStarted(false);
+                  localStorage.setItem("omnisignal_tour_completed", "true");
+                }}
+                className="text-[10.5px] font-semibold text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                Skip Guide
+              </button>
+
+              <div className="flex items-center gap-2">
+                {currentStep > 0 && (
+                  <button
+                    onClick={() => setCurrentStep(prev => prev - 1)}
+                    className="px-3 py-1.5 bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white rounded-xl text-[10.5px] font-bold cursor-pointer transition-all"
+                  >
+                    Back
+                  </button>
+                )}
+
+                {currentStep < 3 ? (
+                  <button
+                    onClick={() => setCurrentStep(prev => prev + 1)}
+                    className="px-3.5 py-1.5 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white rounded-xl text-[10.5px] font-bold cursor-pointer transition-all shadow-md shadow-indigo-950/20 flex items-center gap-1"
+                  >
+                    <span>Next</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setTourActive(false);
+                      setTourStarted(false);
+                      localStorage.setItem("omnisignal_tour_completed", "true");
+                    }}
+                    className="px-4 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl text-[10.5px] font-bold cursor-pointer transition-all shadow-md shadow-emerald-950/20"
+                  >
+                    Complete 🎉
+                  </button>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {memoDecision && (
         <ExecutiveMemorandum 
