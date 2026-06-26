@@ -906,7 +906,10 @@ export default function HomepageCockpit({
                               onClick={() => executeAdvisoryAnalysis(selectedCoin, analysisMode, sidebarTab)}
                               className="flex-1 bg-[#0a152d] hover:bg-[#122345] text-white rounded-xl py-2.5 text-[11.5px] font-semibold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs transition-all duration-300"
                             >
-                              Trigger Analysis for {selectedCoin.toUpperCase()}
+                              {matchedDecision 
+                                ? `Trigger New Analysis for ${selectedCoin.toUpperCase()}`
+                                : `Trigger Analysis for ${selectedCoin.toUpperCase()}`
+                              }
                             </button>
                             {(logs.length > 0 || matchedDecision) && (
                               <button

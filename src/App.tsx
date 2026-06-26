@@ -35,10 +35,22 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    // Initial fetch
     fetchDecisions();
     fetchStatus();
     fetchStartupLogs();
-  }, []);
+
+    // Background synchronization loop (highly robust for cold-starts and inactive server re-awakenings)
+    const syncInterval = setInterval(() => {
+      if (!isAnalyzing) {
+        fetchDecisions();
+        fetchStatus();
+        fetchStartupLogs();
+      }
+    }, 4500);
+
+    return () => clearInterval(syncInterval);
+  }, [isAnalyzing]);
 
   const fetchStartupLogs = async () => {
     try {
