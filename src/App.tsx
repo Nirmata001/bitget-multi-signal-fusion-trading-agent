@@ -40,16 +40,27 @@ export default function App() {
     fetchStatus();
     fetchStartupLogs();
 
-    // Background synchronization loop (highly robust for cold-starts and inactive server re-awakenings)
-    const syncInterval = setInterval(() => {
+    // Trigger exactly two delayed syncs to handle any Render cold-start lag, without continuous polling
+    const syncTimeout1 = setTimeout(() => {
       if (!isAnalyzing) {
         fetchDecisions();
         fetchStatus();
         fetchStartupLogs();
       }
-    }, 4500);
+    }, 3000);
 
-    return () => clearInterval(syncInterval);
+    const syncTimeout2 = setTimeout(() => {
+      if (!isAnalyzing) {
+        fetchDecisions();
+        fetchStatus();
+        fetchStartupLogs();
+      }
+    }, 8000);
+
+    return () => {
+      clearTimeout(syncTimeout1);
+      clearTimeout(syncTimeout2);
+    };
   }, [isAnalyzing]);
 
   const fetchStartupLogs = async () => {
