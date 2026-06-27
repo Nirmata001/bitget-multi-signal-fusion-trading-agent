@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { AnimatePresence } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
+import { Server, RefreshCw, X } from "lucide-react";
 import { Decision, SystemStatus } from "./types";
 import LandingPage from "./components/LandingPage";
 import HomepageCockpit from "./components/HomepageCockpit";
@@ -24,6 +25,8 @@ export default function App() {
   const [activeAnalystTab, setActiveAnalystTab] = useState<string>("macro");
   const [currentTime, setCurrentTime] = useState<string>("");
   const [view, setView] = useState<"landing" | "homepage">("landing");
+  const [serverOffline, setServerOffline] = useState<boolean>(false);
+  const [showReloadPrompt, setShowReloadPrompt] = useState<boolean>(false);
 
   // Keep live UTC clock refreshed every second
   useEffect(() => {
@@ -63,6 +66,29 @@ export default function App() {
     };
   }, [isAnalyzing]);
 
+  // Periodic background ping when server is sleeping/booting (cold-start recovery)
+  useEffect(() => {
+    if (!serverOffline || showReloadPrompt) return;
+
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch("/api/status");
+        if (res.ok) {
+          setShowReloadPrompt(true);
+          setServerOffline(false);
+          fetchDecisions();
+          fetchStatus();
+          fetchStartupLogs();
+          clearInterval(interval);
+        }
+      } catch (err) {
+        // Still sleeping/offline
+      }
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [serverOffline, showReloadPrompt]);
+
   const fetchStartupLogs = async () => {
     try {
       const res = await fetch("/api/realtime-logs");
@@ -71,9 +97,16 @@ export default function App() {
         if (data && Array.isArray(data.logs) && data.logs.length > 0) {
           setLogs(data.logs);
         }
+        if (serverOffline) {
+          setShowReloadPrompt(true);
+          setServerOffline(false);
+        }
+      } else {
+        setServerOffline(true);
       }
     } catch (err) {
       console.error("Failed to fetch startup logs from server:", err);
+      setServerOffline(true);
     }
   };
 
@@ -90,10 +123,17 @@ export default function App() {
             lastConfidence: data.lastConfidence,
             model: data.model || "qwen3.6-plus"
           });
+          if (serverOffline) {
+            setShowReloadPrompt(true);
+            setServerOffline(false);
+          }
         }
+      } else {
+        setServerOffline(true);
       }
     } catch (err) {
       console.error("Failed to fetch system status from API:", err);
+      setServerOffline(true);
     }
   };
 
@@ -106,9 +146,16 @@ export default function App() {
           setLedgerData(data);
           setLatestDecision(data[0]);
         }
+        if (serverOffline) {
+          setShowReloadPrompt(true);
+          setServerOffline(false);
+        }
+      } else {
+        setServerOffline(true);
       }
     } catch (err) {
       console.error("Failed to fetch historical decisions from API:", err);
+      setServerOffline(true);
     }
   };
 
@@ -264,7 +311,51 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f9fafb] flex flex-col justify-between py-6 px-4 md:px-8 overflow-x-hidden font-sans select-none">
+    <div className="min-h-screen bg-[#f9fafb] flex flex-col justify-between py-6 px-4 md:px-8 overflow-x-hidden font-sans select-none relative">
+      <AnimatePresence>
+        {showReloadPrompt && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="fixed top-5 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4"
+          >
+            <div className="bg-[#0c142c] border border-indigo-500/30 text-white p-4 rounded-xl shadow-2xl flex items-center justify-between gap-4 backdrop-blur-md bg-opacity-95">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                  <Server className="w-4 h-4 text-emerald-400 animate-pulse" />
+                </div>
+                <div className="text-left">
+                  <h5 className="text-[12px] font-bold text-white tracking-tight flex items-center gap-1.5">
+                    Back-end Online!
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                  </h5>
+                  <p className="text-[10px] text-slate-300 mt-0.5 leading-snug">
+                    Server finished booting. Reload to sync historical records.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  onClick={() => window.location.reload()}
+                  className="px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-all active:scale-95 shadow-md shadow-indigo-600/15"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  <span>Reload</span>
+                </button>
+                <button
+                  onClick={() => setShowReloadPrompt(false)}
+                  className="p-1.5 hover:bg-white/10 rounded-lg text-slate-400 hover:text-white transition-all cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <AnimatePresence mode="wait">
         {view === "landing" ? (
           <LandingPage
